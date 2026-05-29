@@ -100,8 +100,21 @@ local-signed:
 	@$(MAKE) local
 	@echo ""
 	@echo "Re-signing with stable identity '$(SIGN_IDENTITY)' (xcodebuild falls back to ad-hoc)..."
-	@scripts/resign-local.sh "$$HOME/Downloads/VoiceInk.app" \
+	@# Sign the build-products copy, NOT the ~/Downloads copy: ~/Downloads is a
+	@# TCC-protected location and ditto stamps com.apple.provenance on the copy,
+	@# both of which make `codesign --force` fail there ("Operation not permitted").
+	@# Signature survives the subsequent ditto, so we copy the signed app over.
+	@scripts/resign-local.sh \
+		"$(LOCAL_DERIVED_DATA)/Build/Products/Debug/VoiceInk.app" \
 		"$(CURDIR)/VoiceInk/VoiceInk.local.entitlements" "$(SIGN_IDENTITY)"
+	@echo "Copying signed app to ~/Downloads..."
+	@rm -rf "$$HOME/Downloads/VoiceInk.app"
+	@ditto "$(LOCAL_DERIVED_DATA)/Build/Products/Debug/VoiceInk.app" "$$HOME/Downloads/VoiceInk.app"
+	@if codesign --verify --deep --strict "$$HOME/Downloads/VoiceInk.app" 2>/dev/null; then \
+		echo "~/Downloads/VoiceInk.app signed OK (Authority: $(SIGN_IDENTITY))."; \
+	else \
+		echo "WARNING: signature did not survive copy to ~/Downloads"; \
+	fi
 	@echo ""
 	@echo "Grant Accessibility once; it then persists across rebuilds (DR pinned to the cert)."
 
