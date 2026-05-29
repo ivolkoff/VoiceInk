@@ -21,6 +21,7 @@ struct SettingsView: View {
     @AppStorage("restoreClipboardAfterPaste") private var restoreClipboardAfterPaste = true
     @AppStorage("clipboardRestoreDelay") private var clipboardRestoreDelay = 2.0
     @AppStorage(PasteMethod.userDefaultsKey) private var pasteMethodRawValue = PasteMethod.standard.rawValue
+    @AppStorage(SelectedTextEnhancementSettings.maxInputLengthKey) private var selectedTextMaxInputLength = SelectedTextEnhancementSettings.defaultMaxInputLength
     @State private var showResetOnboardingAlert = false
     @State private var hasCancelRecordingShortcut = ShortcutStore.shortcut(for: .cancelRecorder) != nil
     @State private var cancelRecordingShortcutRecorderResetID = 0
@@ -98,6 +99,38 @@ struct SettingsView: View {
                         recordingShortcutManager.updateShortcutStatus()
                     }
                         .controlSize(.small)
+                }
+
+                LabeledContent {
+                    ShortcutRecorder(action: .enhanceSelectedText) {
+                        recordingShortcutManager.updateShortcutStatus()
+                    }
+                        .controlSize(.small)
+                } label: {
+                    HStack(spacing: 4) {
+                        Text("Enhance Selected Text")
+                        InfoTip("Runs your active AI Enhancement prompt on the selected text and pastes the result back. With nothing selected, it selects all text in the focused field.")
+                    }
+                }
+
+                LabeledContent {
+                    HStack(spacing: 4) {
+                        TextField("", value: $selectedTextMaxInputLength, formatter: {
+                            let formatter = NumberFormatter()
+                            formatter.minimum = 0
+                            formatter.allowsFloats = false
+                            return formatter
+                        }())
+                            .textFieldStyle(.roundedBorder)
+                            .frame(width: 70)
+                        Text("characters")
+                            .foregroundColor(.secondary)
+                    }
+                } label: {
+                    HStack(spacing: 4) {
+                        Text("Max Input Length")
+                        InfoTip("Enhance Selected Text aborts before any AI request when the captured text exceeds this many characters, so the shortcut cannot accidentally process a whole document.")
+                    }
                 }
 
                 LabeledContent("Cancel Recording") {

@@ -51,6 +51,11 @@ class RecordingShortcutManager: ObservableObject {
     private let shortcutModeHandler: RecordingShortcutModeHandler
     private let primaryRecordingShortcutModeSource: RecordingShortcutModeSource
 
+    private lazy var selectedTextEnhancementService: SelectedTextEnhancementService? = {
+        guard let enhancementService = engine.enhancementService else { return nil }
+        return SelectedTextEnhancementService(enhancementService: enhancementService)
+    }()
+
     // MARK: - Helper Properties
     private var canHandleShortcutAction: Bool {
         Self.canHandleShortcutAction(for: engine.recordingState)
@@ -292,6 +297,12 @@ class RecordingShortcutManager: ObservableObject {
             )
         case .quickAddToDictionary:
             DictionaryQuickAddManager.shared.toggle(modelContainer: engine.modelContext.container)
+        case .enhanceSelectedText:
+            if let selectedTextEnhancementService {
+                await selectedTextEnhancementService.run()
+            } else {
+                NotificationManager.shared.showNotification(title: "AI Enhancement is not available", type: .error)
+            }
         default:
             break
         }
