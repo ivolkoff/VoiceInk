@@ -4,7 +4,16 @@ WHISPER_CPP_DIR := $(DEPS_DIR)/whisper.cpp
 FRAMEWORK_PATH := $(WHISPER_CPP_DIR)/build-apple/whisper.xcframework
 LOCAL_DERIVED_DATA := $(CURDIR)/.local-build
 
-.PHONY: all clean whisper setup build local check healthcheck help dev run
+# Signing identity for `make local`. Default `-` = ad-hoc (new identity each
+# build, so Accessibility/TCC resets every rebuild). Override with a stable
+# self-signed code-signing identity to keep permissions across rebuilds, e.g.
+#   make local LOCAL_SIGN_IDENTITY="VoiceInk Local"
+# or use the `local-signed` target below.
+LOCAL_SIGN_IDENTITY ?= -
+# Identity used by the `local-signed` convenience target.
+SIGN_IDENTITY ?= VoiceInk Local
+
+.PHONY: all clean whisper setup build local local-signed check healthcheck help dev run
 
 # Default target
 all: check build
@@ -51,7 +60,7 @@ local: check setup
 	xcodebuild -project VoiceInk.xcodeproj -scheme VoiceInk -configuration Debug \
 		-derivedDataPath "$(LOCAL_DERIVED_DATA)" \
 		-xcconfig LocalBuild.xcconfig \
-		CODE_SIGN_IDENTITY="-" \
+		CODE_SIGN_IDENTITY="$(LOCAL_SIGN_IDENTITY)" \
 		CODE_SIGNING_REQUIRED=NO \
 		CODE_SIGNING_ALLOWED=YES \
 		DEVELOPMENT_TEAM="" \
@@ -75,6 +84,26 @@ local: check setup
 		echo "Error: Could not find built VoiceInk.app at $$APP_PATH"; \
 		exit 1; \
 	fi
+
+# Build for local use signed with a stable self-signed identity.
+# Keeps Accessibility/Input Monitoring (TCC) granted across rebuilds because the
+# code's Designated Requirement stays pinned to the same certificate.
+# One-time setup: create a "Code Signing" self-signed cert named "$(SIGN_IDENTITY)"
+# in Keychain Access (Certificate Assistant), or via the documented CLI.
+local-signed:
+	@if ! security find-identity -p codesigning | grep -q "$(SIGN_IDENTITY)"; then \
+		echo "Code-signing identity '$(SIGN_IDENTITY)' not found in keychain."; \
+		echo "Create it once (Keychain Access > Certificate Assistant > Create a Certificate,"; \
+		echo "type 'Code Signing', self-signed) then re-run 'make local-signed'."; \
+		exit 1; \
+	fi
+	@$(MAKE) local
+	@echo ""
+	@echo "Re-signing with stable identity '$(SIGN_IDENTITY)' (xcodebuild falls back to ad-hoc)..."
+	@scripts/resign-local.sh "$$HOME/Downloads/VoiceInk.app" \
+		"$(CURDIR)/VoiceInk/VoiceInk.local.entitlements" "$(SIGN_IDENTITY)"
+	@echo ""
+	@echo "Grant Accessibility once; it then persists across rebuilds (DR pinned to the cert)."
 
 # Run application
 run:
