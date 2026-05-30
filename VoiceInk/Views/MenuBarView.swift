@@ -263,7 +263,7 @@ struct MenuBarView: View {
 
     /// A menu item title with its current shortcut shown trailing in grey.
     @ViewBuilder
-    private func menuItemLabel(_ title: String, shortcut: Shortcut?) -> some View {
+    private func menuItemLabel(_ title: LocalizedStringKey, shortcut: Shortcut?) -> some View {
         if let shortcut {
             HStack {
                 Text(title)
