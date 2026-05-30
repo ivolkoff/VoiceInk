@@ -18,12 +18,16 @@ struct MenuBarView: View {
     
     var body: some View {
         VStack {
-            Button("Toggle Recorder") {
+            Button {
                 recorderUIManager.handleToggleMiniRecorder()
+            } label: {
+                menuItemLabel("Toggle Recorder", shortcut: toggleRecorderShortcut)
             }
 
-            Button("Enhance Selected Text") {
+            Button {
                 Task { await recordingShortcutManager.enhanceSelectedText() }
+            } label: {
+                menuItemLabel("Enhance Selected Text", shortcut: ShortcutStore.shortcut(for: .enhanceSelectedText))
             }
 
             Divider()
@@ -246,6 +250,28 @@ struct MenuBarView: View {
             Button("Quit VoiceInk") {
                 NSApplication.shared.terminate(nil)
             }
+        }
+    }
+
+    /// Primary recording shortcut, but only when the user has set a custom one
+    /// (otherwise there is no key bound to show).
+    private var toggleRecorderShortcut: Shortcut? {
+        guard recordingShortcutManager.primaryRecordingShortcut == .custom else { return nil }
+        return ShortcutStore.shortcut(for: .primaryRecording)
+    }
+
+    /// A menu item title with its current shortcut shown trailing in grey.
+    @ViewBuilder
+    private func menuItemLabel(_ title: String, shortcut: Shortcut?) -> some View {
+        if let shortcut {
+            HStack {
+                Text(title)
+                Spacer()
+                Text(shortcut.displayString)
+                    .foregroundStyle(.secondary)
+            }
+        } else {
+            Text(title)
         }
     }
 }
