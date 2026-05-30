@@ -49,7 +49,13 @@ final class SelectedTextEnhancementService {
             inputText = text
         }
 
-        notify("Enhancing selected text…", type: .info, duration: 2.0)
+        // Persistent in-flight indicator: stays on screen (with a spinner) until the
+        // AI responds, so the user always knows the request is still running.
+        NotificationManager.shared.showNotification(
+            title: "Enhancing selected text…",
+            type: .info,
+            isLoading: true
+        )
 
         do {
             let (enhanced, _, _) = try await enhancementService.enhance(inputText)
@@ -60,7 +66,9 @@ final class SelectedTextEnhancementService {
                 return
             }
 
-            // Pasting over a live selection replaces it; CursorPaster preserves the clipboard.
+            // Response arrived: replace the loading indicator, then paste over the selection.
+            // CursorPaster preserves the clipboard.
+            notify("Selected text enhanced", type: .success, duration: 2.0)
             CursorPaster.startPasteAtCursor(enhanced)
         } catch {
             logger.error("Enhancement failed: \(error.localizedDescription, privacy: .public)")

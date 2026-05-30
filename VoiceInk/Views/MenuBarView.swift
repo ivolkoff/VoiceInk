@@ -22,6 +22,10 @@ struct MenuBarView: View {
                 recorderUIManager.handleToggleMiniRecorder()
             }
 
+            Button("Enhance Selected Text") {
+                Task { await recordingShortcutManager.enhanceSelectedText() }
+            }
+
             Divider()
 
             Menu {

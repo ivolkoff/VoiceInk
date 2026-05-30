@@ -10,6 +10,7 @@ struct ShortcutRecorder: View {
     @StateObject private var recorder = ShortcutRecorderModel()
     @State private var recorderID = UUID()
     @State private var shortcut: Shortcut?
+    @State private var previousShortcut: Shortcut?
 
     init(
         action: ShortcutAction,
@@ -32,11 +33,21 @@ struct ShortcutRecorder: View {
                         name: Self.shortcutRecordingDidStart,
                         object: recorderID
                     )
+                    // Clear the stored binding while recording so the global
+                    // monitor pauses and the old shortcut can't fire mid-capture.
+                    // The previous binding is restored if recording is cancelled
+                    // or the new shortcut fails validation (see onConflictOrCancel).
                     clearShortcutBeforeRecording()
-                    recorder.start(action: action) { newShortcut in
-                        shortcut = newShortcut
-                        onShortcutChanged()
-                    }
+                    recorder.start(
+                        action: action,
+                        onCapture: { newShortcut in
+                            shortcut = newShortcut
+                            onShortcutChanged()
+                        },
+                        onConflictOrCancel: {
+                            restoreShortcutAfterFailedRecording()
+                        }
+                    )
                 }
             } label: {
                 ShortcutVisualization(
@@ -79,8 +90,17 @@ struct ShortcutRecorder: View {
     }
 
     private func clearShortcutBeforeRecording() {
+        previousShortcut = ShortcutStore.shortcut(for: action)
         ShortcutStore.setShortcut(nil, for: action)
         shortcut = nil
+        onShortcutChanged()
+    }
+
+    private func restoreShortcutAfterFailedRecording() {
+        guard let previousShortcut else { return }
+        ShortcutStore.setShortcut(previousShortcut, for: action)
+        shortcut = previousShortcut
+        self.previousShortcut = nil
         onShortcutChanged()
     }
 
@@ -166,6 +186,7 @@ final class ShortcutRecorderModel: ObservableObject {
 
     private var localMonitor: Any?
     private var onCapture: ((Shortcut) -> Void)?
+    private var onConflictOrCancel: (() -> Void)?
     private var activeAction: ShortcutAction?
     private var pendingModifierShortcut: Shortcut?
     private var peakModifierFlags: NSEvent.ModifierFlags = []
@@ -174,19 +195,29 @@ final class ShortcutRecorderModel: ObservableObject {
         removeRecordingMonitor()
     }
 
-    func start(action: ShortcutAction, onCapture: @escaping (Shortcut) -> Void) {
+    func start(
+        action: ShortcutAction,
+        onCapture: @escaping (Shortcut) -> Void,
+        onConflictOrCancel: @escaping () -> Void = {}
+    ) {
         cancel()
 
         activeAction = action
         self.onCapture = onCapture
+        self.onConflictOrCancel = onConflictOrCancel
         isRecording = true
         previewShortcut = nil
         installRecordingMonitor()
     }
 
     func cancel() {
+        let wasRecording = isRecording
+        let restore = onConflictOrCancel
         removeRecordingMonitor()
         resetRecordingState()
+        if wasRecording {
+            restore?()
+        }
     }
 
     private func finish(with shortcut: Shortcut) {
@@ -213,6 +244,7 @@ final class ShortcutRecorderModel: ObservableObject {
         isRecording = false
         previewShortcut = nil
         onCapture = nil
+        onConflictOrCancel = nil
         activeAction = nil
         pendingModifierShortcut = nil
         peakModifierFlags = []

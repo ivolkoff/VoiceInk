@@ -298,13 +298,18 @@ class RecordingShortcutManager: ObservableObject {
         case .quickAddToDictionary:
             DictionaryQuickAddManager.shared.toggle(modelContainer: engine.modelContext.container)
         case .enhanceSelectedText:
-            if let selectedTextEnhancementService {
-                await selectedTextEnhancementService.run()
-            } else {
-                NotificationManager.shared.showNotification(title: "AI Enhancement is not available", type: .error)
-            }
+            await enhanceSelectedText()
         default:
             break
+        }
+    }
+
+    /// Runs the enhance-selected-text action. Shared by the global shortcut and the menu bar item.
+    func enhanceSelectedText() async {
+        if let selectedTextEnhancementService {
+            await selectedTextEnhancementService.run()
+        } else {
+            NotificationManager.shared.showNotification(title: "AI Enhancement is not available", type: .error)
         }
     }
 
