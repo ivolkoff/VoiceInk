@@ -67,7 +67,7 @@ struct AudioInputSettingsView: View {
                 Image(systemName: "display")
                     .foregroundStyle(.secondary)
 
-                Text(audioDeviceManager.getSystemDefaultDeviceName() ?? "No device available")
+                Text(audioDeviceManager.getSystemDefaultDeviceName() ?? String(localized: "No device available"))
                     .foregroundStyle(.primary)
 
                 Spacer()
@@ -274,7 +274,7 @@ struct InputModeCard: View {
         }
     }
 
-    private var description: String {
+    private var description: LocalizedStringKey {
         switch mode {
         case .systemDefault: return "Use your Mac's default input"
         case .custom: return "Select a specific input device"
@@ -291,7 +291,7 @@ struct InputModeCard: View {
                     .foregroundStyle(isSelected ? .blue : .secondary)
                 
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(mode.rawValue)
+                    Text(LocalizedStringKey(mode.rawValue))
                         .font(.headline)
                     
                     Text(description)
