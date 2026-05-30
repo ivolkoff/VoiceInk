@@ -65,33 +65,36 @@ enum ShortcutAction: Hashable {
     var displayName: String {
         switch self {
         case .primaryRecording:
-            return "Primary Shortcut"
+            return String(localized: "Primary Shortcut")
         case .secondaryRecording:
-            return "Secondary Shortcut"
+            return String(localized: "Secondary Shortcut")
         case .pasteLastTranscription:
-            return "Paste Last Transcription"
+            return String(localized: "Paste Last Transcription")
         case .pasteLastEnhancement:
-            return "Paste Last Enhanced Transcription"
+            return String(localized: "Paste Last Enhanced Transcription")
         case .retryLastTranscription:
-            return "Retry Last Transcription"
+            return String(localized: "Retry Last Transcription")
         case .cancelRecorder:
-            return "Cancel Recording"
+            return String(localized: "Cancel Recording")
         case .openHistoryWindow:
-            return "Open History Window"
+            return String(localized: "Open History Window")
         case .quickAddToDictionary:
-            return "Quick Add to Dictionary"
+            return String(localized: "Quick Add to Dictionary")
         case .toggleEnhancement:
-            return "Toggle Enhancement"
+            return String(localized: "Toggle Enhancement")
         case .enhanceSelectedText:
-            return "Enhance Selected Text"
+            return String(localized: "Enhance Selected Text")
         case .powerMode(let id):
             if let config = PowerModeManager.shared.getConfiguration(with: id) {
-                return "\(config.name) Power Mode"
+                return String.localizedStringWithFormat(
+                    String(localized: "%@ Power Mode"),
+                    config.name
+                )
             }
 
-            return "Power Mode"
+            return String(localized: "Power Mode")
         case .miniRecorderEscape:
-            return "Mini Recorder Cancel"
+            return String(localized: "Mini Recorder Cancel")
         case .miniRecorderPrompt(let index):
             return "Select Prompt \(Self.displayNumber(forMiniRecorderIndex: index))"
         case .miniRecorderPowerMode(let index):
