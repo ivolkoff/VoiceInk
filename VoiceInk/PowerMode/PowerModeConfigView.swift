@@ -9,7 +9,7 @@ struct ConfigurationView: View {
     @EnvironmentObject private var transcriptionModelManager: TranscriptionModelManager
     @FocusState private var isNameFieldFocused: Bool
 
-    @State private var configName: String = "New Power Mode"
+    @State private var configName: String = String(localized: "New Power Mode")
     @State private var selectedEmoji: String = "💼"
     @State private var isShowingEmojiPicker = false
     @State private var isShowingAppPicker = false

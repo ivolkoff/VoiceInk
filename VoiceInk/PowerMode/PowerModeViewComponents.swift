@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct VoiceInkButton: View {
-    let title: String
+    let title: LocalizedStringKey
     let action: () -> Void
     var isDisabled: Bool = false
     
