@@ -201,6 +201,11 @@ enum BackupImporter {
         if let clipboardDelay = general.clipboardRestoreDelay {
             UserDefaults.standard.set(clipboardDelay, forKey: "clipboardRestoreDelay")
         }
+        if let customProviderHeaders = general.customProviderHeaders {
+            if let encoded = try? JSONEncoder().encode(customProviderHeaders) {
+                UserDefaults.standard.set(encoded, forKey: "customProviderHeaders")
+            }
+        }
 
         print("Successfully imported general settings.")
     }

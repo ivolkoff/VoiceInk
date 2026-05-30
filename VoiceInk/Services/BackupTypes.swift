@@ -101,6 +101,7 @@ struct GeneralBackup: Codable {
     let isExperimentalFeaturesEnabled: Bool?
     let restoreClipboardAfterPaste: Bool?
     let clipboardRestoreDelay: Double?
+    let customProviderHeaders: [String: String]?
 }
 
 struct WordBackup: Codable {

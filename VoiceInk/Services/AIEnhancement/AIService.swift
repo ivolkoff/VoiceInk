@@ -184,6 +184,21 @@ class AIService: ObservableObject {
             userDefaults.set(customModel, forKey: "customProviderModel")
         }
     }
+    @Published var customHeaders: [String: String] = AIService.loadCustomHeaders() {
+        didSet {
+            if let encoded = try? JSONEncoder().encode(customHeaders) {
+                userDefaults.set(encoded, forKey: "customProviderHeaders")
+            }
+        }
+    }
+
+    private static func loadCustomHeaders() -> [String: String] {
+        guard let data = UserDefaults.standard.data(forKey: "customProviderHeaders"),
+              let headers = try? JSONDecoder().decode([String: String].self, from: data) else {
+            return [:]
+        }
+        return headers
+    }
     @Published var selectedProvider: AIProvider {
         didSet {
             userDefaults.set(selectedProvider.rawValue, forKey: "selectedAIProvider")

@@ -186,7 +186,8 @@ class ImportExportService {
             lowercaseTranscription: UserDefaults.standard.bool(forKey: keyLowercaseTranscription),
             isExperimentalFeaturesEnabled: UserDefaults.standard.bool(forKey: "isExperimentalFeaturesEnabled"),
             restoreClipboardAfterPaste: UserDefaults.standard.bool(forKey: "restoreClipboardAfterPaste"),
-            clipboardRestoreDelay: UserDefaults.standard.double(forKey: "clipboardRestoreDelay")
+            clipboardRestoreDelay: UserDefaults.standard.double(forKey: "clipboardRestoreDelay"),
+            customProviderHeaders: (UserDefaults.standard.data(forKey: "customProviderHeaders").flatMap { try? JSONDecoder().decode([String: String].self, from: $0) })
         )
 
         let exportedSettings = BackupFile(

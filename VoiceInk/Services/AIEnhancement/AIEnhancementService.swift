@@ -300,15 +300,19 @@ class AIEnhancementService: ObservableObject {
                     for: aiService.selectedProvider,
                     modelName: aiService.currentModel
                 )
-                result = try await OpenAILLMClient.chatCompletion(
+                let extraHeaders: [String: String]? = (aiService.selectedProvider == .custom && !aiService.customHeaders.isEmpty)
+                    ? aiService.customHeaders
+                    : nil
+                result = try await openAICompatibleChatCompletion(
                     baseURL: baseURL,
                     apiKey: aiService.apiKey,
                     model: aiService.currentModel,
-                    messages: [.user(formattedText)],
                     systemPrompt: systemMessage,
+                    userContent: formattedText,
                     temperature: temperature,
                     reasoningEffort: reasoningEffort,
                     extraBody: extraBody,
+                    extraHeaders: extraHeaders,
                     timeout: baseTimeout
                 )
             }
@@ -320,6 +324,90 @@ class AIEnhancementService: ObservableObject {
         } catch {
             throw EnhancementError.customError(error.localizedDescription)
         }
+    }
+
+    /// OpenAI-compatible chat completion built in-repo so that custom HTTP
+    /// headers can be injected for the Custom provider. LLMkit's
+    /// `OpenAILLMClient.chatCompletion` does not expose an `extraHeaders`
+    /// parameter, so this mirrors its behaviour (endpoint, body, parsing) and
+    /// throws `EnhancementError` so retry/error handling stays consistent.
+    private func openAICompatibleChatCompletion(
+        baseURL: URL,
+        apiKey: String,
+        model: String,
+        systemPrompt: String?,
+        userContent: String,
+        temperature: Double,
+        reasoningEffort: String?,
+        extraBody: [String: Any]?,
+        extraHeaders: [String: String]?,
+        timeout: TimeInterval
+    ) async throws -> String {
+        var request = URLRequest(url: baseURL)
+        request.httpMethod = "POST"
+        request.timeoutInterval = timeout
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        if !apiKey.isEmpty {
+            request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
+        }
+        // Custom headers applied last so the user can override defaults.
+        if let extraHeaders = extraHeaders {
+            for (key, value) in extraHeaders {
+                request.setValue(value, forHTTPHeaderField: key)
+            }
+        }
+
+        var messages: [[String: String]] = []
+        if let systemPrompt = systemPrompt, !systemPrompt.isEmpty {
+            messages.append(["role": "system", "content": systemPrompt])
+        }
+        messages.append(["role": "user", "content": userContent])
+
+        var bodyDict: [String: Any] = [
+            "model": model,
+            "messages": messages,
+            "temperature": temperature,
+            "stream": false
+        ]
+        if let reasoningEffort = reasoningEffort {
+            bodyDict["reasoning_effort"] = reasoningEffort
+        }
+        if let extraBody = extraBody {
+            for (key, value) in extraBody {
+                bodyDict[key] = value
+            }
+        }
+        guard let body = try? JSONSerialization.data(withJSONObject: bodyDict) else {
+            throw EnhancementError.customError("Failed to encode request body.")
+        }
+        request.httpBody = body
+
+        let data: Data
+        let response: URLResponse
+        do {
+            (data, response) = try await URLSession.shared.data(for: request)
+        } catch {
+            throw EnhancementError.networkError
+        }
+        guard let httpResponse = response as? HTTPURLResponse else {
+            throw EnhancementError.networkError
+        }
+        guard (200...299).contains(httpResponse.statusCode) else {
+            if httpResponse.statusCode == 429 { throw EnhancementError.rateLimitExceeded }
+            if (500...599).contains(httpResponse.statusCode) { throw EnhancementError.serverError }
+            let message = String(data: data, encoding: .utf8) ?? ""
+            throw EnhancementError.customError("HTTP \(httpResponse.statusCode): \(message)")
+        }
+        guard
+            let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+            let choices = json["choices"] as? [[String: Any]],
+            let first = choices.first,
+            let message = first["message"] as? [String: Any],
+            let content = message["content"] as? String
+        else {
+            throw EnhancementError.enhancementFailed
+        }
+        return content
     }
 
     private func mapLLMKitError(_ error: LLMKitError) -> EnhancementError {

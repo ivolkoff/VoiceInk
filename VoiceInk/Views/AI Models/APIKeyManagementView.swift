@@ -262,6 +262,10 @@ struct APIKeyManagementView: View {
                         }
                         .disabled(aiService.customBaseURL.isEmpty || aiService.customModel.isEmpty || apiKey.isEmpty)
                     }
+
+                    Divider()
+
+                    CustomHeadersEditor(headers: $aiService.customHeaders)
                     
                 } else {
                     if aiService.isAPIKeyValid {
@@ -377,6 +381,121 @@ struct APIKeyManagementView: View {
         case .openRouter: return URL(string: "https://openrouter.ai/keys")
         case .cerebras: return URL(string: "https://cloud.cerebras.ai/")
         default: return nil
+        }
+    }
+}
+
+// MARK: - Custom Headers Editor
+
+private struct CustomHeadersEditor: View {
+    @Binding var headers: [String: String]
+
+    @State private var newKey: String = ""
+    @State private var newValue: String = ""
+    @State private var reservedKeyWarning: String?
+
+    private let reservedHeaders: Set<String> = ["authorization", "content-type", "content-length", "host"]
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("Custom Headers")
+                .font(.subheadline)
+                .fontWeight(.medium)
+                .foregroundColor(.primary)
+
+            Text("Additional HTTP headers sent with every request to your custom endpoint.")
+                .font(.caption)
+                .foregroundColor(.secondary)
+
+            if !headers.isEmpty {
+                ForEach(Array(headers.keys.sorted()), id: \.self) { key in
+                    headerRow(key: key, value: headers[key] ?? "")
+                }
+            }
+
+            HStack(spacing: 6) {
+                TextField("Header Key", text: $newKey)
+                    .textFieldStyle(.roundedBorder)
+                    .font(.system(size: 12))
+
+                TextField("Value", text: $newValue)
+                    .textFieldStyle(.roundedBorder)
+                    .font(.system(size: 12))
+
+                Button {
+                    addHeader()
+                } label: {
+                    Image(systemName: "plus.circle.fill")
+                        .foregroundColor(.accentColor)
+                }
+                .buttonStyle(.plain)
+                .help("Add Header")
+                .disabled(newKey.trimmingCharacters(in: .whitespaces).isEmpty)
+            }
+
+            if let warning = reservedKeyWarning {
+                HStack(spacing: 4) {
+                    Image(systemName: "exclamationmark.triangle.fill")
+                        .foregroundColor(.orange)
+                        .font(.caption)
+                    Text(warning)
+                        .font(.caption)
+                        .foregroundColor(.orange)
+                }
+            }
+        }
+        .padding(.vertical, 4)
+    }
+
+    private func headerRow(key: String, value: String) -> some View {
+        HStack(spacing: 6) {
+            TextField("Key", text: Binding(
+                get: { key },
+                set: { newKey in
+                    if !newKey.isEmpty {
+                        headers[newKey] = headers.removeValue(forKey: key)
+                        checkReservedHeader(newKey)
+                    }
+                }
+            ))
+            .textFieldStyle(.roundedBorder)
+            .font(.system(size: 12))
+
+            TextField("Value", text: Binding(
+                get: { headers[key] ?? "" },
+                set: { headers[key] = $0 }
+            ))
+            .textFieldStyle(.roundedBorder)
+            .font(.system(size: 12))
+
+            Button {
+                headers.removeValue(forKey: key)
+            } label: {
+                Image(systemName: "xmark.circle.fill")
+                    .foregroundColor(.secondary)
+            }
+            .buttonStyle(.plain)
+            .help("Remove Header")
+        }
+    }
+
+    private func addHeader() {
+        let trimmedKey = newKey.trimmingCharacters(in: .whitespaces)
+        let trimmedValue = newValue.trimmingCharacters(in: .whitespaces)
+        guard !trimmedKey.isEmpty else { return }
+
+        headers[trimmedKey] = trimmedValue
+        checkReservedHeader(trimmedKey)
+
+        newKey = ""
+        newValue = ""
+    }
+
+    private func checkReservedHeader(_ key: String) {
+        if reservedHeaders.contains(key.lowercased()) {
+            reservedKeyWarning = "\"\(key)\" is a reserved header and may override standard request headers."
+        } else {
+            reservedKeyWarning = nil
         }
     }
 }
