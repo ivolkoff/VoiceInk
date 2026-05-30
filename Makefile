@@ -12,6 +12,10 @@ LOCAL_DERIVED_DATA := $(CURDIR)/.local-build
 LOCAL_SIGN_IDENTITY ?= -
 # Identity used by the `local-signed` convenience target.
 SIGN_IDENTITY ?= VoiceInk Local
+# Install destination for `local-signed`. Defaults to /Applications because
+# ~/Downloads is often under a backup/sync tool (e.g. Backblaze) that injects
+# placeholder files which break the code signature seal.
+LOCAL_INSTALL_DIR ?= /Applications
 
 .PHONY: all clean whisper setup build local local-signed check healthcheck help dev run
 
@@ -107,15 +111,27 @@ local-signed:
 	@scripts/resign-local.sh \
 		"$(LOCAL_DERIVED_DATA)/Build/Products/Debug/VoiceInk.app" \
 		"$(CURDIR)/VoiceInk/VoiceInk.local.entitlements" "$(SIGN_IDENTITY)"
-	@echo "Copying signed app to ~/Downloads..."
-	@rm -rf "$$HOME/Downloads/VoiceInk.app"
-	@ditto "$(LOCAL_DERIVED_DATA)/Build/Products/Debug/VoiceInk.app" "$$HOME/Downloads/VoiceInk.app"
-	@if codesign --verify --deep --strict "$$HOME/Downloads/VoiceInk.app" 2>/dev/null; then \
-		echo "~/Downloads/VoiceInk.app signed OK (Authority: $(SIGN_IDENTITY))."; \
+	@# The build-products copy is the source of truth: it is signed and lives
+	@# outside any backup/sync path. Its verification gates success.
+	@codesign --verify --deep --strict \
+		"$(LOCAL_DERIVED_DATA)/Build/Products/Debug/VoiceInk.app"
+	@echo "Build-products app signed OK (Authority: $(SIGN_IDENTITY))."
+	@# Install to $(LOCAL_INSTALL_DIR) — NOT ~/Downloads. Backup/sync tools like
+	@# Backblaze continuously inject .BC.D_* placeholder symlinks into bundles
+	@# under ~/Downloads, which break the embedded-framework code seal
+	@# ("unsealed contents...") and can stop the app from launching. Override the
+	@# destination with `make local-signed LOCAL_INSTALL_DIR=/some/other/dir`.
+	@echo "Installing signed app to $(LOCAL_INSTALL_DIR)..."
+	@rm -rf "$(LOCAL_INSTALL_DIR)/VoiceInk.app"
+	@ditto "$(LOCAL_DERIVED_DATA)/Build/Products/Debug/VoiceInk.app" "$(LOCAL_INSTALL_DIR)/VoiceInk.app"
+	@if codesign --verify --deep --strict "$(LOCAL_INSTALL_DIR)/VoiceInk.app" 2>/dev/null; then \
+		echo "$(LOCAL_INSTALL_DIR)/VoiceInk.app signed OK (Authority: $(SIGN_IDENTITY))."; \
 	else \
-		echo "WARNING: signature did not survive copy to ~/Downloads"; \
+		echo "NOTE: installed copy failed strict verify. If $(LOCAL_INSTALL_DIR)"; \
+		echo "      is under a backup/sync tool, point LOCAL_INSTALL_DIR elsewhere."; \
 	fi
 	@echo ""
+	@echo "Launch: open $(LOCAL_INSTALL_DIR)/VoiceInk.app"
 	@echo "Grant Accessibility once; it then persists across rebuilds (DR pinned to the cert)."
 
 # Run application
