@@ -17,7 +17,7 @@ SIGN_IDENTITY ?= VoiceInk Local
 # placeholder files which break the code signature seal.
 LOCAL_INSTALL_DIR ?= /Applications
 
-.PHONY: all clean whisper setup build local local-signed check healthcheck help dev run
+.PHONY: all clean whisper setup build local local-signed check healthcheck help dev run run-direct
 
 # Default target
 all: check build
@@ -150,6 +150,30 @@ run:
 			exit 1; \
 		fi; \
 	fi
+
+# Run a local/self-signed build by executing the Mach-O directly.
+#
+# Why not `open`: for a self-signed (non Developer ID) app, launching through
+# Launch Services (open / Finder / Dock) makes macOS apply stricter Input
+# Monitoring enforcement to the CGEventTap, so global hotkeys silently do not
+# receive events even when Input Monitoring + Accessibility are granted.
+# Executing the binary directly bypasses Launch Services and the hotkeys work.
+# The app still shows in the Dock and behaves like a normal launch; stdout/
+# stderr go to the log file below.
+run-direct:
+	@APP="$(LOCAL_INSTALL_DIR)/VoiceInk.app"; \
+	BIN="$$APP/Contents/MacOS/VoiceInk"; \
+	if [ ! -x "$$BIN" ]; then \
+		echo "Not found: $$BIN"; \
+		echo "Build first: make local-signed"; \
+		exit 1; \
+	fi; \
+	echo "Quitting any running VoiceInk..."; \
+	killall VoiceInk 2>/dev/null || true; \
+	sleep 1; \
+	echo "Launching directly (bypassing Launch Services): $$BIN"; \
+	nohup "$$BIN" >> "$$HOME/Library/Logs/VoiceInk-direct.log" 2>&1 & \
+	echo "Launched. Logs: ~/Library/Logs/VoiceInk-direct.log"
 
 # Cleanup
 clean:

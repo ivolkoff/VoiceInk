@@ -90,8 +90,8 @@ Requirement stays pinned to one cert. Then you grant Accessibility **once** and
 it survives rebuilds.
 
 ```bash
-make local-signed                 # builds, then re-signs with "VoiceInk Local"
-open ~/Downloads/VoiceInk.app
+make local-signed                 # builds, re-signs with "VoiceInk Local", installs to /Applications
+make run-direct                   # launch it (see "Global hotkeys" below for why not `open`)
 ```
 
 One-time certificate setup (named `VoiceInk Local`, must be a **Code Signing**
@@ -130,11 +130,42 @@ Override the identity name with `make local-signed SIGN_IDENTITY="Your Cert"`.
 **Why re-signing happens in two steps** (see `scripts/resign-local.sh`):
 `xcodebuild` ignores the cert and falls back to ad-hoc (a self-signed cert is
 not policy-valid), so the Makefile re-signs the built `.app` afterward. It signs
-the `.local-build` build-products copy **before** `ditto`-ing it to `~/Downloads`,
-because `~/Downloads` is a TCC-protected location where `codesign --force` is
-denied (*"Operation not permitted"*). The script also strips Backblaze
-placeholder symlinks (`.BC.D_*`) that otherwise break the framework code seal
-(*"unsealed contents present in the root directory of an embedded framework"*).
+the `.local-build` build-products copy **before** `ditto`-ing it to the install
+dir, and the script strips Backblaze placeholder symlinks (`.BC.D_*`) that
+otherwise break the framework code seal (*"unsealed contents present in the root
+directory of an embedded framework"*). The app installs to **`/Applications`** by
+default (`LOCAL_INSTALL_DIR`), not `~/Downloads`, because `~/Downloads` is often
+under a backup/sync tool (Backblaze) that keeps re-injecting those placeholder
+files and can break the signature seal.
+
+### Global hotkeys: launch with `make run-direct`, not `open`
+
+A self-signed (non Developer ID) app has a quirk: when launched through **Launch
+Services** (`open`, Finder, Dock), macOS applies **stricter Input Monitoring
+enforcement** to the app's `CGEventTap`, so **global hotkeys silently receive no
+events** — even when both *Input Monitoring* and *Accessibility* are granted in
+System Settings. The tap is created but never fires; nothing logs an error.
+
+Launching the Mach-O binary **directly** bypasses Launch Services and the hotkeys
+work:
+
+```bash
+make run-direct
+# equivalent to: /Applications/VoiceInk.app/Contents/MacOS/VoiceInk
+```
+
+The app still appears in the Dock and behaves normally; stdout/stderr go to
+`~/Library/Logs/VoiceInk-direct.log`.
+
+Permissions to grant once (System Settings → Privacy & Security):
+- **Input Monitoring** — required: the global-shortcut event tap is gated on
+  `CGPreflightListenEventAccess()`; without it the tap is never installed.
+- **Accessibility** — required: the tap uses `.defaultTap` (interception), and
+  capturing the current selection needs it too.
+
+The only real fix that makes `open`/Finder work is signing with a **Developer ID**
+certificate + hardened runtime (paid Apple Developer account). For local dev,
+`make run-direct` is the workaround.
 
 ---
 
