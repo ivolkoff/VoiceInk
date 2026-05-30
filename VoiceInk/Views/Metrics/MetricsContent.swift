@@ -107,7 +107,6 @@ struct MetricsContent: View {
                             heroSection
                             metricsSection
                             HStack(alignment: .top, spacing: 18) {
-                                HelpAndResourcesSection()
                                 DashboardPromotionsSection(licenseState: licenseState)
                             }
 
@@ -306,35 +305,35 @@ struct MetricsContent: View {
         LazyVGrid(columns: [GridItem(.adaptive(minimum: 240), spacing: 16)], spacing: 16) {
             MetricCard(
                 icon: "mic.fill",
-                title: "Sessions Recorded",
+                title: String(localized: "Sessions Recorded"),
                 value: hasLoadedMetricsSnapshot ? "\(totalCount)" : "–",
-                detail: "VoiceInk sessions completed",
+                detail: String(localized: "VoiceInk sessions completed"),
                 color: .purple
             )
 
             MetricCard(
                 icon: "text.alignleft",
-                title: "Words Dictated",
+                title: String(localized: "Words Dictated"),
                 value: hasLoadedMetricsSnapshot ? Formatters.formattedNumber(totalWords) : "–",
-                detail: "words generated",
+                detail: String(localized: "words generated"),
                 color: Color(nsColor: .controlAccentColor)
             )
             
             MetricCard(
                 icon: "speedometer",
-                title: "Words Per Minute",
+                title: String(localized: "Words Per Minute"),
                 value: hasLoadedMetricsSnapshot && averageWordsPerMinute > 0
                     ? String(format: "%.1f", averageWordsPerMinute)
                     : "–",
-                detail: "VoiceInk vs. typing by hand",
+                detail: String(localized: "VoiceInk vs. typing by hand"),
                 color: .yellow
             )
             
             MetricCard(
                 icon: "keyboard.fill",
-                title: "Keystrokes Saved",
+                title: String(localized: "Keystrokes Saved"),
                 value: hasLoadedMetricsSnapshot ? Formatters.formattedNumber(totalKeystrokesSaved) : "–",
-                detail: "fewer keystrokes",
+                detail: String(localized: "fewer keystrokes"),
                 color: .orange
             )
         }
@@ -361,23 +360,20 @@ struct MetricsContent: View {
     }
     
     private var formattedTimeSaved: String {
-        let formatted = Formatters.formattedDuration(timeSaved, style: .full, fallback: "Time savings coming soon")
+        let formatted = Formatters.formattedDuration(timeSaved, style: .full, fallback: String(localized: "Time savings coming soon"))
         return formatted
     }
     
     private var heroSubtitle: String {
         guard hasLoadedMetricsSnapshot else {
-            return "Your usage summary will appear here."
+            return String(localized: "Your usage summary will appear here.")
         }
 
         guard totalCount > 0 else {
-            return "Your VoiceInk journey starts with your first recording."
+            return String(localized: "Your VoiceInk journey starts with your first recording.")
         }
 
-        let wordsText = Formatters.formattedNumber(totalWords)
-        let sessionText = totalCount == 1 ? "session" : "sessions"
-
-        return "Dictated \(wordsText) words across \(totalCount) \(sessionText)."
+        return String(localized: "Dictated \(totalWords) words across \(totalCount) sessions.")
     }
     
     private var heroGradient: LinearGradient {

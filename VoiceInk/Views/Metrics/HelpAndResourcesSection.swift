@@ -10,25 +10,25 @@ struct HelpAndResourcesSection: View {
             VStack(alignment: .leading, spacing: 10) {
                 resourceLink(
                     icon: "sparkles",
-                    title: "Recommended Models",
+                    title: String(localized: "Recommended Models"),
                     url: "https://tryvoiceink.com/recommended-models"
                 )
 
                 resourceLink(
                     icon: "video.fill",
-                    title: "YouTube Videos & Guides",
+                    title: String(localized: "YouTube Videos & Guides"),
                     url: "https://www.youtube.com/@tryvoiceink/videos"
                 )
 
                 resourceLink(
                     icon: "book.fill",
-                    title: "Documentation",
+                    title: String(localized: "Documentation"),
                     url: "https://tryvoiceink.com/docs"
                 )
                 
                 resourceLink(
                     icon: "exclamationmark.bubble.fill",
-                    title: "Feedback or Issues?",
+                    title: String(localized: "Feedback or Issues?"),
                     action: {
                         EmailSupport.openSupportEmail()
                     }
