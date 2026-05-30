@@ -4,7 +4,20 @@ WHISPER_CPP_DIR := $(DEPS_DIR)/whisper.cpp
 FRAMEWORK_PATH := $(WHISPER_CPP_DIR)/build-apple/whisper.xcframework
 LOCAL_DERIVED_DATA := $(CURDIR)/.local-build
 
-.PHONY: all clean whisper setup build local check healthcheck help dev run
+# Signing identity for `make local`. Default `-` = ad-hoc (new identity each
+# build, so Accessibility/TCC resets every rebuild). Override with a stable
+# self-signed code-signing identity to keep permissions across rebuilds, e.g.
+#   make local LOCAL_SIGN_IDENTITY="VoiceInk Local"
+# or use the `local-signed` target below.
+LOCAL_SIGN_IDENTITY ?= -
+# Identity used by the `local-signed` convenience target.
+SIGN_IDENTITY ?= VoiceInk Local
+# Install destination for `local-signed`. Defaults to /Applications because
+# ~/Downloads is often under a backup/sync tool (e.g. Backblaze) that injects
+# placeholder files which break the code signature seal.
+LOCAL_INSTALL_DIR ?= /Applications
+
+.PHONY: all clean whisper setup build local local-signed check healthcheck help dev run run-direct
 
 # Default target
 all: check build
@@ -51,7 +64,7 @@ local: check setup
 	xcodebuild -project VoiceInk.xcodeproj -scheme VoiceInk -configuration Debug \
 		-derivedDataPath "$(LOCAL_DERIVED_DATA)" \
 		-xcconfig LocalBuild.xcconfig \
-		CODE_SIGN_IDENTITY="-" \
+		CODE_SIGN_IDENTITY="$(LOCAL_SIGN_IDENTITY)" \
 		CODE_SIGNING_REQUIRED=NO \
 		CODE_SIGNING_ALLOWED=YES \
 		DEVELOPMENT_TEAM="" \
@@ -76,6 +89,51 @@ local: check setup
 		exit 1; \
 	fi
 
+# Build for local use signed with a stable self-signed identity.
+# Keeps Accessibility/Input Monitoring (TCC) granted across rebuilds because the
+# code's Designated Requirement stays pinned to the same certificate.
+# One-time setup: create a "Code Signing" self-signed cert named "$(SIGN_IDENTITY)"
+# in Keychain Access (Certificate Assistant), or via the documented CLI.
+local-signed:
+	@if ! security find-identity -p codesigning | grep -q "$(SIGN_IDENTITY)"; then \
+		echo "Code-signing identity '$(SIGN_IDENTITY)' not found in keychain."; \
+		echo "Create it once (Keychain Access > Certificate Assistant > Create a Certificate,"; \
+		echo "type 'Code Signing', self-signed) then re-run 'make local-signed'."; \
+		exit 1; \
+	fi
+	@$(MAKE) local
+	@echo ""
+	@echo "Re-signing with stable identity '$(SIGN_IDENTITY)' (xcodebuild falls back to ad-hoc)..."
+	@# Sign the build-products copy, NOT the ~/Downloads copy: ~/Downloads is a
+	@# TCC-protected location and ditto stamps com.apple.provenance on the copy,
+	@# both of which make `codesign --force` fail there ("Operation not permitted").
+	@# Signature survives the subsequent ditto, so we copy the signed app over.
+	@scripts/resign-local.sh \
+		"$(LOCAL_DERIVED_DATA)/Build/Products/Debug/VoiceInk.app" \
+		"$(CURDIR)/VoiceInk/VoiceInk.local.entitlements" "$(SIGN_IDENTITY)"
+	@# The build-products copy is the source of truth: it is signed and lives
+	@# outside any backup/sync path. Its verification gates success.
+	@codesign --verify --deep --strict \
+		"$(LOCAL_DERIVED_DATA)/Build/Products/Debug/VoiceInk.app"
+	@echo "Build-products app signed OK (Authority: $(SIGN_IDENTITY))."
+	@# Install to $(LOCAL_INSTALL_DIR) — NOT ~/Downloads. Backup/sync tools like
+	@# Backblaze continuously inject .BC.D_* placeholder symlinks into bundles
+	@# under ~/Downloads, which break the embedded-framework code seal
+	@# ("unsealed contents...") and can stop the app from launching. Override the
+	@# destination with `make local-signed LOCAL_INSTALL_DIR=/some/other/dir`.
+	@echo "Installing signed app to $(LOCAL_INSTALL_DIR)..."
+	@rm -rf "$(LOCAL_INSTALL_DIR)/VoiceInk.app"
+	@ditto "$(LOCAL_DERIVED_DATA)/Build/Products/Debug/VoiceInk.app" "$(LOCAL_INSTALL_DIR)/VoiceInk.app"
+	@if codesign --verify --deep --strict "$(LOCAL_INSTALL_DIR)/VoiceInk.app" 2>/dev/null; then \
+		echo "$(LOCAL_INSTALL_DIR)/VoiceInk.app signed OK (Authority: $(SIGN_IDENTITY))."; \
+	else \
+		echo "NOTE: installed copy failed strict verify. If $(LOCAL_INSTALL_DIR)"; \
+		echo "      is under a backup/sync tool, point LOCAL_INSTALL_DIR elsewhere."; \
+	fi
+	@echo ""
+	@echo "Launch: open $(LOCAL_INSTALL_DIR)/VoiceInk.app"
+	@echo "Grant Accessibility once; it then persists across rebuilds (DR pinned to the cert)."
+
 # Run application
 run:
 	@if [ -d "$$HOME/Downloads/VoiceInk.app" ]; then \
@@ -92,6 +150,27 @@ run:
 			exit 1; \
 		fi; \
 	fi
+
+# Run a local/self-signed build by executing the Mach-O directly.
+#
+# Diagnostic fallback. Debug/LOCAL_BUILD registers supported global shortcuts through
+# Carbon, so normal `open` / Finder launches should work. Modifier-only shortcuts
+# still keep a CGEventTap fallback, so this target remains useful when diagnosing
+# TCC/Input Monitoring behavior.
+run-direct:
+	@APP="$(LOCAL_INSTALL_DIR)/VoiceInk.app"; \
+	BIN="$$APP/Contents/MacOS/VoiceInk"; \
+	if [ ! -x "$$BIN" ]; then \
+		echo "Not found: $$BIN"; \
+		echo "Build first: make local-signed"; \
+		exit 1; \
+	fi; \
+	echo "Quitting any running VoiceInk..."; \
+	killall VoiceInk 2>/dev/null || true; \
+	sleep 1; \
+	echo "Launching directly (bypassing Launch Services): $$BIN"; \
+	nohup "$$BIN" >> "$$HOME/Library/Logs/VoiceInk-direct.log" 2>&1 & \
+	echo "Launched. Logs: ~/Library/Logs/VoiceInk-direct.log"
 
 # Cleanup
 clean:

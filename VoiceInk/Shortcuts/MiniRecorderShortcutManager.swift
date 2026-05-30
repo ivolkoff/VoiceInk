@@ -10,6 +10,11 @@ class MiniRecorderShortcutManager: ObservableObject {
     private var shortcutChangeObserver: NSObjectProtocol?
     private let visibleRecorderMonitor = ShortcutMonitor()
     
+    /// Called after visible recorder shortcuts are (re-)registered or torn down.
+    /// RecordingShortcutManager uses this to re-register its own carbon event handler
+    /// so it stays ahead of this monitor's handler in the Carbon Event Manager chain.
+    var onVisibleShortcutsRefreshed: (() -> Void)?
+    
     // Double-tap Escape handling
     private var firstEscapePressTime: Date? = nil
     private let escapeDoublePressThreshold: TimeInterval = 1.5
@@ -49,6 +54,7 @@ class MiniRecorderShortcutManager: ObservableObject {
                 } else {
                     visibleRecorderMonitor.stop()
                     resetEscapeState()
+                    onVisibleShortcutsRefreshed?()
                 }
             }
         }
@@ -101,8 +107,15 @@ class MiniRecorderShortcutManager: ObservableObject {
                     await self?.handleMiniRecorderShortcut(action)
                 }
             },
-            onKeyUp: { _, _ in }
+            onKeyUp: { _, _ in },
+            onShortcutPressed: { [weak self] action, _ in
+                Task { @MainActor in
+                    await self?.handleMiniRecorderShortcut(action)
+                }
+            }
         )
+
+        onVisibleShortcutsRefreshed?()
     }
 
     private func handleMiniRecorderShortcut(_ action: ShortcutAction) async {

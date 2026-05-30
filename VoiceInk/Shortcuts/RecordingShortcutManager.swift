@@ -50,6 +50,12 @@ class RecordingShortcutManager: ObservableObject {
     private var shortcutChangeObserver: NSObjectProtocol?
     private let shortcutModeHandler: RecordingShortcutModeHandler
     private let primaryRecordingShortcutModeSource: RecordingShortcutModeSource
+    private let logger = Logger(subsystem: "com.prakashjoshipax.voiceink", category: "RecordingShortcutManager")
+
+    private lazy var selectedTextEnhancementService: SelectedTextEnhancementService? = {
+        guard let enhancementService = engine.enhancementService else { return nil }
+        return SelectedTextEnhancementService(enhancementService: enhancementService)
+    }()
 
     // MARK: - Helper Properties
     private var canHandleShortcutAction: Bool {
@@ -151,6 +157,12 @@ class RecordingShortcutManager: ObservableObject {
             shortcutModeHandler: shortcutModeHandler
         )
 
+        self.miniRecorderShortcutManager.onVisibleShortcutsRefreshed = { [weak self] in
+            Task { @MainActor in
+                self?.refreshShortcutMonitor()
+            }
+        }
+
         shortcutChangeObserver = NotificationCenter.default.addObserver(
             forName: ShortcutStore.shortcutDidChange,
             object: nil,
@@ -208,7 +220,7 @@ class RecordingShortcutManager: ObservableObject {
         middleClickMonitors = [downMonitor, upMonitor]
     }
     
-    private func refreshShortcutMonitor() {
+    func refreshShortcutMonitor() {
         let primaryShortcut = primaryRecordingShortcut == .custom ? ShortcutStore.shortcut(for: .primaryRecording) : nil
         let secondaryShortcut = secondaryRecordingShortcut == .custom ? ShortcutStore.shortcut(for: .secondaryRecording) : nil
         var shortcuts = ShortcutStore.shortcuts(for: ShortcutAction.globalUtilityActions)
@@ -230,6 +242,7 @@ class RecordingShortcutManager: ObservableObject {
             onKeyDown: { [weak self] action, eventTime in
                 Task { @MainActor in
                     guard let self else { return }
+                    self.logger.notice("onKeyDown: action=\(action.storageName, privacy: .public), eventTime=\(eventTime, privacy: .public), state=\(String(describing: self.engine.recordingState), privacy: .public), visible=\(self.recorderUIManager.isMiniRecorderVisible, privacy: .public)")
                     guard let mode = self.recordingMode(for: action) else { return }
                     await self.shortcutModeHandler.handleKeyDown(
                         action: action,
@@ -241,8 +254,24 @@ class RecordingShortcutManager: ObservableObject {
             onKeyUp: { [weak self] action, eventTime in
                 Task { @MainActor in
                     guard let self else { return }
+                    self.logger.notice("onKeyUp: action=\(action.storageName, privacy: .public), eventTime=\(eventTime, privacy: .public), state=\(String(describing: self.engine.recordingState), privacy: .public), visible=\(self.recorderUIManager.isMiniRecorderVisible, privacy: .public)")
                     if let mode = self.recordingMode(for: action) {
                         await self.shortcutModeHandler.handleKeyUp(
+                            action: action,
+                            eventTime: eventTime,
+                            mode: mode
+                        )
+                    } else {
+                        await self.handleGlobalShortcut(action)
+                    }
+                }
+            },
+            onShortcutPressed: { [weak self] action, eventTime in
+                Task { @MainActor in
+                    guard let self else { return }
+                    self.logger.notice("onShortcutPressed: action=\(action.storageName, privacy: .public), eventTime=\(eventTime, privacy: .public), state=\(String(describing: self.engine.recordingState), privacy: .public), visible=\(self.recorderUIManager.isMiniRecorderVisible, privacy: .public)")
+                    if let mode = self.recordingMode(for: action) {
+                        await self.shortcutModeHandler.handleDiscretePress(
                             action: action,
                             eventTime: eventTime,
                             mode: mode
@@ -292,8 +321,21 @@ class RecordingShortcutManager: ObservableObject {
             )
         case .quickAddToDictionary:
             DictionaryQuickAddManager.shared.toggle(modelContainer: engine.modelContext.container)
+        case .enhanceSelectedText:
+            await enhanceSelectedText()
         default:
             break
+        }
+    }
+
+    /// Runs the enhance-selected-text action. Shared by the global shortcut and the menu bar item.
+    /// - Parameter focusSettleDelay: pass a small delay for menu-bar triggers so focus returns to
+    ///   the source app before the selection is captured; the global shortcut passes `0`.
+    func enhanceSelectedText(focusSettleDelay: TimeInterval = 0) async {
+        if let selectedTextEnhancementService {
+            await selectedTextEnhancementService.run(focusSettleDelay: focusSettleDelay)
+        } else {
+            NotificationManager.shared.showNotification(title: "AI Enhancement is not available", type: .error)
         }
     }
 
@@ -393,16 +435,22 @@ final class RecordingShortcutModeHandler {
         mode: RecordingShortcutManager.Mode,
         powerModeId: UUID? = nil
     ) async {
+        logger.notice("handleKeyDown enter: action=\(action.storageName, privacy: .public), mode=\(mode.rawValue, privacy: .public), eventTime=\(eventTime, privacy: .public), isShortcutPressed=\(self.isShortcutPressed, privacy: .public), active=\(self.activeRecordingShortcutAction?.storageName ?? "nil", privacy: .public), handsFree=\(self.isHandsFreeRecording, privacy: .public), visible=\(self.isRecorderVisible(), privacy: .public), state=\(String(describing: self.recordingState()), privacy: .public)")
         if interruptedRecordingActions.remove(action) != nil {
+            logger.notice("handleKeyDown ignored: interrupted action=\(action.storageName, privacy: .public)")
             return
         }
 
         if let lastTrigger = lastShortcutPressTime,
            Date().timeIntervalSince(lastTrigger) < shortcutPressCooldown {
+            logger.notice("handleKeyDown ignored: cooldown action=\(action.storageName, privacy: .public)")
             return
         }
 
-        guard !isShortcutPressed else { return }
+        guard !isShortcutPressed else {
+            logger.notice("handleKeyDown ignored: already pressed action=\(action.storageName, privacy: .public)")
+            return
+        }
         isShortcutPressed = true
         activeRecordingShortcutAction = action
         activeShortcutCanCancelAccidentalStart = canCurrentShortcutPressCancelAccidentalStart
@@ -440,7 +488,11 @@ final class RecordingShortcutModeHandler {
         mode: RecordingShortcutManager.Mode,
         powerModeId: UUID? = nil
     ) async {
-        guard isShortcutPressed, activeRecordingShortcutAction == action else { return }
+        logger.notice("handleKeyUp enter: action=\(action.storageName, privacy: .public), mode=\(mode.rawValue, privacy: .public), eventTime=\(eventTime, privacy: .public), isShortcutPressed=\(self.isShortcutPressed, privacy: .public), active=\(self.activeRecordingShortcutAction?.storageName ?? "nil", privacy: .public), handsFree=\(self.isHandsFreeRecording, privacy: .public), visible=\(self.isRecorderVisible(), privacy: .public), state=\(String(describing: self.recordingState()), privacy: .public)")
+        guard isShortcutPressed, activeRecordingShortcutAction == action else {
+            logger.notice("handleKeyUp ignored: state mismatch action=\(action.storageName, privacy: .public)")
+            return
+        }
         isShortcutPressed = false
         activeRecordingShortcutAction = nil
         activeShortcutCanCancelAccidentalStart = false
@@ -468,6 +520,33 @@ final class RecordingShortcutModeHandler {
         }
 
         shortcutPressStartTime = nil
+    }
+
+    func handleDiscretePress(
+        action: ShortcutAction,
+        eventTime: TimeInterval,
+        mode: RecordingShortcutManager.Mode,
+        powerModeId: UUID? = nil
+    ) async {
+        logger.notice("handleDiscretePress enter: action=\(action.storageName, privacy: .public), mode=\(mode.rawValue, privacy: .public), eventTime=\(eventTime, privacy: .public), isShortcutPressed=\(self.isShortcutPressed, privacy: .public), active=\(self.activeRecordingShortcutAction?.storageName ?? "nil", privacy: .public), handsFree=\(self.isHandsFreeRecording, privacy: .public), visible=\(self.isRecorderVisible(), privacy: .public), state=\(String(describing: self.recordingState()), privacy: .public)")
+        if interruptedRecordingActions.remove(action) != nil {
+            logger.notice("handleDiscretePress ignored: interrupted action=\(action.storageName, privacy: .public)")
+            return
+        }
+
+        isShortcutPressed = false
+        activeRecordingShortcutAction = nil
+        activeShortcutCanCancelAccidentalStart = false
+        shortcutPressStartTime = nil
+        isHandsFreeRecording = isRecorderVisible()
+
+        guard canHandleShortcutAction() else { return }
+
+        switch mode {
+        case .toggle, .hybrid, .pushToTalk:
+            logger.notice("handleDiscreteShortcutPress: toggling mini recorder (eventTime=\(eventTime, privacy: .public)s)")
+            await toggleMiniRecorder(powerModeId)
+        }
     }
 
     func handleInterruption(action: ShortcutAction) async {

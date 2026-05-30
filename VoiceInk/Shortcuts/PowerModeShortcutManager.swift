@@ -103,6 +103,21 @@ class PowerModeShortcutManager {
                     )
                 }
             },
+            onShortcutPressed: { [weak self] action, eventTime in
+                Task { @MainActor in
+                    guard let self,
+                          case .powerMode(let powerModeId) = action else {
+                        return
+                    }
+
+                    await self.shortcutModeHandler.handleDiscretePress(
+                        action: action,
+                        eventTime: eventTime,
+                        mode: self.modeProvider(),
+                        powerModeId: powerModeId
+                    )
+                }
+            },
             onShortcutInterrupted: { [weak self] action, _ in
                 Task { @MainActor in
                     guard let self, case .powerMode = action else { return }

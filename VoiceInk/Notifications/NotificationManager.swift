@@ -14,6 +14,7 @@ class NotificationManager {
         title: String,
         type: AppNotificationView.NotificationType,
         duration: TimeInterval = 3.0,
+        isLoading: Bool = false,
         onTap: (() -> Void)? = nil,
         actionButton: (label: String, action: () -> Void)? = nil
     ) {
@@ -40,7 +41,8 @@ class NotificationManager {
                 }
             },
             onTap: onTap,
-            actionButton: actionButton
+            actionButton: actionButton,
+            isLoading: isLoading
         )
         let hostingController = NSHostingController(rootView: notificationView)
         let size = hostingController.view.fittingSize
@@ -72,11 +74,14 @@ class NotificationManager {
         })
         
         // Schedule a new timer to dismiss the new notification.
-        dismissTimer = Timer.scheduledTimer(
-            withTimeInterval: duration,
-            repeats: false
-        ) { [weak self] _ in
-            self?.dismissNotification()
+        // Loading notifications stay up until they are explicitly replaced/dismissed.
+        if !isLoading {
+            dismissTimer = Timer.scheduledTimer(
+                withTimeInterval: duration,
+                repeats: false
+            ) { [weak self] _ in
+                self?.dismissNotification()
+            }
         }
     }
 

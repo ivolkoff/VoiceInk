@@ -1,6 +1,8 @@
 import AppKit
+import Carbon.HIToolbox
 import CoreGraphics
 import Foundation
+import os
 
 final class ShortcutMonitor {
     fileprivate enum EventKind {
@@ -20,9 +22,15 @@ final class ShortcutMonitor {
     private var interruptibleActions: Set<ShortcutAction> = []
     private var onKeyDown: ((ShortcutAction, TimeInterval) -> Void)?
     private var onKeyUp: ((ShortcutAction, TimeInterval) -> Void)?
+    private var onShortcutPressed: ((ShortcutAction, TimeInterval) -> Void)?
     private var onShortcutInterrupted: ((ShortcutAction, TimeInterval) -> Void)?
     private var eventTap: CFMachPort?
     private var eventTapRunLoopSource: CFRunLoopSource?
+    private var carbonEventHandler: EventHandlerRef?
+    private var carbonHotKeys: [EventHotKeyRef] = []
+    private var carbonHotKeyActions: [UInt32: ShortcutAction] = [:]
+    private var eventTapActions: Set<ShortcutAction>?
+    private let logger = Logger(subsystem: "com.prakashjoshipax.voiceink", category: "ShortcutMonitor")
 
     private static var hasRequestedListenEventAccess = false
     private static let shortcutInterruptionWindow: TimeInterval = 1.0
@@ -37,12 +45,14 @@ final class ShortcutMonitor {
         interruptibleActions: Set<ShortcutAction> = [],
         onKeyDown: @escaping (ShortcutAction, TimeInterval) -> Void,
         onKeyUp: @escaping (ShortcutAction, TimeInterval) -> Void,
+        onShortcutPressed: ((ShortcutAction, TimeInterval) -> Void)? = nil,
         onShortcutInterrupted: ((ShortcutAction, TimeInterval) -> Void)? = nil
     ) -> Bool {
         stop()
 
         for (action, shortcut) in shortcuts {
             self.shortcuts[action] = ShortcutState(shortcut: shortcut)
+            logger.notice("start: action=\(action.storageName, privacy: .public), shortcut=\(shortcut.displayString, privacy: .public), kind=\(shortcut.kind.rawValue, privacy: .public)")
         }
 
         guard !self.shortcuts.isEmpty else {
@@ -52,6 +62,7 @@ final class ShortcutMonitor {
         self.interruptibleActions = interruptibleActions
         self.onKeyDown = onKeyDown
         self.onKeyUp = onKeyUp
+        self.onShortcutPressed = onShortcutPressed
         self.onShortcutInterrupted = onShortcutInterrupted
 
         return installEventTap()
@@ -68,16 +79,40 @@ final class ShortcutMonitor {
             self.eventTap = nil
         }
 
+        unregisterCarbonHotKeys()
+
         shortcuts = [:]
         interruptibleActions = []
+        eventTapActions = nil
         onKeyDown = nil
         onKeyUp = nil
+        onShortcutPressed = nil
         onShortcutInterrupted = nil
     }
 
     private func installEventTap() -> Bool {
+        #if DEBUG || LOCAL_BUILD
+        let tapShortcuts = shortcuts.filter { _, state in
+            state.shortcut.isModifierOnly
+        }
+        let carbonShortcuts = shortcuts.filter { _, state in
+            state.shortcut.canRegisterWithCarbonHotKey
+        }
+
+        logger.notice("install: carbon=\(carbonShortcuts.count, privacy: .public), eventTap=\(tapShortcuts.count, privacy: .public), interruptible=\(self.interruptibleActions.map { $0.storageName }.joined(separator: ","), privacy: .public)")
+        let didInstallCarbonHotKeys = installCarbonHotKeys(for: carbonShortcuts)
+        eventTapActions = Set(tapShortcuts.keys)
+        guard !tapShortcuts.isEmpty else {
+            return didInstallCarbonHotKeys || carbonShortcuts.isEmpty
+        }
+        #endif
+
         guard Self.hasListenEventAccess() else {
+            #if DEBUG || LOCAL_BUILD
+            return didInstallCarbonHotKeys
+            #else
             return false
+            #endif
         }
 
         let callback: CGEventTapCallBack = { _, type, event, userInfo in
@@ -107,7 +142,11 @@ final class ShortcutMonitor {
             callback: callback,
             userInfo: Unmanaged.passUnretained(self).toOpaque()
         ) else {
+            #if DEBUG || LOCAL_BUILD
+            return didInstallCarbonHotKeys
+            #else
             return false
+            #endif
         }
 
         guard let source = CFMachPortCreateRunLoopSource(kCFAllocatorDefault, eventTap, 0) else {
@@ -121,6 +160,172 @@ final class ShortcutMonitor {
         CGEvent.tapEnable(tap: eventTap, enable: true)
         return true
     }
+
+    #if DEBUG || LOCAL_BUILD
+    private func installCarbonHotKeys(for shortcuts: [ShortcutAction: ShortcutState]) -> Bool {
+        guard !shortcuts.isEmpty else {
+            return false
+        }
+
+        var eventTypes = [
+            EventTypeSpec(eventClass: OSType(kEventClassKeyboard), eventKind: UInt32(kEventHotKeyPressed)),
+            EventTypeSpec(eventClass: OSType(kEventClassKeyboard), eventKind: UInt32(kEventHotKeyReleased))
+        ]
+
+        let installStatus = InstallEventHandler(
+            GetApplicationEventTarget(),
+            Self.carbonHotKeyHandler,
+            eventTypes.count,
+            &eventTypes,
+            Unmanaged.passUnretained(self).toOpaque(),
+            &carbonEventHandler
+        )
+
+        guard installStatus == noErr else {
+            logger.error("carbon install handler failed status=\(installStatus, privacy: .public)")
+            return false
+        }
+
+        var nextID: UInt32 = 1
+
+        for (action, state) in shortcuts {
+            let hotKeyID = EventHotKeyID(signature: Self.carbonHotKeySignature, id: nextID)
+            var hotKeyRef: EventHotKeyRef?
+            let registerStatus = RegisterEventHotKey(
+                UInt32(state.shortcut.keyCode),
+                state.shortcut.carbonModifierFlags,
+                hotKeyID,
+                GetApplicationEventTarget(),
+                0,
+                &hotKeyRef
+            )
+
+            guard registerStatus == noErr, let hotKeyRef else {
+                logger.error("carbon register failed: id=\(nextID, privacy: .public), action=\(action.storageName, privacy: .public), shortcut=\(state.shortcut.displayString, privacy: .public), status=\(registerStatus, privacy: .public)")
+                nextID += 1
+                continue
+            }
+
+            carbonHotKeys.append(hotKeyRef)
+            carbonHotKeyActions[nextID] = action
+            logger.notice("carbon registered: id=\(nextID, privacy: .public), action=\(action.storageName, privacy: .public), shortcut=\(state.shortcut.displayString, privacy: .public), interruptible=\(self.interruptibleActions.contains(action), privacy: .public)")
+            nextID += 1
+        }
+
+        if carbonHotKeys.isEmpty {
+            unregisterCarbonHotKeys()
+            return false
+        }
+
+        return true
+    }
+
+    private func unregisterCarbonHotKeys() {
+        for hotKey in carbonHotKeys {
+            UnregisterEventHotKey(hotKey)
+        }
+
+        carbonHotKeys = []
+        carbonHotKeyActions = [:]
+
+        if let carbonEventHandler {
+            RemoveEventHandler(carbonEventHandler)
+            self.carbonEventHandler = nil
+        }
+    }
+
+    private func handleCarbonHotKey(event: EventRef?) -> OSStatus {
+        guard let event else {
+            logger.notice("carbon event: missing event")
+            return Self.carbonEventNotHandled
+        }
+
+        var hotKeyID = EventHotKeyID()
+        let parameterStatus = GetEventParameter(
+            event,
+            EventParamName(kEventParamDirectObject),
+            EventParamType(typeEventHotKeyID),
+            nil,
+            MemoryLayout<EventHotKeyID>.size,
+            nil,
+            &hotKeyID
+        )
+
+        guard parameterStatus == noErr,
+              hotKeyID.signature == Self.carbonHotKeySignature,
+              let action = carbonHotKeyActions[hotKeyID.id]
+        else {
+            logger.notice("carbon event not handled: status=\(parameterStatus, privacy: .public), signature=\(hotKeyID.signature, privacy: .public), id=\(hotKeyID.id, privacy: .public), kind=\(Int(GetEventKind(event)), privacy: .public)")
+            return Self.carbonEventNotHandled
+        }
+
+        guard var state = shortcuts[action] else {
+            logger.notice("carbon event no state: id=\(hotKeyID.id, privacy: .public), action=\(action.storageName, privacy: .public), kind=\(Int(GetEventKind(event)), privacy: .public)")
+            return Self.carbonEventNotHandled
+        }
+
+        let eventTime = ProcessInfo.processInfo.systemUptime
+        logger.notice("carbon event handled: id=\(hotKeyID.id, privacy: .public), action=\(action.storageName, privacy: .public), kind=\(Int(GetEventKind(event)), privacy: .public), isDown=\(state.isDown, privacy: .public), hasDiscrete=\(self.onShortcutPressed != nil, privacy: .public), interruptible=\(self.interruptibleActions.contains(action), privacy: .public)")
+
+        switch Int(GetEventKind(event)) {
+        case kEventHotKeyPressed:
+            if onShortcutPressed != nil {
+                dispatchShortcutPressed(for: action, eventTime: eventTime)
+                return noErr
+            }
+
+            if state.isDown {
+                state.isDown = false
+                state.pressedAt = nil
+                state.isInterrupted = false
+                shortcuts[action] = state
+                dispatchKeyUp(for: action, eventTime: eventTime)
+            }
+
+            state.isDown = true
+            state.pressedAt = eventTime
+            state.isInterrupted = false
+            shortcuts[action] = state
+            dispatchKeyDown(for: action, eventTime: eventTime)
+
+            if !interruptibleActions.contains(action) {
+                state.isDown = false
+                state.pressedAt = nil
+                state.isInterrupted = false
+                shortcuts[action] = state
+                dispatchKeyUp(for: action, eventTime: eventTime)
+            }
+
+        case kEventHotKeyReleased:
+            guard interruptibleActions.contains(action) else { return noErr }
+            guard state.isDown else { return noErr }
+            state.isDown = false
+            state.pressedAt = nil
+            state.isInterrupted = false
+            shortcuts[action] = state
+            dispatchKeyUp(for: action, eventTime: eventTime)
+
+        default:
+            break
+        }
+
+        return noErr
+    }
+
+    private static let carbonHotKeySignature: OSType = 0x56494B48 // VIKH
+    private static let carbonEventNotHandled = OSStatus(eventNotHandledErr)
+
+    private static let carbonHotKeyHandler: EventHandlerUPP = { _, event, userData in
+        guard let userData else {
+            return noErr
+        }
+
+        let monitor = Unmanaged<ShortcutMonitor>.fromOpaque(userData).takeUnretainedValue()
+        return monitor.handleCarbonHotKey(event: event)
+    }
+    #else
+    private func unregisterCarbonHotKeys() {}
+    #endif
 
     private static func hasListenEventAccess() -> Bool {
         if CGPreflightListenEventAccess() {
@@ -142,6 +347,9 @@ final class ShortcutMonitor {
 
         let keyCode = UInt16(event.getIntegerValueField(.keyboardEventKeycode))
         let modifierFlags = NSEvent.ModifierFlags(rawValue: UInt(event.flags.rawValue))
+        if type == .keyDown || type == .keyUp || type == .flagsChanged {
+            logger.notice("cg event: type=\(type.rawValue, privacy: .public), keyCode=\(keyCode, privacy: .public), flags=\(modifierFlags.rawValue, privacy: .public)")
+        }
         return handleEvent(
             kind: eventKind,
             keyCode: keyCode,
@@ -183,7 +391,9 @@ final class ShortcutMonitor {
             handleShortcutInterruptions(keyCode: keyCode, eventTime: eventTime)
         }
 
-        for action in Array(shortcuts.keys) {
+        let actions = eventTapActions ?? Set(shortcuts.keys)
+
+        for action in Array(actions) {
             guard var state = shortcuts[action] else {
                 continue
             }
@@ -214,6 +424,7 @@ final class ShortcutMonitor {
             case .suppress:
                 shouldSuppress = true
             case .keyDown:
+                logger.notice("dispatch keyDown: action=\(action.storageName, privacy: .public), eventTime=\(eventTime, privacy: .public)")
                 state.isDown = true
                 state.pressedAt = eventTime
                 state.isInterrupted = false
@@ -221,6 +432,7 @@ final class ShortcutMonitor {
                 shouldSuppress = true
                 dispatchKeyDown(for: action, eventTime: eventTime)
             case .keyUp:
+                logger.notice("dispatch keyUp: action=\(action.storageName, privacy: .public), eventTime=\(eventTime, privacy: .public)")
                 state.isDown = false
                 state.pressedAt = nil
                 state.isInterrupted = false
@@ -327,20 +539,30 @@ final class ShortcutMonitor {
     }
 
     private func dispatchKeyDown(for action: ShortcutAction, eventTime: TimeInterval) {
+        logger.notice("queue keyDown: action=\(action.storageName, privacy: .public), eventTime=\(eventTime, privacy: .public)")
         DispatchQueue.main.async { [onKeyDown] in
             onKeyDown?(action, eventTime)
         }
     }
 
     private func dispatchKeyUp(for action: ShortcutAction, eventTime: TimeInterval) {
+        logger.notice("queue keyUp: action=\(action.storageName, privacy: .public), eventTime=\(eventTime, privacy: .public)")
         DispatchQueue.main.async { [onKeyUp] in
             onKeyUp?(action, eventTime)
         }
     }
 
     private func dispatchShortcutInterrupted(for action: ShortcutAction, eventTime: TimeInterval) {
+        logger.notice("queue interrupted: action=\(action.storageName, privacy: .public), eventTime=\(eventTime, privacy: .public)")
         DispatchQueue.main.async { [onShortcutInterrupted] in
             onShortcutInterrupted?(action, eventTime)
+        }
+    }
+
+    private func dispatchShortcutPressed(for action: ShortcutAction, eventTime: TimeInterval) {
+        logger.notice("queue pressed: action=\(action.storageName, privacy: .public), eventTime=\(eventTime, privacy: .public)")
+        DispatchQueue.main.async { [onShortcutPressed] in
+            onShortcutPressed?(action, eventTime)
         }
     }
 

@@ -7,6 +7,7 @@ struct AppNotificationView: View {
     let onClose: () -> Void
     let onTap: (() -> Void)?
     var actionButton: (label: String, action: () -> Void)? = nil
+    var isLoading: Bool = false
     
     @State private var progress: Double = 1.0
     @State private var timer: Timer?
@@ -39,11 +40,19 @@ struct AppNotificationView: View {
     var body: some View {
         ZStack {
             HStack(alignment: .center, spacing: 12) {
-                // Type icon
-                Image(systemName: type.iconName)
-                    .font(.system(size: 16, weight: .medium))
-                    .foregroundColor(type.iconColor)
-                    .frame(width: 20, height: 20)
+                // Type icon (or spinner while loading)
+                if isLoading {
+                    ProgressView()
+                        .progressViewStyle(.circular)
+                        .controlSize(.small)
+                        .tint(.white)
+                        .frame(width: 20, height: 20)
+                } else {
+                    Image(systemName: type.iconName)
+                        .font(.system(size: 16, weight: .medium))
+                        .foregroundColor(type.iconColor)
+                        .frame(width: 20, height: 20)
+                }
 
                 // Single message text
                 Text(title)
@@ -114,20 +123,26 @@ struct AppNotificationView: View {
                 .strokeBorder(Color.white.opacity(0.1), lineWidth: 0.5)
         )
         .overlay(
-            VStack {
-                Spacer()
-                GeometryReader { geometry in
-                    Rectangle()
-                        .fill(type.iconColor.opacity(0.8))
-                        .frame(width: geometry.size.width * max(0, progress), height: 2)
-                        .animation(.linear(duration: 0.1), value: progress)
+            Group {
+                if !isLoading {
+                    VStack {
+                        Spacer()
+                        GeometryReader { geometry in
+                            Rectangle()
+                                .fill(type.iconColor.opacity(0.8))
+                                .frame(width: geometry.size.width * max(0, progress), height: 2)
+                                .animation(.linear(duration: 0.1), value: progress)
+                        }
+                        .frame(height: 2)
+                    }
+                    .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
                 }
-                .frame(height: 2)
             }
-            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
         )
         .onAppear {
-            startProgressTimer()
+            if !isLoading {
+                startProgressTimer()
+            }
         }
         .onDisappear {
             timer?.invalidate()
