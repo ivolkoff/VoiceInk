@@ -90,7 +90,7 @@ struct CustomPrompt: Identifiable, Codable, Equatable {
         id: UUID = UUID(),
         title: String,
         promptText: String,
-        isActive: Bool = false,
+        isActive: Bool = true,
         icon: PromptIcon = "doc.text.fill",
         description: String? = nil,
         isPredefined: Bool = false,
@@ -136,21 +136,20 @@ struct CustomPrompt: Identifiable, Codable, Equatable {
 
 // MARK: - UI Extensions
 extension CustomPrompt {
-    func promptIcon(isSelected: Bool, onTap: @escaping () -> Void, onEdit: ((CustomPrompt) -> Void)? = nil, onDelete: ((CustomPrompt) -> Void)? = nil) -> some View {
+    func promptIcon(isSelected: Bool, isEnabled: Bool = true, onTap: @escaping () -> Void, onEdit: ((CustomPrompt) -> Void)? = nil, onDelete: ((CustomPrompt) -> Void)? = nil) -> some View {
         VStack(spacing: 8) {
             ZStack {
-                // Dynamic background with blur effect
                 RoundedRectangle(cornerRadius: 14)
                     .fill(
                         LinearGradient(
-                            gradient: isSelected ?
+                            gradient: isSelected && isEnabled ?
                                 Gradient(colors: [
                                     Color.accentColor.opacity(0.9),
                                     Color.accentColor.opacity(0.7)
                                 ]) :
                                 Gradient(colors: [
-                                    Color(NSColor.controlBackgroundColor).opacity(0.95),
-                                    Color(NSColor.controlBackgroundColor).opacity(0.85)
+                                    Color(NSColor.controlBackgroundColor).opacity(isEnabled ? 0.95 : 0.5),
+                                    Color(NSColor.controlBackgroundColor).opacity(isEnabled ? 0.85 : 0.4)
                                 ]),
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
@@ -161,10 +160,10 @@ extension CustomPrompt {
                             .stroke(
                                 LinearGradient(
                                     gradient: Gradient(colors: [
-                                        isSelected ?
-                                            Color.white.opacity(0.3) : Color.white.opacity(0.15),
-                                        isSelected ?
-                                            Color.white.opacity(0.1) : Color.white.opacity(0.05)
+                                        isSelected && isEnabled ?
+                                            Color.white.opacity(0.3) : Color.white.opacity(0.07),
+                                        isSelected && isEnabled ?
+                                            Color.white.opacity(0.1) : Color.white.opacity(0.03)
                                     ]),
                                     startPoint: .topLeading,
                                     endPoint: .bottomTrailing
@@ -173,20 +172,31 @@ extension CustomPrompt {
                             )
                     )
                     .shadow(
-                        color: isSelected ?
-                            Color.accentColor.opacity(0.4) : Color.black.opacity(0.1),
-                        radius: isSelected ? 10 : 6,
+                        color: isSelected && isEnabled ?
+                            Color.accentColor.opacity(0.4) : Color.black.opacity(0.04),
+                        radius: isSelected && isEnabled ? 10 : 4,
                         x: 0,
                         y: 3
                     )
-                
-                // Decorative background elements
+
+                if !isEnabled {
+                    ZStack {
+                        RoundedRectangle(cornerRadius: 14)
+                            .fill(.ultraThinMaterial)
+                            .opacity(0.3)
+
+                        Image(systemName: "slash.circle.fill")
+                            .font(.system(size: 16, weight: .medium))
+                            .foregroundColor(.secondary.opacity(0.5))
+                    }
+                }
+
                 Circle()
                     .fill(
                         RadialGradient(
                             gradient: Gradient(colors: [
-                                isSelected ?
-                                    Color.white.opacity(0.15) : Color.white.opacity(0.08),
+                                isSelected && isEnabled ?
+                                    Color.white.opacity(0.15) : Color.white.opacity(0.04),
                                 Color.clear
                             ]),
                             center: .center,
@@ -197,58 +207,55 @@ extension CustomPrompt {
                     .frame(width: 50, height: 50)
                     .offset(x: -15, y: -15)
                     .blur(radius: 2)
-                
-                // Icon with enhanced effects
+
                 Image(systemName: icon)
                     .font(.system(size: 20, weight: .medium))
                     .foregroundStyle(
                         LinearGradient(
-                            colors: isSelected ?
+                            colors: isSelected && isEnabled ?
                                 [Color.white, Color.white.opacity(0.9)] :
-                                [Color.primary.opacity(0.9), Color.primary.opacity(0.7)],
+                                [Color.primary.opacity(isEnabled ? 0.9 : 0.35), Color.primary.opacity(isEnabled ? 0.7 : 0.25)],
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
                         )
                     )
                     .shadow(
-                        color: isSelected ?
+                        color: isSelected && isEnabled ?
                             Color.white.opacity(0.5) : Color.clear,
                         radius: 4
                     )
                     .shadow(
-                        color: isSelected ?
+                        color: isSelected && isEnabled ?
                             Color.accentColor.opacity(0.5) : Color.clear,
                         radius: 3
                     )
             }
             .frame(width: 48, height: 48)
-            
-            // Enhanced title styling
+
             VStack(spacing: 2) {
                 Text(title)
                     .font(.system(size: 11, weight: .medium))
-                    .foregroundColor(isSelected ?
-                        .primary : .secondary)
+                    .foregroundColor(isSelected && isEnabled ?
+                        .primary : .secondary.opacity(isEnabled ? 0.8 : 0.4))
                     .lineLimit(1)
                     .frame(maxWidth: 70)
-                
-                // Trigger word section with consistent height
+
                 ZStack(alignment: .center) {
                     if !triggerWords.isEmpty {
                         HStack(spacing: 2) {
                             Image(systemName: "mic.fill")
                                 .font(.system(size: 7))
-                                .foregroundColor(isSelected ? .accentColor.opacity(0.9) : .secondary.opacity(0.7))
-                            
+                                .foregroundColor(isSelected && isEnabled ? .accentColor.opacity(0.9) : .secondary.opacity(isEnabled ? 0.7 : 0.3))
+
                             if triggerWords.count == 1 {
                                 Text("\"\(triggerWords[0])...\"")
                                     .font(.system(size: 8, weight: .regular))
-                                    .foregroundColor(isSelected ? .primary.opacity(0.8) : .secondary.opacity(0.7))
+                                    .foregroundColor(isSelected && isEnabled ? .primary.opacity(0.8) : .secondary.opacity(isEnabled ? 0.7 : 0.3))
                                     .lineLimit(1)
                             } else {
                                 Text("\"\(triggerWords[0])...\" +\(triggerWords.count - 1)")
                                     .font(.system(size: 8, weight: .regular))
-                                    .foregroundColor(isSelected ? .primary.opacity(0.8) : .secondary.opacity(0.7))
+                                    .foregroundColor(isSelected && isEnabled ? .primary.opacity(0.8) : .secondary.opacity(isEnabled ? 0.7 : 0.3))
                                     .lineLimit(1)
                             }
                         }
@@ -261,15 +268,13 @@ extension CustomPrompt {
         .padding(.horizontal, 4)
         .padding(.vertical, 6)
         .contentShape(Rectangle())
-        .scaleEffect(isSelected ? 1.05 : 1.0)
+        .scaleEffect(isSelected && isEnabled ? 1.05 : 1.0)
         .onTapGesture(count: 2) {
-            // Double tap to edit
             if let onEdit = onEdit {
                 onEdit(self)
             }
         }
         .onTapGesture(count: 1) {
-            // Single tap to select
             onTap()
         }
         .contextMenu {
@@ -281,7 +286,7 @@ extension CustomPrompt {
                         Label("Edit", systemImage: "pencil")
                     }
                 }
-                
+
                 if let onDelete = onDelete, !isPredefined {
                     Button(role: .destructive) {
                         let alert = NSAlert()
@@ -290,7 +295,7 @@ extension CustomPrompt {
                         alert.alertStyle = .warning
                         alert.addButton(withTitle: String(localized: "Delete"))
                         alert.addButton(withTitle: String(localized: "Cancel"))
-                        
+
                         let response = alert.runModal()
                         if response == .alertFirstButtonReturn {
                             onDelete(self)

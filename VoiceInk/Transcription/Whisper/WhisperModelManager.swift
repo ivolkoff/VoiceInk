@@ -355,7 +355,7 @@ class WhisperModelManager: ObservableObject {
 
         if FileManager.default.fileExists(atPath: destinationURL.path) {
             await NotificationManager.shared.showNotification(
-                title: "A model named \(baseName).bin already exists",
+                title: String.localizedStringWithFormat(String(localized: "A model named %@ already exists"), "\(baseName).bin"),
                 type: .warning,
                 duration: 4.0
             )
@@ -372,14 +372,14 @@ class WhisperModelManager: ObservableObject {
             onModelsChanged?()
 
             await NotificationManager.shared.showNotification(
-                title: "Imported \(destinationURL.lastPathComponent)",
+                title: String.localizedStringWithFormat(String(localized: "Imported %@"), destinationURL.lastPathComponent),
                 type: .success,
                 duration: 3.0
             )
         } catch {
             logError("Failed to import local model", error)
             await NotificationManager.shared.showNotification(
-                title: "Failed to import model: \(error.localizedDescription)",
+                title: String.localizedStringWithFormat(String(localized: "Failed to import model: %@"), error.localizedDescription),
                 type: .error,
                 duration: 5.0
             )

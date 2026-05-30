@@ -31,7 +31,7 @@ final class SelectedTextEnhancementService {
 
         // Guard: enhancement must be enabled and configured (before any capture side effects).
         guard enhancementService.isEnhancementEnabled, enhancementService.isConfigured else {
-            notify("Enable and configure AI Enhancement to use this shortcut", type: .error)
+            notify(String(localized: "Enable and configure AI Enhancement to use this shortcut"), type: .error)
             return
         }
 
@@ -47,10 +47,10 @@ final class SelectedTextEnhancementService {
         let inputText: String
         switch decision {
         case .abortNoText:
-            notify("No text found to enhance", type: .warning)
+            notify(String(localized: "No text found to enhance"), type: .warning)
             return
         case .abortTooLong(let length, let limit):
-            notify("Selected text is too large (\(length)/\(limit) characters)", type: .warning)
+            notify(String.localizedStringWithFormat(String(localized: "Selected text is too large (%lld/%lld characters)"), length, limit), type: .warning)
             return
         case .proceed(let text):
             inputText = text
@@ -59,7 +59,7 @@ final class SelectedTextEnhancementService {
         // Persistent in-flight indicator: stays on screen (with a spinner) until the
         // AI responds, so the user always knows the request is still running.
         NotificationManager.shared.showNotification(
-            title: "Enhancing selected text…",
+            title: String(localized: "Enhancing selected text…"),
             type: .info,
             isLoading: true
         )
@@ -69,17 +69,17 @@ final class SelectedTextEnhancementService {
 
             guard !enhanced.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
                 logger.error("Enhancement returned empty text; leaving original selection untouched")
-                notify("Enhancement returned no text", type: .error)
+                notify(String(localized: "Enhancement returned no text"), type: .error)
                 return
             }
 
             // Response arrived: replace the loading indicator, then paste over the selection.
             // CursorPaster preserves the clipboard.
-            notify("Selected text enhanced", type: .success, duration: 2.0)
+            notify(String(localized: "Selected text enhanced"), type: .success, duration: 2.0)
             CursorPaster.startPasteAtCursor(enhanced)
         } catch {
             logger.error("Enhancement failed: \(error.localizedDescription, privacy: .public)")
-            notify("Enhancement failed: \(error.localizedDescription)", type: .error)
+            notify(String.localizedStringWithFormat(String(localized: "Enhancement failed: %@"), error.localizedDescription), type: .error)
         }
     }
 

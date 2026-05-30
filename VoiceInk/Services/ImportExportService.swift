@@ -209,7 +209,10 @@ class ImportExportService {
 
             let savePanel = NSSavePanel()
             savePanel.allowedContentTypes = [UTType.json]
-            savePanel.nameFieldStringValue = "VoiceInk_Settings_Backup.json"
+            let dateFormatter = DateFormatter()
+            dateFormatter.dateFormat = "yyyy_MM_dd"
+            let dateString = dateFormatter.string(from: Date())
+            savePanel.nameFieldStringValue = "VoiceInk_Settings_Backup_\(dateString).json"
             savePanel.title = String(localized: "Export VoiceInk Settings")
             savePanel.message = String(localized: "Choose a location to save your settings.")
 
@@ -218,13 +221,14 @@ class ImportExportService {
                     if let url = savePanel.url {
                         do {
                             try jsonData.write(to: url)
-                            self.showAlert(title: String(localized: "Export Successful"), message: String(localized: "Your settings have been successfully exported to \(url.lastPathComponent)."))
+                            NotificationManager.shared.showNotification(
+                                title: String(localized: "Settings exported successfully"),
+                                type: .success
+                            )
                         } catch {
                             self.showAlert(title: String(localized: "Export Error"), message: String(localized: "Could not save settings to file: \(error.localizedDescription)"))
                         }
                     }
-                } else {
-                    self.showAlert(title: String(localized: "Export Canceled"), message: String(localized: "The settings export operation was canceled."))
                 }
             }
         } catch {

@@ -157,7 +157,7 @@ class TranscriptionPipeline {
                     let shortReason = String(errorDescription.prefix(80))
                     await MainActor.run {
                         NotificationManager.shared.showNotification(
-                            title: "Enhancement failed: \(shortReason)",
+                            title: String.localizedStringWithFormat(String(localized: "Enhancement failed: %@"), shortReason),
                             type: .warning
                         )
                     }

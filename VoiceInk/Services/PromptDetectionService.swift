@@ -21,7 +21,7 @@ class PromptDetectionService {
         let originalEnhancementState = enhancementService.isEnhancementEnabled
         let originalPromptId = enhancementService.selectedPromptId
 
-		for prompt in enhancementService.allPrompts {
+		for prompt in enhancementService.enabledPrompts {
             if !prompt.triggerWords.isEmpty {
 				if let (detectedWord, processedText) = detectAndStripTriggerWord(from: text, triggerWords: prompt.triggerWords) {
                     return PromptDetectionResult(

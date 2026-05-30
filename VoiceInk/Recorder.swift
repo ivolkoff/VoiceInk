@@ -81,7 +81,7 @@ class Recorder: NSObject, ObservableObject {
             if let deviceName = deviceManager.availableDevices.first(where: { $0.id == newDeviceID })?.name {
                 await MainActor.run {
                     NotificationManager.shared.showNotification(
-                        title: "Switched to: \(deviceName)",
+                        title: String.localizedStringWithFormat(String(localized: "Switched to: %@"), deviceName),
                         type: .info
                     )
                 }
@@ -113,7 +113,7 @@ class Recorder: NSObject, ObservableObject {
         let lastDeviceID = UserDefaults.standard.string(forKey: "lastUsedMicrophoneDeviceID")
         if String(currentDeviceID) != lastDeviceID {
             if let deviceName = deviceManager.availableDevices.first(where: { $0.id == currentDeviceID })?.name {
-                NotificationManager.shared.showNotification(title: "Using: \(deviceName)", type: .info)
+                NotificationManager.shared.showNotification(title: String.localizedStringWithFormat(String(localized: "Using: %@"), deviceName), type: .info)
             }
         }
         UserDefaults.standard.set(String(currentDeviceID), forKey: "lastUsedMicrophoneDeviceID")
@@ -196,7 +196,7 @@ class Recorder: NSObject, ObservableObject {
         // Notify the user about the recording failure
         await MainActor.run {
             NotificationManager.shared.showNotification(
-                title: "Recording Failed: \(error.localizedDescription)",
+                title: String.localizedStringWithFormat(String(localized: "Recording Failed: %@"), error.localizedDescription),
                 type: .error
             )
         }

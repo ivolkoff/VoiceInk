@@ -7006,6 +7006,296 @@
           }
         }
       }
+    },
+    "No transcription available": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Нет доступной транскрипции"
+          }
+        }
+      }
+    },
+    "Last transcription copied": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Последняя транскрипция скопирована"
+          }
+        }
+      }
+    },
+    "Failed to copy transcription": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Не удалось скопировать транскрипцию"
+          }
+        }
+      }
+    },
+    "Cannot retry: Audio file not found": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Не удалось повторить: аудиофайл не найден"
+          }
+        }
+      }
+    },
+    "No transcription model selected": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Модель транскрипции не выбрана"
+          }
+        }
+      }
+    },
+    "Copied to clipboard": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Скопировано в буфер обмена"
+          }
+        }
+      }
+    },
+    "Retry failed: %@": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Повтор не удался: %@"
+          }
+        }
+      }
+    },
+    "No AI Model Selected": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "AI-модель не выбрана"
+          }
+        }
+      }
+    },
+    "Recording failed to start": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Не удалось начать запись"
+          }
+        }
+      }
+    },
+    "Press ESC again to cancel recording": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Нажмите ESC ещё раз, чтобы отменить запись"
+          }
+        }
+      }
+    },
+    "AI Enhancement is not available": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "AI-улучшение недоступно"
+          }
+        }
+      }
+    },
+    "Enable and configure AI Enhancement to use this shortcut": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Включите и настройте AI-улучшение, чтобы использовать это сочетание"
+          }
+        }
+      }
+    },
+    "No text found to enhance": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Текст для улучшения не найден"
+          }
+        }
+      }
+    },
+    "Selected text is too large (%lld/%lld characters)": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Выделенный текст слишком большой (%lld/%lld символов)"
+          }
+        }
+      }
+    },
+    "Enhancing selected text…": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Улучшение выделенного текста…"
+          }
+        }
+      }
+    },
+    "Enhancement returned no text": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Улучшение не вернуло текст"
+          }
+        }
+      }
+    },
+    "Selected text enhanced": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Выделенный текст улучшен"
+          }
+        }
+      }
+    },
+    "Enhancement failed: %@": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Улучшение не удалось: %@"
+          }
+        }
+      }
+    },
+    "Shortcut not allowed: %@": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Сочетание не разрешено: %@"
+          }
+        }
+      }
+    },
+    "Shortcut reserved by macOS: %@": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Сочетание зарезервировано macOS: %@"
+          }
+        }
+      }
+    },
+    "Shortcut already used by %@": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Сочетание уже используется %@"
+          }
+        }
+      }
+    },
+    "A model named %@ already exists": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Модель с именем %@ уже существует"
+          }
+        }
+      }
+    },
+    "Imported %@": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Импортировано: %@"
+          }
+        }
+      }
+    },
+    "Failed to import model: %@": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Не удалось импортировать модель: %@"
+          }
+        }
+      }
+    },
+    "Switched to: %@": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Переключено на: %@"
+          }
+        }
+      }
+    },
+    "Using: %@": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Используется: %@"
+          }
+        }
+      }
+    },
+    "Recording Failed: %@": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Запись не удалась: %@"
+          }
+        }
+      }
+    },
+    "Settings exported successfully": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Настройки успешно экспортированы"
+          }
+        }
+      }
+    },
+    "%@ requires macOS 26 or later": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ требует macOS 26 или новее"
+          }
+        }
+      }
     }
   },
   "version": "1.0"

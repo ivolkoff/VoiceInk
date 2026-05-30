@@ -11,6 +11,7 @@ struct AppNotificationView: View {
     
     @State private var progress: Double = 1.0
     @State private var timer: Timer?
+    @State private var loadingOffset: CGFloat = -1.0
 
     enum NotificationType {
         case error
@@ -124,7 +125,20 @@ struct AppNotificationView: View {
         )
         .overlay(
             Group {
-                if !isLoading {
+                if isLoading {
+                    VStack {
+                        Spacer()
+                        GeometryReader { geometry in
+                            let barWidth = geometry.size.width * 0.4
+                            Rectangle()
+                                .fill(loadingGradient)
+                                .frame(width: barWidth, height: 2)
+                                .offset(x: (geometry.size.width + barWidth) * loadingOffset)
+                        }
+                        .frame(height: 2)
+                    }
+                    .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                } else {
                     VStack {
                         Spacer()
                         GeometryReader { geometry in
@@ -140,7 +154,9 @@ struct AppNotificationView: View {
             }
         )
         .onAppear {
-            if !isLoading {
+            if isLoading {
+                startLoadingAnimation()
+            } else {
                 startProgressTimer()
             }
         }
@@ -155,6 +171,26 @@ struct AppNotificationView: View {
         }
     }
     
+    private var loadingGradient: LinearGradient {
+        LinearGradient(
+            colors: [
+                Color.cyan.opacity(0.9),
+                Color.blue.opacity(0.9),
+                Color.purple.opacity(0.9),
+                Color.blue.opacity(0.9),
+                Color.cyan.opacity(0.9)
+            ],
+            startPoint: .leading,
+            endPoint: .trailing
+        )
+    }
+
+    private func startLoadingAnimation() {
+        withAnimation(.easeInOut(duration: 1.2).repeatForever(autoreverses: true)) {
+            loadingOffset = 1.0
+        }
+    }
+
     private func startProgressTimer() {
         let updateInterval: TimeInterval = 0.1
         let totalSteps = duration / updateInterval

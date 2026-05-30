@@ -44,6 +44,7 @@ struct PromptSelectionGrid: View {
                     ForEach(prompts) { prompt in
                         prompt.promptIcon(
                             isSelected: selectedPromptId == prompt.id,
+                            isEnabled: prompt.isActive,
                             onTap: { 
                                 withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
                                     onPromptSelected(prompt)

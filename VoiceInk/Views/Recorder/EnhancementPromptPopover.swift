@@ -25,7 +25,7 @@ struct EnhancementPromptPopover: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 4) {
                     // Available Enhancement Prompts
-                    ForEach(enhancementService.allPrompts) { prompt in
+                    ForEach(enhancementService.enabledPrompts) { prompt in
                         EnhancementPromptRow(
                             prompt: prompt,
                             isSelected: selectedPrompt?.id == prompt.id,

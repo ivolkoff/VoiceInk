@@ -227,8 +227,13 @@ struct APIKeyManagementView: View {
 
                     Divider()
 
-                    TextField("Model Name", text: $aiService.customModel, prompt: Text("e.g. gemini-3.1-pro-preview, gpt-5.5"))
+                    TextField("Model Name", text: $aiService.customModel, prompt: Text("e.g. gemini_3_1_pro_preview, gpt_5_5"))
                         .textFieldStyle(.roundedBorder)
+                        .onChange(of: aiService.customModel) { _, newValue in
+                            if newValue.contains("-") {
+                                aiService.customModel = newValue.replacingOccurrences(of: "-", with: "_")
+                            }
+                        }
 
                     Divider()
 

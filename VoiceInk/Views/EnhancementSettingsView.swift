@@ -171,27 +171,52 @@ private struct ReorderablePromptGrid: View {
 
                 LazyVGrid(columns: columns, spacing: 16) {
                     ForEach(enhancementService.customPrompts) { prompt in
-                        prompt.promptIcon(
-                            isSelected: selectedPromptId == prompt.id,
-                            onTap: {
-                                withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                                    onPromptSelected(prompt)
+                        VStack(spacing: 4) {
+                            Button {
+                                enhancementService.togglePromptEnabled(prompt)
+                            } label: {
+                                HStack(spacing: 3) {
+                                    Circle()
+                                        .fill(prompt.isActive ? Color.green : Color.gray.opacity(0.35))
+                                        .frame(width: 6, height: 6)
+                                    Text(prompt.isActive ? "ON" : "OFF")
+                                        .font(.system(size: 8, weight: .bold))
+                                        .foregroundColor(prompt.isActive ? .green : .secondary.opacity(0.5))
                                 }
-                            },
-                            onEdit: onEditPrompt,
-                            onDelete: onDeletePrompt
-                        )
+                                .padding(.horizontal, 6)
+                                .padding(.vertical, 2)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 4)
+                                        .fill(prompt.isActive ? Color.green.opacity(0.1) : Color.gray.opacity(0.06))
+                                )
+                            }
+                            .buttonStyle(.plain)
+                            .help(prompt.isActive ? "Disable prompt" : "Enable prompt")
+
+                            prompt.promptIcon(
+                                isSelected: selectedPromptId == prompt.id,
+                                isEnabled: prompt.isActive,
+                                onTap: {
+                                    withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                                        onPromptSelected(prompt)
+                                    }
+                                },
+                                onEdit: onEditPrompt,
+                                onDelete: onDeletePrompt
+                            )
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 14)
+                                    .stroke(
+                                        draggingItem != nil && draggingItem?.id != prompt.id
+                                        ? Color.accentColor.opacity(0.25)
+                                        : Color.clear,
+                                        lineWidth: 1
+                                    )
+                                , alignment: .center
+                            )
+                        }
                         .opacity(draggingItem?.id == prompt.id ? 0.3 : 1.0)
                         .scaleEffect(draggingItem?.id == prompt.id ? 1.05 : 1.0)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 14)
-                                .stroke(
-                                    draggingItem != nil && draggingItem?.id != prompt.id
-                                    ? Color.accentColor.opacity(0.25)
-                                    : Color.clear,
-                                    lineWidth: 1
-                                )
-                        )
                         .animation(.easeInOut(duration: 0.15), value: draggingItem?.id == prompt.id)
                         .onDrag {
                             draggingItem = prompt

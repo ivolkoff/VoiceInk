@@ -57,11 +57,32 @@ class AIEnhancementService: ObservableObject {
     @Published var lastUserMessageSent: String?
 
     var activePrompt: CustomPrompt? {
-        allPrompts.first { $0.id == selectedPromptId }
+        guard let prompt = allPrompts.first(where: { $0.id == selectedPromptId }), prompt.isActive else {
+            return nil
+        }
+        return prompt
     }
 
     var allPrompts: [CustomPrompt] {
         return customPrompts
+    }
+
+    var enabledPrompts: [CustomPrompt] {
+        customPrompts.filter { $0.isActive }
+    }
+
+    func isPromptEnabled(_ id: UUID) -> Bool {
+        customPrompts.first(where: { $0.id == id })?.isActive ?? false
+    }
+
+    func togglePromptEnabled(_ prompt: CustomPrompt) {
+        guard let index = customPrompts.firstIndex(where: { $0.id == prompt.id }) else { return }
+        customPrompts[index].isActive.toggle()
+
+        if !customPrompts[index].isActive, selectedPromptId == prompt.id {
+            let firstEnabled = enabledPrompts.first
+            selectedPromptId = firstEnabled?.id ?? customPrompts.first?.id
+        }
     }
 
     private let aiService: AIService
@@ -383,6 +404,18 @@ class AIEnhancementService: ObservableObject {
     func enhance(_ text: String) async throws -> (String, TimeInterval, String?) {
         let startTime = Date()
         let enhancementPrompt: EnhancementPrompt = .transcriptionEnhancement
+
+        if activePrompt == nil {
+            await MainActor.run {
+                NotificationManager.shared.showNotification(
+                    title: String(localized: "No active prompts enabled. Using default prompt for this enhancement."),
+                    type: .warning,
+                    duration: 3,
+                    isLoading: false
+                )
+            }
+        }
+
         let promptName = activePrompt?.title
 
         do {
@@ -433,7 +466,7 @@ class AIEnhancementService: ObservableObject {
     func deletePrompt(_ prompt: CustomPrompt) {
         customPrompts.removeAll { $0.id == prompt.id }
         if selectedPromptId == prompt.id {
-            selectedPromptId = allPrompts.first?.id
+            selectedPromptId = enabledPrompts.first?.id ?? allPrompts.first?.id
         }
     }
 

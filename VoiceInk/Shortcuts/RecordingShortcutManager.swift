@@ -335,7 +335,7 @@ class RecordingShortcutManager: ObservableObject {
         if let selectedTextEnhancementService {
             await selectedTextEnhancementService.run(focusSettleDelay: focusSettleDelay)
         } else {
-            NotificationManager.shared.showNotification(title: "AI Enhancement is not available", type: .error)
+            NotificationManager.shared.showNotification(title: String(localized: "AI Enhancement is not available"), type: .error)
         }
     }
 

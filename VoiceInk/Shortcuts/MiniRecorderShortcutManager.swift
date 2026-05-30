@@ -152,7 +152,7 @@ class MiniRecorderShortcutManager: ObservableObject {
 
         firstEscapePressTime = now
         NotificationManager.shared.showNotification(
-            title: "Press ESC again to cancel recording",
+            title: String(localized: "Press ESC again to cancel recording"),
             type: .info,
             duration: escapeDoublePressThreshold
         )
