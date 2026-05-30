@@ -64,30 +64,30 @@ class CustomCloudModelManager: ObservableObject {
         var errors: [String] = []
         
         if name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-            errors.append("Name cannot be empty")
+            errors.append(String(localized: "Name cannot be empty"))
         }
         
         if displayName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-            errors.append("Display name cannot be empty")
+            errors.append(String(localized: "Display name cannot be empty"))
         }
         
         if apiEndpoint.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-            errors.append("API endpoint cannot be empty")
+            errors.append(String(localized: "API endpoint cannot be empty"))
         } else if !isValidURL(apiEndpoint) {
-            errors.append("API endpoint must be a valid URL")
+            errors.append(String(localized: "API endpoint must be a valid URL"))
         }
         
         if apiKey.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-            errors.append("API key cannot be empty")
+            errors.append(String(localized: "API key cannot be empty"))
         }
         
         if modelName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-            errors.append("Model name cannot be empty")
+            errors.append(String(localized: "Model name cannot be empty"))
         }
         
         // Check for duplicate names
         if customModels.contains(where: { $0.name == name }) {
-            errors.append("A model with this name already exists")
+            errors.append(String(localized: "A model with this name already exists"))
         }
         
         return errors
@@ -97,30 +97,30 @@ class CustomCloudModelManager: ObservableObject {
         var errors: [String] = []
         
         if name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-            errors.append("Name cannot be empty")
+            errors.append(String(localized: "Name cannot be empty"))
         }
         
         if displayName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-            errors.append("Display name cannot be empty")
+            errors.append(String(localized: "Display name cannot be empty"))
         }
         
         if apiEndpoint.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-            errors.append("API endpoint cannot be empty")
+            errors.append(String(localized: "API endpoint cannot be empty"))
         } else if !isValidURL(apiEndpoint) {
-            errors.append("API endpoint must be a valid URL")
+            errors.append(String(localized: "API endpoint must be a valid URL"))
         }
         
         if apiKey.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-            errors.append("API key cannot be empty")
+            errors.append(String(localized: "API key cannot be empty"))
         }
         
         if modelName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-            errors.append("Model name cannot be empty")
+            errors.append(String(localized: "Model name cannot be empty"))
         }
         
         // Check for duplicate names, excluding the specified ID
         if customModels.contains(where: { $0.name == name && $0.id != excludingId }) {
-            errors.append("A model with this name already exists")
+            errors.append(String(localized: "A model with this name already exists"))
         }
         
         return errors
