@@ -3,7 +3,7 @@ import SwiftUI
 /// A reusable info tip component that displays helpful information in a popover
 struct InfoTip: View {
     // Content configuration
-    var message: String
+    var message: LocalizedStringKey
     var learnMoreLink: URL?
 
     // Appearance customization
@@ -25,11 +25,11 @@ struct InfoTip: View {
             .popover(isPresented: $isShowingTip) {
                 VStack(alignment: .leading, spacing: 0) {
                     if let url = learnMoreLink {
-                        Text(message + " ")
+                        Text(message)
                             .font(.callout)
                             .foregroundColor(.secondary)
-                        +
-                        Text("Learn more")
+                        + Text(verbatim: " ")
+                        + Text("Learn more")
                             .font(.callout)
                             .foregroundColor(.accentColor)
                     } else {
@@ -57,13 +57,13 @@ struct InfoTip: View {
 
 extension InfoTip {
     /// Creates an InfoTip with just a message
-    init(_ message: String) {
+    init(_ message: LocalizedStringKey) {
         self.message = message
         self.learnMoreLink = nil
     }
 
     /// Creates an InfoTip with a learn more link
-    init(_ message: String, learnMoreURL: String) {
+    init(_ message: LocalizedStringKey, learnMoreURL: String) {
         self.message = message
         self.learnMoreLink = URL(string: learnMoreURL)
     }

@@ -83,13 +83,13 @@ class PermissionManager: ObservableObject {
 
 struct PermissionCard: View {
     let icon: String
-    let title: String
-    let description: String
+    let title: LocalizedStringKey
+    let description: LocalizedStringKey
     let isGranted: Bool
-    let buttonTitle: String
+    let buttonTitle: LocalizedStringKey
     let buttonAction: () -> Void
     let checkPermission: () -> Void
-    var infoTipMessage: String?
+    var infoTipMessage: LocalizedStringKey?
     var infoTipLink: String?
     @State private var isRefreshing = false
 

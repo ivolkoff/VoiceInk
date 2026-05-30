@@ -109,8 +109,8 @@ struct CustomSoundSettingsView: View {
 
     private func selectSound(for type: CustomSoundManager.SoundType) {
         let panel = NSOpenPanel()
-        panel.title = "Choose \(type.rawValue.capitalized) Sound"
-        panel.message = "Select an audio file"
+        panel.title = String(localized: "Choose \(type.rawValue.capitalized) Sound")
+        panel.message = String(localized: "Select an audio file")
         panel.allowedContentTypes = [
             UTType.audio,
             UTType.mp3,
