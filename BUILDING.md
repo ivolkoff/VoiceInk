@@ -76,6 +76,103 @@ The `make local` command uses:
 
 Your normal `make all` / `make build` commands are completely unaffected.
 
+### Persistent permissions across rebuilds (`make local-signed`)
+
+`make local` uses **ad-hoc** signing, which generates a *new code identity on
+every build*. macOS keys TCC permissions (Accessibility, Input Monitoring) to
+that identity, so **every rebuild silently drops the permissions you granted** —
+the global hotkeys (e.g. toggle recording) then stop working until you re-grant
+Accessibility. Resetting with `tccutil reset Accessibility com.prakashjoshipax.VoiceInk`
+and re-adding the app only helps until the next rebuild.
+
+Fix: build with a **stable self-signed certificate** so the code's Designated
+Requirement stays pinned to one cert. Then you grant Accessibility **once** and
+it survives rebuilds.
+
+```bash
+make local-signed                 # builds, then re-signs with "VoiceInk Local"
+open ~/Downloads/VoiceInk.app
+```
+
+One-time certificate setup (named `VoiceInk Local`, must be a **Code Signing**
+self-signed cert). Either:
+
+- **Keychain Access** → Certificate Assistant → *Create a Certificate…* →
+  Name `VoiceInk Local`, Identity Type *Self Signed Root*, Certificate Type
+  *Code Signing*, → Create. Or
+- **CLI** (note: Homebrew OpenSSL 3.x **requires `-legacy`** for the PKCS#12
+  export, otherwise `security import` fails with *"MAC verification failed …
+  (wrong password?)"*):
+
+  ```bash
+  openssl req -x509 -newkey rsa:2048 -sha256 -days 3650 -nodes \
+    -keyout key.pem -out cert.pem \
+    -subj "/CN=VoiceInk Local" \
+    -addext "basicConstraints=critical,CA:false" \
+    -addext "keyUsage=critical,digitalSignature" \
+    -addext "extendedKeyUsage=critical,codeSigning"
+  openssl pkcs12 -export -legacy -inkey key.pem -in cert.pem \
+    -name "VoiceInk Local" -out id.p12 -passout pass:vi
+  security import id.p12 -k ~/Library/Keychains/login.keychain-db \
+    -P vi -A -T /usr/bin/codesign
+  ```
+
+Verify the identity exists (a self-signed cert is **not** "valid" by policy, so
+use `find-identity` **without** `-v`, and confirm `codesign` accepts it):
+
+```bash
+security find-identity -p codesigning | grep "VoiceInk Local"
+codesign -dvv ~/Downloads/VoiceInk.app 2>&1 | grep Authority   # → Authority=VoiceInk Local
+```
+
+Override the identity name with `make local-signed SIGN_IDENTITY="Your Cert"`.
+
+**Why re-signing happens in two steps** (see `scripts/resign-local.sh`):
+`xcodebuild` ignores the cert and falls back to ad-hoc (a self-signed cert is
+not policy-valid), so the Makefile re-signs the built `.app` afterward. It signs
+the `.local-build` build-products copy **before** `ditto`-ing it to `~/Downloads`,
+because `~/Downloads` is a TCC-protected location where `codesign --force` is
+denied (*"Operation not permitted"*). The script also strips Backblaze
+placeholder symlinks (`.BC.D_*`) that otherwise break the framework code seal
+(*"unsealed contents present in the root directory of an embedded framework"*).
+
+---
+
+## Troubleshooting: whisper framework build fails
+
+### `No CMAKE_C_COMPILER could be found` / `compiler identification is unknown`
+
+`make whisper` runs whisper.cpp's `build-xcframework.sh`, which cross-compiles
+for iOS/visionOS/tvOS with CMake's Xcode generator (`-G Xcode` +
+`CMAKE_SYSTEM_NAME=iOS`). On recent Xcode (26.x) an **old CMake cannot identify
+the compiler** for those cross-compile slices and the script aborts (it runs
+under `set -e`, so the first failing slice kills the whole build). VoiceInk only
+needs the macOS slice, but the script builds all platforms.
+
+Two fixes, both required:
+
+1. **Update CMake** (Homebrew ships an old one on some setups; check
+   `cmake --version`, and that `which cmake` is the up-to-date one — a stale
+   `/usr/local/bin/cmake` can shadow `/opt/homebrew/bin/cmake`):
+
+   ```bash
+   brew install cmake     # 4.x
+   ```
+
+2. **Force the compiler** so the Xcode generator can identify it. In
+   `~/VoiceInk-Dependencies/whisper.cpp/build-xcframework.sh`, add these to the
+   `COMMON_CMAKE_ARGS` array (applies to all platform slices):
+
+   ```bash
+   -DCMAKE_C_COMPILER=$(xcrun -f clang)
+   -DCMAKE_CXX_COMPILER=$(xcrun -f clang++)
+   ```
+
+> ⚠️ This patch lives in the **vendored** whisper.cpp clone under
+> `~/VoiceInk-Dependencies`, **not** in this repo. `make clean` deletes that
+> directory, so after a clean you must re-apply the patch (or re-update CMake)
+> before `make whisper` / `make local` will succeed again.
+
 ---
 
 ## Manual Build Process (Alternative)
