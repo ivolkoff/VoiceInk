@@ -15,7 +15,7 @@ struct APIKeyManagementView: View {
     @State private var localCLICommandTemplate: String = ""
     @State private var localCLITimeoutSeconds: Double = LocalCLIService.defaultTimeoutSeconds
     @State private var isSyncingLocalCLIState = false
-    
+
     var body: some View {
         Section("AI Provider Integration") {
             HStack {
@@ -26,7 +26,7 @@ struct APIKeyManagementView: View {
                 }
                 .pickerStyle(.automatic)
                 .tint(.blue)
-                
+
                 if aiService.isAPIKeyValid && aiService.selectedProvider != .ollama {
                     Spacer()
                     Circle()
@@ -104,7 +104,7 @@ struct APIKeyManagementView: View {
                             }
                         }
                     }
-                    
+
                 } else if !aiService.availableModels.isEmpty &&
                             aiService.selectedProvider != .ollama &&
                             aiService.selectedProvider != .custom {
@@ -123,7 +123,7 @@ struct APIKeyManagementView: View {
                         HStack {
                             TextField("Base URL", text: $ollamaBaseURL)
                                 .textFieldStyle(.roundedBorder)
-                            
+
                             Button("Save") {
                                 aiService.updateOllamaBaseURL(ollamaBaseURL)
                                 checkOllamaConnection()
@@ -149,13 +149,34 @@ struct APIKeyManagementView: View {
                     if !ollamaModels.isEmpty {
                         Divider()
 
-                        Picker("Model", selection: $selectedOllamaModel) {
-                            ForEach(ollamaModels) { model in
-                                Text(model.name).tag(model.name)
+                        VStack(alignment: .leading, spacing: 2) {
+                            Picker("Model", selection: $selectedOllamaModel) {
+                                ForEach(ollamaModels) { model in
+                                    Text(model.name).tag(model.name)
+                                }
                             }
-                        }
-                        .onChange(of: selectedOllamaModel) { oldValue, newValue in
-                            aiService.updateSelectedOllamaModel(newValue)
+                            .onChange(of: selectedOllamaModel) { oldValue, newValue in
+                                aiService.updateSelectedOllamaModel(newValue)
+                            }
+
+                            HStack {
+                                Text("ollama pull qwen3.5:9b")
+                                    .font(.system(.caption, design: .monospaced))
+                                    .foregroundColor(.secondary)
+                                    .lineLimit(1)
+                                    .truncationMode(.middle)
+
+                                Button {
+                                    NSPasteboard.general.clearContents()
+                                    NSPasteboard.general.setString("ollama pull qwen3.5:9b", forType: .string)
+                                } label: {
+                                    Image(systemName: "doc.on.doc")
+                                        .font(.caption)
+                                }
+                                .buttonStyle(.plain)
+                                .help("Copy command")
+                            }
+                            .padding(.leading, 2)
                         }
                     }
 
@@ -266,7 +287,7 @@ struct APIKeyManagementView: View {
                     Divider()
 
                     CustomHeadersEditor(headers: $aiService.customHeaders)
-                    
+
                 } else {
                     if aiService.isAPIKeyValid {
                         HStack {
@@ -348,7 +369,7 @@ struct APIKeyManagementView: View {
             isSyncingLocalCLIState = false
         }
     }
-    
+
     private func checkOllamaConnection() {
         isCheckingOllama = true
         aiService.checkOllamaConnection { connected in
@@ -365,7 +386,7 @@ struct APIKeyManagementView: View {
             }
         }
     }
-    
+
     private func getAPIKeyURL() -> URL? {
         switch aiService.selectedProvider {
         case .groq: return URL(string: "https://console.groq.com/keys")
