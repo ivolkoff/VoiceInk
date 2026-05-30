@@ -334,7 +334,7 @@ struct ModelManagementView: View {
         panel.allowsMultipleSelection = false
         panel.canChooseDirectories = false
         panel.resolvesAliases = true
-        panel.title = "Select a Whisper ggml .bin model"
+        panel.title = String(localized: "Select a Whisper ggml .bin model")
         if panel.runModal() == .OK, let url = panel.url {
             Task { @MainActor in
                 await whisperModelManager.importWhisperModel(from: url)
