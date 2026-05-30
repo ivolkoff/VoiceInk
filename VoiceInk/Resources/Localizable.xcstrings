@@ -1,0 +1,6510 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "" : {
+      "shouldTranslate" : false
+    },
+    "\n\nIMPORTANT: If you were using AI enhancement features, please make sure to reconfigure your API keys in the Enhancement section." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "\n\nВАЖНО: если вы использовали функции AI-улучшения, не забудьте заново настроить API-ключи в разделе «Улучшение»."
+          }
+        }
+      }
+    },
+    "\n\nIt is recommended to restart VoiceInk for all changes to take full effect." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "\n\nРекомендуется перезапустить VoiceInk, чтобы все изменения вступили в силу."
+          }
+        }
+      }
+    },
+    " with VoiceInk" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : " с VoiceInk"
+          }
+        }
+      }
+    },
+    "\"%@...\"" : {
+      "shouldTranslate" : false
+    },
+    "\"%@...\" +%lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "\"%1$@...\" +%2$lld"
+          }
+        }
+      },
+      "shouldTranslate" : false
+    },
+    "%@ • %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ • %2$@"
+          }
+        }
+      },
+      "shouldTranslate" : false
+    },
+    "%lld" : {
+      "shouldTranslate" : false
+    },
+    "%lld %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld %2$@"
+          }
+        }
+      },
+      "shouldTranslate" : false
+    },
+    "%lld file%@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld file%2$@"
+          }
+        },
+        "ru" : {
+          "variations" : {
+            "plural" : {
+              "few" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld файла"
+                }
+              },
+              "many" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld файлов"
+                }
+              },
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld файл"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld файла"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld seconds" : {
+      "localizations" : {
+        "ru" : {
+          "variations" : {
+            "plural" : {
+              "few" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld секунды"
+                }
+              },
+              "many" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld секунд"
+                }
+              },
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld секунда"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld секунды"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld selected" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Выбрано: %lld"
+          }
+        }
+      }
+    },
+    "%lld sessions" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Сессий: %lld"
+          }
+        }
+      }
+    },
+    "%lld transcripts" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Транскриптов: %lld"
+          }
+        }
+      }
+    },
+    "%lld%%" : {
+      "shouldTranslate" : false
+    },
+    "-" : {
+      "shouldTranslate" : false
+    },
+    "0s" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "0 с"
+          }
+        }
+      }
+    },
+    "1 day" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1 день"
+          }
+        }
+      }
+    },
+    "1 hour" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1 час"
+          }
+        }
+      }
+    },
+    "1.5×" : {
+      "shouldTranslate" : false
+    },
+    "120s" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "120 с"
+          }
+        }
+      }
+    },
+    "14 days" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "14 дней"
+          }
+        }
+      }
+    },
+    "15s" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "15 с"
+          }
+        }
+      }
+    },
+    "180s" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "180 с"
+          }
+        }
+      }
+    },
+    "1s" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1 с"
+          }
+        }
+      }
+    },
+    "1×" : {
+      "shouldTranslate" : false
+    },
+    "250ms" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "250 мс"
+          }
+        }
+      }
+    },
+    "2s" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "2 с"
+          }
+        }
+      }
+    },
+    "2×" : {
+      "shouldTranslate" : false
+    },
+    "3 days" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "3 дня"
+          }
+        }
+      }
+    },
+    "30 days" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "30 дней"
+          }
+        }
+      }
+    },
+    "300s" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "300 с"
+          }
+        }
+      }
+    },
+    "30s" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "30 с"
+          }
+        }
+      }
+    },
+    "3s" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "3 с"
+          }
+        }
+      }
+    },
+    "45s" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "45 с"
+          }
+        }
+      }
+    },
+    "4s" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "4 с"
+          }
+        }
+      }
+    },
+    "500ms" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "500 мс"
+          }
+        }
+      }
+    },
+    "5s" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "5 с"
+          }
+        }
+      }
+    },
+    "60s" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "60 с"
+          }
+        }
+      }
+    },
+    "7 days" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "7 дней"
+          }
+        }
+      }
+    },
+    "90s" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "90 с"
+          }
+        }
+      }
+    },
+    "A New Way to Type" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Новый способ печатать"
+          }
+        }
+      }
+    },
+    "A model with this name already exists" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Модель с таким именем уже существует"
+          }
+        }
+      }
+    },
+    "A network error occurred: %@" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Произошла сетевая ошибка: %@"
+          }
+        }
+      }
+    },
+    "A power mode with the name '%@' already exists." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Power Mode с именем «%@» уже существует."
+          }
+        }
+      }
+    },
+    "AI Enhancement" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AI-улучшение"
+          }
+        }
+      }
+    },
+    "AI Model" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AI-модель"
+          }
+        }
+      }
+    },
+    "AI Model: %@" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AI-модель: %@"
+          }
+        }
+      }
+    },
+    "AI Provider" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AI-провайдер"
+          }
+        }
+      }
+    },
+    "AI Provider Integration" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Интеграция AI-провайдера"
+          }
+        }
+      }
+    },
+    "AI Provider: %@" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AI-провайдер: %@"
+          }
+        }
+      }
+    },
+    "AI Request" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AI-запрос"
+          }
+        }
+      }
+    },
+    "AI enhancement failed to process the text." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AI-улучшению не удалось обработать текст."
+          }
+        }
+      }
+    },
+    "AI enhancement lets you pass the transcribed audio through LLMs to post-process using different prompts suitable for different use cases like e-mails, summary, writing, etc." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AI-улучшение позволяет пропускать расшифрованное аудио через LLM для постобработки разными промптами под разные задачи: письма, резюме, тексты и т.д."
+          }
+        }
+      }
+    },
+    "AI provider not configured. Please check your API key." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AI-провайдер не настроен. Проверьте API-ключ."
+          }
+        }
+      }
+    },
+    "API Endpoint URL" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "URL API-эндпоинта"
+          }
+        }
+      }
+    },
+    "API Key" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "API-ключ"
+          }
+        }
+      }
+    },
+    "API Key Configuration" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Настройка API-ключа"
+          }
+        }
+      }
+    },
+    "API Key Set" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "API-ключ задан"
+          }
+        }
+      }
+    },
+    "API endpoint cannot be empty" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "API-эндпоинт не может быть пустым"
+          }
+        }
+      }
+    },
+    "API endpoint must be a valid URL" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "API-эндпоинт должен быть корректным URL"
+          }
+        }
+      }
+    },
+    "API key cannot be empty" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "API-ключ не может быть пустым"
+          }
+        }
+      }
+    },
+    "API key for this service is missing. Please configure it in the settings." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Отсутствует API-ключ для этого сервиса. Настройте его в настройках."
+          }
+        }
+      }
+    },
+    "API key verified successfully!" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "API-ключ успешно проверен!"
+          }
+        }
+      }
+    },
+    "Accessibility Access" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Доступ к универсальному доступу"
+          }
+        }
+      }
+    },
+    "Accuracy" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Точность"
+          }
+        }
+      }
+    },
+    "Activate" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Активировать"
+          }
+        }
+      }
+    },
+    "Activate License" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Активировать лицензию"
+          }
+        }
+      }
+    },
+    "Activation Delay" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Задержка активации"
+          }
+        }
+      }
+    },
+    "Active" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Активно"
+          }
+        }
+      }
+    },
+    "Add" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Добавить"
+          }
+        }
+      }
+    },
+    "Add Custom Model" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Добавить пользовательскую модель"
+          }
+        }
+      }
+    },
+    "Add Emoji" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Добавить эмодзи"
+          }
+        }
+      }
+    },
+    "Add Model" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Добавить модель"
+          }
+        }
+      }
+    },
+    "Add New" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Добавить новый"
+          }
+        }
+      }
+    },
+    "Add Power Mode" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Добавить Power Mode"
+          }
+        }
+      }
+    },
+    "Add Second Shortcut" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Добавить второе сочетание"
+          }
+        }
+      }
+    },
+    "Add Space After Paste" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Добавлять пробел после вставки"
+          }
+        }
+      }
+    },
+    "Add a custom fine-tuned whisper model to use with VoiceInk. Select the downloaded .bin file." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Добавьте свою дообученную модель Whisper для VoiceInk. Выберите загруженный файл .bin."
+          }
+        }
+      }
+    },
+    "Add a trailing space after pasted transcription output." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Добавлять пробел в конце вставленной транскрипции."
+          }
+        }
+      }
+    },
+    "Add custom emoji" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Добавить свой эмодзи"
+          }
+        }
+      }
+    },
+    "Add customized power modes for different contexts" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Добавляйте настроенные Power Mode для разных контекстов"
+          }
+        }
+      }
+    },
+    "Add files" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Добавить файлы"
+          }
+        }
+      }
+    },
+    "Add filler word" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Добавить слово-паразит"
+          }
+        }
+      }
+    },
+    "Add new prompt" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Добавить новый промпт"
+          }
+        }
+      }
+    },
+    "Add trigger word" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Добавить триггер-слово"
+          }
+        }
+      }
+    },
+    "Add word" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Добавить слово"
+          }
+        }
+      }
+    },
+    "Add word replacement" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Добавить замену слова"
+          }
+        }
+      }
+    },
+    "Add word to vocabulary" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Добавить слово в словарь"
+          }
+        }
+      }
+    },
+    "Add words that automatically activate this prompt. For example, 'summarize', 'email', 'translate'." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Добавьте слова, автоматически активирующие этот промпт. Например: «summarize», «email», «translate»."
+          }
+        }
+      }
+    },
+    "Add words to help VoiceInk recognize them properly. (Requires AI enhancement)" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Добавьте слова, чтобы VoiceInk распознавал их правильно. (Требуется AI-улучшение)"
+          }
+        }
+      }
+    },
+    "Additional" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Дополнительно"
+          }
+        }
+      }
+    },
+    "Additional Shortcuts" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Дополнительные сочетания"
+          }
+        }
+      }
+    },
+    "Advanced" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Дополнительно"
+          }
+        }
+      }
+    },
+    "All" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Все"
+          }
+        }
+      }
+    },
+    "All settings" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Все настройки"
+          }
+        }
+      }
+    },
+    "Allow VoiceInk to help you type anywhere in your Mac." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Разрешите VoiceInk помогать вам печатать в любом месте на Mac."
+          }
+        }
+      }
+    },
+    "Allow VoiceInk to paste transcribed text directly at your cursor position" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Разрешите VoiceInk вставлять расшифрованный текст прямо в позицию курсора"
+          }
+        }
+      }
+    },
+    "Allow VoiceInk to record your voice for transcription" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Разрешите VoiceInk записывать ваш голос для транскрипции"
+          }
+        }
+      }
+    },
+    "Allow VoiceInk to understand context from your screen for transcript Enhancement" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Разрешите VoiceInk считывать контекст с экрана для улучшения транскрипции"
+          }
+        }
+      }
+    },
+    "Already have a license?" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Уже есть лицензия?"
+          }
+        }
+      }
+    },
+    "Already purchased?" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Уже приобрели?"
+          }
+        }
+      }
+    },
+    "An unknown error occurred." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Произошла неизвестная ошибка."
+          }
+        }
+      }
+    },
+    "Analyze" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Анализировать"
+          }
+        }
+      }
+    },
+    "Analyzing..." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Анализ..."
+          }
+        }
+      }
+    },
+    "Apple Speech asset management is not available on this system." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Управление ресурсами Apple Speech недоступно в этой системе."
+          }
+        }
+      }
+    },
+    "Applications" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Приложения"
+          }
+        }
+      }
+    },
+    "Apply custom settings based on active app or website." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Применять особые настройки в зависимости от активного приложения или сайта."
+          }
+        }
+      }
+    },
+    "Apply intelligent text formatting to break large block of text into paragraphs." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Применять умное форматирование для разбивки большого текста на абзацы."
+          }
+        }
+      }
+    },
+    "Are you sure you want to delete '%@' prompt? This action cannot be undone." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Вы уверены, что хотите удалить промпт «%@»? Это действие нельзя отменить."
+          }
+        }
+      }
+    },
+    "Are you sure you want to delete the '%@' power mode? This action cannot be undone." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Вы уверены, что хотите удалить Power Mode «%@»? Это действие нельзя отменить."
+          }
+        }
+      }
+    },
+    "Assign a unique keyboard shortcut to instantly activate this Power Mode and start recording." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Назначьте уникальное сочетание клавиш для мгновенной активации этого Power Mode и начала записи."
+          }
+        }
+      }
+    },
+    "Audio Cleanup" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Очистка аудио"
+          }
+        }
+      }
+    },
+    "Audio Input" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Аудиовход"
+          }
+        }
+      }
+    },
+    "Auto Send" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Автоотправка"
+          }
+        }
+      }
+    },
+    "Auto-check Updates" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Автопроверка обновлений"
+          }
+        }
+      }
+    },
+    "Auto-delete Audio Files" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Автоудаление аудиофайлов"
+          }
+        }
+      }
+    },
+    "Auto-delete Transcripts" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Автоудаление транскриптов"
+          }
+        }
+      }
+    },
+    "Autodetected" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Автоопределение"
+          }
+        }
+      }
+    },
+    "Automate your workflows with context-aware configurations." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Автоматизируйте работу с помощью контекстных конфигураций."
+          }
+        }
+      }
+    },
+    "Automatically apply custom configurations based on the app/website you are using." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Автоматически применять особые конфигурации в зависимости от используемого приложения/сайта."
+          }
+        }
+      }
+    },
+    "Automatically delete audio recordings while keeping text transcripts intact." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Автоматически удалять аудиозаписи, сохраняя текстовые транскрипты."
+          }
+        }
+      }
+    },
+    "Automatically delete transcript history based on the retention period you set." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Автоматически удалять историю транскриптов согласно заданному сроку хранения."
+          }
+        }
+      }
+    },
+    "Automatically presses a key combination after pasting text. Useful for chat applications or forms that use different send shortcuts." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Автоматически нажимать сочетание клавиш после вставки текста. Полезно для чатов и форм с разными сочетаниями отправки."
+          }
+        }
+      }
+    },
+    "Automatically remove filler words like 'uh', 'um', 'hmm' from transcriptions." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Автоматически удалять слова-паразиты вроде «uh», «um», «hmm» из транскрипций."
+          }
+        }
+      }
+    },
+    "Automatically skip AI enhancement when the transcription has very few words. Short phrases like \"yes\", \"thank you\", or quick commands don't benefit from enhancement." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Автоматически пропускать AI-улучшение, когда в транскрипции очень мало слов. Короткие фразы вроде «да», «спасибо» или быстрые команды не нуждаются в улучшении."
+          }
+        }
+      }
+    },
+    "Available Devices" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Доступные устройства"
+          }
+        }
+      }
+    },
+    "Avg. Audio" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ср. аудио"
+          }
+        }
+      }
+    },
+    "Avg. Enhancement Time" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ср. время улучшения"
+          }
+        }
+      }
+    },
+    "Avg. Processing" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ср. обработка"
+          }
+        }
+      }
+    },
+    "Backup" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Резервная копия"
+          }
+        }
+      }
+    },
+    "Base URL" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Базовый URL"
+          }
+        }
+      }
+    },
+    "Batch mode — click to enable live streaming" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Пакетный режим — нажмите для потоковой передачи"
+          }
+        }
+      }
+    },
+    "Brief description" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Краткое описание"
+          }
+        }
+      }
+    },
+    "Buy License" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Купить лицензию"
+          }
+        }
+      }
+    },
+    "Buy Once, Own Forever" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Купите один раз — владейте навсегда"
+          }
+        }
+      }
+    },
+    "Cancel" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Отмена"
+          }
+        }
+      }
+    },
+    "Cancel Recording" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Отменить запись"
+          }
+        }
+      }
+    },
+    "Cancel transcription" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Отменить транскрипцию"
+          }
+        }
+      }
+    },
+    "Cannot Save Power Mode" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Не удалось сохранить Power Mode"
+          }
+        }
+      }
+    },
+    "Capture on-screen text to understand context for better enhancement." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Считывать текст с экрана для понимания контекста и лучшего улучшения."
+          }
+        }
+      }
+    },
+    "Check for Updates" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Проверить обновления"
+          }
+        }
+      }
+    },
+    "Check for Updates…" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Проверить обновления…"
+          }
+        }
+      }
+    },
+    "Check the default model try again. If the problem persists, try a different model." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Проверьте модель по умолчанию и попробуйте снова. Если проблема сохраняется, выберите другую модель."
+          }
+        }
+      }
+    },
+    "Checking Apple Speech language download status." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Проверка статуса загрузки языка Apple Speech."
+          }
+        }
+      }
+    },
+    "Choose" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Выбрать"
+          }
+        }
+      }
+    },
+    "Choose %@ Sound" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Выберите звук: %@"
+          }
+        }
+      }
+    },
+    "Choose Files" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Выбрать файлы"
+          }
+        }
+      }
+    },
+    "Choose a location to save your settings." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Выберите место для сохранения настроек."
+          }
+        }
+      }
+    },
+    "Choose a settings backup, then select what you want to import." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Выберите резервную копию настроек, затем укажите, что импортировать."
+          }
+        }
+      }
+    },
+    "Choose what to import from this backup." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Выберите, что импортировать из этой резервной копии."
+          }
+        }
+      }
+    },
+    "Cleanup Complete" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Очистка завершена"
+          }
+        }
+      }
+    },
+    "Cleanup complete." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Очистка завершена."
+          }
+        }
+      }
+    },
+    "Clear" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Очистить"
+          }
+        }
+      }
+    },
+    "Clear all items" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Очистить все элементы"
+          }
+        }
+      }
+    },
+    "Click here and start speaking..." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Нажмите здесь и начните говорить..."
+          }
+        }
+      }
+    },
+    "Clipboard Context" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Контекст буфера обмена"
+          }
+        }
+      }
+    },
+    "Close" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Закрыть"
+          }
+        }
+      }
+    },
+    "Command" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Команда"
+          }
+        }
+      }
+    },
+    "Complete Setup" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Завершить настройку"
+          }
+        }
+      }
+    },
+    "Complete the setup to get started" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Завершите настройку, чтобы начать"
+          }
+        }
+      }
+    },
+    "Configure" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Настроить"
+          }
+        }
+      }
+    },
+    "Configure API Keys" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Настроить API-ключи"
+          }
+        }
+      }
+    },
+    "Configure Shortcut" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Настроить сочетание"
+          }
+        }
+      }
+    },
+    "Connect an audio input device to get started" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Подключите устройство аудиовхода, чтобы начать"
+          }
+        }
+      }
+    },
+    "Connected" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Подключено"
+          }
+        }
+      }
+    },
+    "Context" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Контекст"
+          }
+        }
+      }
+    },
+    "Context Awareness" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Учёт контекста"
+          }
+        }
+      }
+    },
+    "Control how VoiceInk handles your transcription data and audio recordings." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Управляйте тем, как VoiceInk обрабатывает данные транскрипций и аудиозаписи."
+          }
+        }
+      }
+    },
+    "Convert transcription output to lowercase." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Преобразовывать вывод транскрипции в нижний регистр."
+          }
+        }
+      }
+    },
+    "Copied!" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Скопировано!"
+          }
+        }
+      }
+    },
+    "Copy Last Transcription" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Копировать последнюю транскрипцию"
+          }
+        }
+      }
+    },
+    "Copy System Info" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Копировать информацию о системе"
+          }
+        }
+      }
+    },
+    "Copy to clipboard" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Копировать в буфер обмена"
+          }
+        }
+      }
+    },
+    "Could not encode settings to JSON: %@" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Не удалось закодировать настройки в JSON: %@"
+          }
+        }
+      }
+    },
+    "Could not get the file URL from the open panel." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Не удалось получить URL файла из окна выбора."
+          }
+        }
+      }
+    },
+    "Could not save settings to file: %@" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Не удалось сохранить настройки в файл: %@"
+          }
+        }
+      }
+    },
+    "Create first power mode to automate your VoiceInk workflow based on apps/website you are using" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Создайте первый Power Mode, чтобы автоматизировать работу VoiceInk в зависимости от приложения/сайта"
+          }
+        }
+      }
+    },
+    "Critical Storage Error" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Критическая ошибка хранилища"
+          }
+        }
+      }
+    },
+    "Current Device" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Текущее устройство"
+          }
+        }
+      }
+    },
+    "Custom Model Definitions" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Определения пользовательских моделей"
+          }
+        }
+      }
+    },
+    "Custom Prompts" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Пользовательские промпты"
+          }
+        }
+      }
+    },
+    "Custom Provider" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Пользовательский провайдер"
+          }
+        }
+      }
+    },
+    "Custom: %@" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Пользовательский: %@"
+          }
+        }
+      }
+    },
+    "Deactivate License" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Деактивировать лицензию"
+          }
+        }
+      }
+    },
+    "Debug" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Отладка"
+          }
+        }
+      }
+    },
+    "Default" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "По умолчанию"
+          }
+        }
+      }
+    },
+    "Default Model" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Модель по умолчанию"
+          }
+        }
+      }
+    },
+    "Default power mode is used when no specific app or website matches are found." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Power Mode по умолчанию используется, когда нет совпадений по приложению или сайту."
+          }
+        }
+      }
+    },
+    "Default uses simulated Cmd+V key events. AppleScript can help when custom keyboard layouts do not paste correctly." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "По умолчанию используются имитированные нажатия Cmd+V. AppleScript помогает, когда нестандартные раскладки вставляют текст некорректно."
+          }
+        }
+      }
+    },
+    "Define word replacements to automatically replace specific words or phrases" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Задайте замены слов для автоматической замены определённых слов или фраз"
+          }
+        }
+      }
+    },
+    "Delete" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Удалить"
+          }
+        }
+      }
+    },
+    "Delete %lld Files" : {
+      "localizations" : {
+        "ru" : {
+          "variations" : {
+            "plural" : {
+              "few" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Удалить %lld файла"
+                }
+              },
+              "many" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Удалить %lld файлов"
+                }
+              },
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Удалить %lld файл"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Удалить %lld файла"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Delete After" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Удалять через"
+          }
+        }
+      }
+    },
+    "Delete Model" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Удалить модель"
+          }
+        }
+      }
+    },
+    "Delete Power Mode?" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Удалить Power Mode?"
+          }
+        }
+      }
+    },
+    "Delete Prompt?" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Удалить промпт?"
+          }
+        }
+      }
+    },
+    "Delete Selected Items?" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Удалить выбранные элементы?"
+          }
+        }
+      }
+    },
+    "Deleted %lld audio files." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Удалено аудиофайлов: %lld."
+          }
+        }
+      }
+    },
+    "Deleted %lld files. Failed: %lld." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deleted %1$lld files. Failed: %2$lld."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Удалено файлов: %1$lld. Ошибок: %2$lld."
+          }
+        }
+      }
+    },
+    "Deselect All" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Снять выделение со всех"
+          }
+        }
+      }
+    },
+    "Details" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Подробности"
+          }
+        }
+      }
+    },
+    "Detect speech segments and filter out silence to improve accuracy of local models." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Определять сегменты речи и отфильтровывать тишину для повышения точности локальных моделей."
+          }
+        }
+      }
+    },
+    "Devices will be used in order of priority. If a device is unavailable, the next one will be tried. If no prioritized device is available, the built-in microphone will be used." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Устройства будут использоваться по приоритету. Если устройство недоступно, будет выбрано следующее. Если ни одно приоритетное устройство недоступно, используется встроенный микрофон."
+          }
+        }
+      }
+    },
+    "Diagnostics" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Диагностика"
+          }
+        }
+      }
+    },
+    "Dictionary" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Словарь"
+          }
+        }
+      }
+    },
+    "Dictionary Settings" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Настройки словаря"
+          }
+        }
+      }
+    },
+    "Dictionary settings" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Настройки словаря"
+          }
+        }
+      }
+    },
+    "Disable or remove your Power Modes first." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Сначала отключите или удалите ваши Power Mode."
+          }
+        }
+      }
+    },
+    "Disabled" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Отключено"
+          }
+        }
+      }
+    },
+    "Disconnected" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Отключено"
+          }
+        }
+      }
+    },
+    "Dismiss" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Закрыть"
+          }
+        }
+      }
+    },
+    "Dismiss Recorder" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Закрыть рекордер"
+          }
+        }
+      }
+    },
+    "Dismiss VoiceInk Recorder" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Закрыть рекордер VoiceInk"
+          }
+        }
+      }
+    },
+    "Dismiss the VoiceInk mini recorder and cancel any active recording." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Закрыть мини-рекордер VoiceInk и отменить активную запись."
+          }
+        }
+      }
+    },
+    "Dismiss this promotion" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Скрыть это предложение"
+          }
+        }
+      }
+    },
+    "Display name cannot be empty" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Отображаемое имя не может быть пустым"
+          }
+        }
+      }
+    },
+    "Displays the live transcript preview in the recorder while speaking. Only applies when using real-time streaming models." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Показывать предпросмотр транскрипта в рекордере во время речи. Работает только с потоковыми моделями в реальном времени."
+          }
+        }
+      }
+    },
+    "Double-click to edit • Right-click for more options" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Двойной клик — изменить • Правый клик — больше опций"
+          }
+        }
+      }
+    },
+    "Download" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Загрузить"
+          }
+        }
+      }
+    },
+    "Download AI Model" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Загрузить AI-модель"
+          }
+        }
+      }
+    },
+    "Download Apple Speech language" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Загрузить язык Apple Speech"
+          }
+        }
+      }
+    },
+    "Download this Apple Speech language before transcribing." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Загрузите этот язык Apple Speech перед транскрипцией."
+          }
+        }
+      }
+    },
+    "Downloading Apple Speech language." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Загрузка языка Apple Speech."
+          }
+        }
+      }
+    },
+    "Downloading..." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Загрузка..."
+          }
+        }
+      }
+    },
+    "Drop audio or video files here" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Перетащите сюда аудио- или видеофайлы"
+          }
+        }
+      }
+    },
+    "Drop files anywhere to add more" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Перетащите файлы в любое место, чтобы добавить ещё"
+          }
+        }
+      }
+    },
+    "Drop to add files" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Отпустите, чтобы добавить файлы"
+          }
+        }
+      }
+    },
+    "Duplicate Word" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Дубликат слова"
+          }
+        }
+      }
+    },
+    "Edit" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Изменить"
+          }
+        }
+      }
+    },
+    "Edit Custom Model" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Изменить пользовательскую модель"
+          }
+        }
+      }
+    },
+    "Edit Model" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Изменить модель"
+          }
+        }
+      }
+    },
+    "Edit Prompt" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Изменить промпт"
+          }
+        }
+      }
+    },
+    "Edit Trigger Words" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Изменить триггер-слова"
+          }
+        }
+      }
+    },
+    "Edit Word Replacement" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Изменить замену слова"
+          }
+        }
+      }
+    },
+    "Edit replacement" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Изменить замену"
+          }
+        }
+      }
+    },
+    "Editing: %@" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Редактирование: %@"
+          }
+        }
+      }
+    },
+    "Emoji in Use" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Эмодзи используется"
+          }
+        }
+      }
+    },
+    "Enable Enhancement" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Включить улучшение"
+          }
+        }
+      }
+    },
+    "Enable your microphone to start speaking and converting your voice to text instantly." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Включите микрофон, чтобы начать говорить и мгновенно превращать голос в текст."
+          }
+        }
+      }
+    },
+    "English" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Английский"
+          }
+        }
+      }
+    },
+    "Enhance Selected Text" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Улучшить выделенный текст"
+          }
+        }
+      }
+    },
+    "Enhance Selected Text aborts before any AI request when the captured text exceeds this many characters, so the shortcut cannot accidentally process a whole document." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Улучшение выделенного текста прерывается до отправки AI-запроса, если захваченный текст превышает указанное количество символов — чтобы случайно не обработать целый документ."
+          }
+        }
+      }
+    },
+    "Enhancement Models" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Модели улучшения"
+          }
+        }
+      }
+    },
+    "Enhancement Prompt" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Промпт улучшения"
+          }
+        }
+      }
+    },
+    "Enhancement Prompts" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Промпты улучшения"
+          }
+        }
+      }
+    },
+    "Enhancement Settings" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Настройки улучшения"
+          }
+        }
+      }
+    },
+    "Enhancement request timed out. Check your connection or increase the timeout duration." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Истёк тайм-аут запроса улучшения. Проверьте соединение или увеличьте длительность тайм-аута."
+          }
+        }
+      }
+    },
+    "Enhancement settings" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Настройки улучшения"
+          }
+        }
+      }
+    },
+    "Enter License" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ввести лицензию"
+          }
+        }
+      }
+    },
+    "Enter License Key" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Введите лицензионный ключ"
+          }
+        }
+      }
+    },
+    "Enter website URL" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Введите URL сайта"
+          }
+        }
+      }
+    },
+    "Enter word or phrase to replace (use commas for multiple)" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Введите слово или фразу для замены (несколько — через запятую)"
+          }
+        }
+      }
+    },
+    "Enter your %@ API key" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Введите ваш API-ключ %@"
+          }
+        }
+      }
+    },
+    "Enter your custom prompt instructions here..." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Введите инструкции своего промпта здесь..."
+          }
+        }
+      }
+    },
+    "Enter your license key" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Введите свой лицензионный ключ"
+          }
+        }
+      }
+    },
+    "Environment variables available: VOICEINK_SYSTEM_PROMPT, VOICEINK_USER_PROMPT, VOICEINK_FULL_PROMPT. VoiceInk also writes VOICEINK_FULL_PROMPT to stdin for every command." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Доступные переменные окружения: VOICEINK_SYSTEM_PROMPT, VOICEINK_USER_PROMPT, VOICEINK_FULL_PROMPT. VoiceInk также передаёт VOICEINK_FULL_PROMPT в stdin для каждой команды."
+          }
+        }
+      }
+    },
+    "Error" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ошибка"
+          }
+        }
+      }
+    },
+    "Error importing settings: %@. The file might be corrupted or not in the correct format." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ошибка импорта настроек: %@. Файл может быть повреждён или иметь неверный формат."
+          }
+        }
+      }
+    },
+    "Examples" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Примеры"
+          }
+        }
+      }
+    },
+    "Experimental" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Экспериментально"
+          }
+        }
+      }
+    },
+    "Export" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Экспорт"
+          }
+        }
+      }
+    },
+    "Export Canceled" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Экспорт отменён"
+          }
+        }
+      }
+    },
+    "Export Error" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ошибка экспорта"
+          }
+        }
+      }
+    },
+    "Export Failed" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Экспорт не удался"
+          }
+        }
+      }
+    },
+    "Export Logs" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Экспорт логов"
+          }
+        }
+      }
+    },
+    "Export Settings" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Экспорт настроек"
+          }
+        }
+      }
+    },
+    "Export Successful" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Экспорт выполнен"
+          }
+        }
+      }
+    },
+    "Export VoiceInk Settings" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Экспорт настроек VoiceInk"
+          }
+        }
+      }
+    },
+    "Export all settings, or choose specific categories when importing a backup." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Экспортируйте все настройки или выберите отдельные категории при импорте резервной копии."
+          }
+        }
+      }
+    },
+    "Fail immediately" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Сразу прерывать"
+          }
+        }
+      }
+    },
+    "Failed to encode the request body." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Не удалось закодировать тело запроса."
+          }
+        }
+      }
+    },
+    "Failed to load the transcription model." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Не удалось загрузить модель транскрипции."
+          }
+        }
+      }
+    },
+    "Failed to transcribe the audio." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Не удалось расшифровать аудио."
+          }
+        }
+      }
+    },
+    "Failed to unzip the downloaded Core ML model." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Не удалось распаковать загруженную модель Core ML."
+          }
+        }
+      }
+    },
+    "Faster than Real-time" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Быстрее реального времени"
+          }
+        }
+      }
+    },
+    "For best results, using your Mac's built-in microphone is recommended." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Для лучших результатов рекомендуется использовать встроенный микрофон Mac."
+          }
+        }
+      }
+    },
+    "General" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Основные"
+          }
+        }
+      }
+    },
+    "General Settings" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Основные настройки"
+          }
+        }
+      }
+    },
+    "Get API Key" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Получить API-ключ"
+          }
+        }
+      }
+    },
+    "Get Started" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Начать"
+          }
+        }
+      }
+    },
+    "Got it" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Понятно"
+          }
+        }
+      }
+    },
+    "Help & Resources" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Помощь и ресурсы"
+          }
+        }
+      }
+    },
+    "Help and Support" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Помощь и поддержка"
+          }
+        }
+      }
+    },
+    "Hide Dock Icon" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Скрыть иконку в Dock"
+          }
+        }
+      }
+    },
+    "History" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "История"
+          }
+        }
+      }
+    },
+    "How to use Word Replacements" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Как использовать замены слов"
+          }
+        }
+      }
+    },
+    "If enabled, your instructions are combined with a general-purpose template to improve transcription quality.\n\nDisable for full control over the AI's system prompt (for advanced users)." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Если включено, ваши инструкции объединяются с универсальным шаблоном для улучшения качества транскрипции.\n\nОтключите для полного контроля над системным промптом AI (для опытных пользователей)."
+          }
+        }
+      }
+    },
+    "Immediately" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Немедленно"
+          }
+        }
+      }
+    },
+    "Import" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Импорт"
+          }
+        }
+      }
+    },
+    "Import Canceled" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Импорт отменён"
+          }
+        }
+      }
+    },
+    "Import Error" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ошибка импорта"
+          }
+        }
+      }
+    },
+    "Import Local Model…" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Импортировать локальную модель…"
+          }
+        }
+      }
+    },
+    "Import Settings" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Импорт настроек"
+          }
+        }
+      }
+    },
+    "Import Successful" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Импорт выполнен"
+          }
+        }
+      }
+    },
+    "Import VoiceInk Settings" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Импорт настроек VoiceInk"
+          }
+        }
+      }
+    },
+    "Imported local model" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Импортированная локальная модель"
+          }
+        }
+      }
+    },
+    "Individual categories" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Отдельные категории"
+          }
+        }
+      }
+    },
+    "Info" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Информация"
+          }
+        }
+      }
+    },
+    "Input Mode" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Режим ввода"
+          }
+        }
+      }
+    },
+    "Instructions" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Инструкции"
+          }
+        }
+      }
+    },
+    "Interface" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Интерфейс"
+          }
+        }
+      }
+    },
+    "Interface Language" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Язык интерфейса"
+          }
+        }
+      }
+    },
+    "Invalid response from AI provider." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Некорректный ответ от AI-провайдера."
+          }
+        }
+      }
+    },
+    "Keep Audio For" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Хранить аудио"
+          }
+        }
+      }
+    },
+    "Keep Clipboard Content" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Сохранять содержимое буфера обмена"
+          }
+        }
+      }
+    },
+    "Keep preserves punctuation as transcribed. Remove all strips punctuation marks from the transcribed text. Remove trailing period only removes a final period from the transcribed text." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "«Сохранять» оставляет пунктуацию как в расшифровке. «Удалять всю» убирает все знаки препинания. «Удалять только точку в конце» убирает лишь финальную точку."
+          }
+        }
+      }
+    },
+    "Keyboard Shortcut" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Сочетание клавиш"
+          }
+        }
+      }
+    },
+    "Language" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Язык"
+          }
+        }
+      }
+    },
+    "Language: %@" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Язык: %@"
+          }
+        }
+      }
+    },
+    "Language: Autodetected" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Язык: автоопределение"
+          }
+        }
+      }
+    },
+    "Language: English" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Язык: английский"
+          }
+        }
+      }
+    },
+    "Language: English (only)" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Язык: только английский"
+          }
+        }
+      }
+    },
+    "Later" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Позже"
+          }
+        }
+      }
+    },
+    "Launch at Login" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Запуск при входе"
+          }
+        }
+      }
+    },
+    "Learn more" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Подробнее"
+          }
+        }
+      }
+    },
+    "Let's test your VoiceInk setup." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Давайте проверим настройку VoiceInk."
+          }
+        }
+      }
+    },
+    "License Active" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Лицензия активна"
+          }
+        }
+      }
+    },
+    "License Management" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Управление лицензией"
+          }
+        }
+      }
+    },
+    "License Management Portal" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Портал управления лицензией"
+          }
+        }
+      }
+    },
+    "Live streaming enabled — click to switch to batch" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Потоковая передача включена — нажмите для пакетного режима"
+          }
+        }
+      }
+    },
+    "Load More" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Загрузить ещё"
+          }
+        }
+      }
+    },
+    "Load Template" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Загрузить шаблон"
+          }
+        }
+      }
+    },
+    "Load a template or enter a command to enable Local CLI enhancement." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Загрузите шаблон или введите команду, чтобы включить улучшение через локальный CLI."
+          }
+        }
+      }
+    },
+    "Loading..." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Загрузка..."
+          }
+        }
+      }
+    },
+    "Local models don't work reliably on Intel Macs" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Локальные модели нестабильно работают на Mac с Intel"
+          }
+        }
+      }
+    },
+    "Lowercase output" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Вывод в нижнем регистре"
+          }
+        }
+      }
+    },
+    "Manage Models" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Управление моделями"
+          }
+        }
+      }
+    },
+    "Manage your license and device activations" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Управляйте лицензией и активациями устройств"
+          }
+        }
+      }
+    },
+    "Max Input Length" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Макс. длина ввода"
+          }
+        }
+      }
+    },
+    "Microphone Access" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Доступ к микрофону"
+          }
+        }
+      }
+    },
+    "Microphone Selection" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Выбор микрофона"
+          }
+        }
+      }
+    },
+    "Middle-Click Recording" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Запись по средней кнопке мыши"
+          }
+        }
+      }
+    },
+    "Mini" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Мини"
+          }
+        }
+      }
+    },
+    "Mini Recorder Cancel" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Отмена мини-рекордера"
+          }
+        }
+      }
+    },
+    "Minimum words" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Минимум слов"
+          }
+        }
+      }
+    },
+    "Model" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Модель"
+          }
+        }
+      }
+    },
+    "Model Name" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Название модели"
+          }
+        }
+      }
+    },
+    "Model Performance" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Производительность модели"
+          }
+        }
+      }
+    },
+    "Model Settings" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Настройки модели"
+          }
+        }
+      }
+    },
+    "Model name cannot be empty" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Имя модели не может быть пустым"
+          }
+        }
+      }
+    },
+    "Multilingual Model" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Многоязычная модель"
+          }
+        }
+      }
+    },
+    "Mute Audio While Recording" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Отключать звук во время записи"
+          }
+        }
+      }
+    },
+    "Name" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Имя"
+          }
+        }
+      }
+    },
+    "Name cannot be empty" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Имя не может быть пустым"
+          }
+        }
+      }
+    },
+    "Native Apple" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apple (нативно)"
+          }
+        }
+      }
+    },
+    "Need help? Check the Help menu for support options" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Нужна помощь? Откройте меню «Помощь» для вариантов поддержки"
+          }
+        }
+      }
+    },
+    "Network connection failed. Check your internet." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Сбой сетевого подключения. Проверьте интернет."
+          }
+        }
+      }
+    },
+    "New Prompt" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Новый промпт"
+          }
+        }
+      }
+    },
+    "No Audio Devices" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Нет аудиоустройств"
+          }
+        }
+      }
+    },
+    "No Metadata" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Нет метаданных"
+          }
+        }
+      }
+    },
+    "No Power Modes" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Нет Power Mode"
+          }
+        }
+      }
+    },
+    "No Power Modes Available" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Нет доступных Power Mode"
+          }
+        }
+      }
+    },
+    "No Power Modes Yet" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Пока нет Power Mode"
+          }
+        }
+      }
+    },
+    "No Recorder Sessions Yet" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Пока нет сессий записи"
+          }
+        }
+      }
+    },
+    "No Selection" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ничего не выбрано"
+          }
+        }
+      }
+    },
+    "No additional devices available" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Нет дополнительных устройств"
+          }
+        }
+      }
+    },
+    "No applications added" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Приложения не добавлены"
+          }
+        }
+      }
+    },
+    "No audio files found older than %lld day%@." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No audio files found older than %1$lld day%2$@."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Не найдено аудиофайлов старше %lld дн."
+          }
+        }
+      }
+    },
+    "No data for this period" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Нет данных за этот период"
+          }
+        }
+      }
+    },
+    "No devices available" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Нет доступных устройств"
+          }
+        }
+      }
+    },
+    "No microphones found" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Микрофоны не найдены"
+          }
+        }
+      }
+    },
+    "No model selected" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Модель не выбрана"
+          }
+        }
+      }
+    },
+    "No models available" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Нет доступных моделей"
+          }
+        }
+      }
+    },
+    "No models loaded" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Модели не загружены"
+          }
+        }
+      }
+    },
+    "No prioritized devices" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Нет приоритетных устройств"
+          }
+        }
+      }
+    },
+    "No prompts available" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Нет доступных промптов"
+          }
+        }
+      }
+    },
+    "No providers connected" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Нет подключённых провайдеров"
+          }
+        }
+      }
+    },
+    "No results found" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ничего не найдено"
+          }
+        }
+      }
+    },
+    "No settings were imported." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Настройки не были импортированы."
+          }
+        }
+      }
+    },
+    "No transcription models available. Please connect to a cloud service or download a local model in the AI Models tab." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Нет доступных моделей транскрипции. Подключите облачный сервис или загрузите локальную модель во вкладке «AI-модели»."
+          }
+        }
+      }
+    },
+    "No transcriptions" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Нет транскрипций"
+          }
+        }
+      }
+    },
+    "No transcriptions yet" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Пока нет транскрипций"
+          }
+        }
+      }
+    },
+    "No trigger words added" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Триггер-слова не добавлены"
+          }
+        }
+      }
+    },
+    "No websites added" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Сайты не добавлены"
+          }
+        }
+      }
+    },
+    "Notch" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Вырез"
+          }
+        }
+      }
+    },
+    "OK" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "OK"
+          }
+        }
+      }
+    },
+    "On timeout" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "При тайм-ауте"
+          }
+        }
+      }
+    },
+    "On-Device" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "На устройстве"
+          }
+        }
+      }
+    },
+    "Only OpenAI-compatible transcription APIs are supported" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Поддерживаются только OpenAI-совместимые API транскрипции"
+          }
+        }
+      }
+    },
+    "Only OpenAI-compatible transcription APIs are supported." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Поддерживаются только OpenAI-совместимые API транскрипции."
+          }
+        }
+      }
+    },
+    "Only supported for local Whisper models. Unlike GPT, Voice Models(whisper) follows the style of your prompt rather than instructions. Use examples of your desired output format instead of commands." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Поддерживается только для локальных моделей Whisper. В отличие от GPT, голосовые модели (whisper) следуют стилю вашего промпта, а не инструкциям. Используйте примеры желаемого формата вывода вместо команд."
+          }
+        }
+      }
+    },
+    "Open History Window" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Открыть окно истории"
+          }
+        }
+      }
+    },
+    "Open System Settings" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Открыть Системные настройки"
+          }
+        }
+      }
+    },
+    "Open history from anywhere with a global shortcut" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Открывайте историю откуда угодно глобальным сочетанием клавиш"
+          }
+        }
+      }
+    },
+    "OpenAI Compatible" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "OpenAI-совместимый"
+          }
+        }
+      }
+    },
+    "Original" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Оригинал"
+          }
+        }
+      }
+    },
+    "Original Text" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Исходный текст"
+          }
+        }
+      }
+    },
+    "Original text (use commas for multiple)" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Исходный текст (несколько — через запятую)"
+          }
+        }
+      }
+    },
+    "Original:" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Оригинал:"
+          }
+        }
+      }
+    },
+    "Output Format" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Формат вывода"
+          }
+        }
+      }
+    },
+    "PRO" : {
+      "shouldTranslate" : false
+    },
+    "Paragraph breaks" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Разрывы абзацев"
+          }
+        }
+      }
+    },
+    "Paste Last Enhanced Transcription" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Вставить последнюю улучшенную транскрипцию"
+          }
+        }
+      }
+    },
+    "Paste Last Transcription" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Вставить последнюю транскрипцию"
+          }
+        }
+      }
+    },
+    "Paste Last Transcription (Enhanced)" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Вставить последнюю транскрипцию (улучшенную)"
+          }
+        }
+      }
+    },
+    "Paste Last Transcription (Original)" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Вставить последнюю транскрипцию (оригинал)"
+          }
+        }
+      }
+    },
+    "Paste Method" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Способ вставки"
+          }
+        }
+      }
+    },
+    "Pause Media While Recording" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ставить медиа на паузу во время записи"
+          }
+        }
+      }
+    },
+    "Pauses playing media when recording starts and resumes when done." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ставит воспроизводимое медиа на паузу при начале записи и возобновляет по завершении."
+          }
+        }
+      }
+    },
+    "Performance Analysis" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Анализ производительности"
+          }
+        }
+      }
+    },
+    "Persist Configured Preferences" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Сохранять заданные настройки"
+          }
+        }
+      }
+    },
+    "Playback speed" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Скорость воспроизведения"
+          }
+        }
+      }
+    },
+    "Please fix the validation errors before saving." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Исправьте ошибки проверки перед сохранением."
+          }
+        }
+      }
+    },
+    "Please restart the application. If the problem persists, contact support." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Перезапустите приложение. Если проблема сохраняется, обратитесь в поддержку."
+          }
+        }
+      }
+    },
+    "Power Mode" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Power Mode"
+          }
+        }
+      }
+    },
+    "Power Mode Still Active" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Power Mode всё ещё активен"
+          }
+        }
+      }
+    },
+    "Power Modes" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Power Mode"
+          }
+        }
+      }
+    },
+    "Power mode name cannot be empty." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Имя Power Mode не может быть пустым."
+          }
+        }
+      }
+    },
+    "Premium Features Activated" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Премиум-функции активированы"
+          }
+        }
+      }
+    },
+    "Press shortcut" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Нажмите сочетание"
+          }
+        }
+      }
+    },
+    "Prewarm model (Experimental)" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Прогревать модель (экспериментально)"
+          }
+        }
+      }
+    },
+    "Primary Shortcut" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Основное сочетание"
+          }
+        }
+      }
+    },
+    "Prioritized Devices" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Приоритетные устройства"
+          }
+        }
+      }
+    },
+    "Privacy" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Конфиденциальность"
+          }
+        }
+      }
+    },
+    "Prompt" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Промпт"
+          }
+        }
+      }
+    },
+    "Prompt Name" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Название промпта"
+          }
+        }
+      }
+    },
+    "Prompt: %@" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Промпт: %@"
+          }
+        }
+      }
+    },
+    "Provider" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Провайдер"
+          }
+        }
+      }
+    },
+    "Punctuation" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Пунктуация"
+          }
+        }
+      }
+    },
+    "Quick Access" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Быстрый доступ"
+          }
+        }
+      }
+    },
+    "Quick Add to Dictionary" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Быстро добавить в словарь"
+          }
+        }
+      }
+    },
+    "Quickly enable or disable AI enhancement while recording. Available only when VoiceInk is running and the recorder is visible." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Быстро включайте или отключайте AI-улучшение во время записи. Доступно только когда VoiceInk запущен и рекордер виден."
+          }
+        }
+      }
+    },
+    "Quit" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Выйти"
+          }
+        }
+      }
+    },
+    "Quit VoiceInk" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Выйти из VoiceInk"
+          }
+        }
+      }
+    },
+    "RAM" : {
+      "shouldTranslate" : false
+    },
+    "Rate limit exceeded. Please try again later." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Превышен лимит запросов. Повторите попытку позже."
+          }
+        }
+      }
+    },
+    "Re-enhance with selected prompt" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Улучшить заново выбранным промптом"
+          }
+        }
+      }
+    },
+    "Read more about custom local models" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Подробнее о пользовательских локальных моделях"
+          }
+        }
+      }
+    },
+    "Real-time" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "В реальном времени"
+          }
+        }
+      }
+    },
+    "Record" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Запись"
+          }
+        }
+      }
+    },
+    "Recorder Style" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Стиль рекордера"
+          }
+        }
+      }
+    },
+    "Recording Feedback" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Обратная связь при записи"
+          }
+        }
+      }
+    },
+    "Refresh" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Обновить"
+          }
+        }
+      }
+    },
+    "Refresh Models" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Обновить модели"
+          }
+        }
+      }
+    },
+    "Refresh models" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Обновить модели"
+          }
+        }
+      }
+    },
+    "Remove" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Удалить"
+          }
+        }
+      }
+    },
+    "Remove API Key" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Удалить API-ключ"
+          }
+        }
+      }
+    },
+    "Remove Key" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Удалить ключ"
+          }
+        }
+      }
+    },
+    "Remove License" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Удалить лицензию"
+          }
+        }
+      }
+    },
+    "Remove filler words" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Удалять слова-паразиты"
+          }
+        }
+      }
+    },
+    "Remove replacement" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Удалить замену"
+          }
+        }
+      }
+    },
+    "Remove word" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Удалить слово"
+          }
+        }
+      }
+    },
+    "Reorder" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Изменить порядок"
+          }
+        }
+      }
+    },
+    "Reorder Power Modes" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Изменить порядок Power Mode"
+          }
+        }
+      }
+    },
+    "Replace" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Заменить"
+          }
+        }
+      }
+    },
+    "Replacement" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Замена"
+          }
+        }
+      }
+    },
+    "Replacement Text" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Текст замены"
+          }
+        }
+      }
+    },
+    "Replacement text" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Текст замены"
+          }
+        }
+      }
+    },
+    "Replacement:" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Замена:"
+          }
+        }
+      }
+    },
+    "Request Permission" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Запросить разрешение"
+          }
+        }
+      }
+    },
+    "Request Timeout" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Тайм-аут запроса"
+          }
+        }
+      }
+    },
+    "Required" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Обязательно"
+          }
+        }
+      }
+    },
+    "Reset" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Сбросить"
+          }
+        }
+      }
+    },
+    "Reset Onboarding" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Сбросить знакомство"
+          }
+        }
+      }
+    },
+    "Reset to default" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Сбросить по умолчанию"
+          }
+        }
+      }
+    },
+    "Restart Now" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Перезапустить сейчас"
+          }
+        }
+      }
+    },
+    "Restart Required" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Требуется перезапуск"
+          }
+        }
+      }
+    },
+    "Restore Delay" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Задержка восстановления"
+          }
+        }
+      }
+    },
+    "Resume Delay" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Задержка возобновления"
+          }
+        }
+      }
+    },
+    "Retranscribe this audio" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Транскрибировать это аудио заново"
+          }
+        }
+      }
+    },
+    "Retry" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Повторить"
+          }
+        }
+      }
+    },
+    "Retry Apple Speech language download" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Повторить загрузку языка Apple Speech"
+          }
+        }
+      }
+    },
+    "Retry Last Transcription" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Повторить последнюю транскрипцию"
+          }
+        }
+      }
+    },
+    "Retry downloading this Apple Speech language. %@" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Повторить загрузку этого языка Apple Speech. %@"
+          }
+        }
+      }
+    },
+    "Run Cleanup Now" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Запустить очистку сейчас"
+          }
+        }
+      }
+    },
+    "Runs your active AI Enhancement prompt on the selected text and pastes the result back. With nothing selected, it selects all text in the focused field." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Запускает активный AI-промпт улучшения на выделенном тексте и вставляет результат обратно. Если ничего не выделено, выделяет весь текст в активном поле."
+          }
+        }
+      }
+    },
+    "Russian" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Русский"
+          }
+        }
+      }
+    },
+    "Save" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Сохранить"
+          }
+        }
+      }
+    },
+    "Save Changes" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Сохранить изменения"
+          }
+        }
+      }
+    },
+    "Save Transcription" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Сохранить транскрипцию"
+          }
+        }
+      }
+    },
+    "Save as MD" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Сохранить как MD"
+          }
+        }
+      }
+    },
+    "Save as TXT" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Сохранить как TXT"
+          }
+        }
+      }
+    },
+    "Save to file" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Сохранить в файл"
+          }
+        }
+      }
+    },
+    "Screen Context" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Контекст экрана"
+          }
+        }
+      }
+    },
+    "Screen Recording" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Запись экрана"
+          }
+        }
+      }
+    },
+    "Screen Recording Access" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Доступ к записи экрана"
+          }
+        }
+      }
+    },
+    "Search apps..." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Поиск приложений..."
+          }
+        }
+      }
+    },
+    "Search transcriptions" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Поиск транскрипций"
+          }
+        }
+      }
+    },
+    "Search transcriptions..." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Поиск транскрипций..."
+          }
+        }
+      }
+    },
+    "Secondary Shortcut" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Дополнительное сочетание"
+          }
+        }
+      }
+    },
+    "Select All" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Выбрать все"
+          }
+        }
+      }
+    },
+    "Select Language" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Выберите язык"
+          }
+        }
+      }
+    },
+    "Select Power Mode" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Выберите Power Mode"
+          }
+        }
+      }
+    },
+    "Select Prompt" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Выбрать промпт"
+          }
+        }
+      }
+    },
+    "Select Section" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Выберите раздел"
+          }
+        }
+      }
+    },
+    "Select a Whisper ggml .bin model" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Выберите модель Whisper ggml .bin"
+          }
+        }
+      }
+    },
+    "Select a transcription to view details" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Выберите транскрипцию для просмотра подробностей"
+          }
+        }
+      }
+    },
+    "Select a view" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Выберите вид"
+          }
+        }
+      }
+    },
+    "Select an audio file" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Выберите аудиофайл"
+          }
+        }
+      }
+    },
+    "Select at least one category to import." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Выберите хотя бы одну категорию для импорта."
+          }
+        }
+      }
+    },
+    "Select enhancement prompt" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Выберите промпт улучшения"
+          }
+        }
+      }
+    },
+    "Select sound" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Выберите звук"
+          }
+        }
+      }
+    },
+    "Select the audio input device you want to use with VoiceInk." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Выберите устройство аудиовхода для использования с VoiceInk."
+          }
+        }
+      }
+    },
+    "Separate multiple originals with commas:" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Разделяйте несколько оригиналов запятыми:"
+          }
+        }
+      }
+    },
+    "Server: %@" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Сервер: %@"
+          }
+        }
+      }
+    },
+    "Set as Default" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Сделать по умолчанию"
+          }
+        }
+      }
+    },
+    "Set as default" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Сделать по умолчанию"
+          }
+        }
+      }
+    },
+    "Set how long to wait for the AI provider to respond. If no response is received within this duration, you can either fail immediately and paste the original transcription, or retry the request (up to 3 attempts)." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Задайте, сколько ждать ответа AI-провайдера. Если ответ не получен за это время, можно сразу прервать и вставить оригинальную транскрипцию или повторить запрос (до 3 попыток)."
+          }
+        }
+      }
+    },
+    "Set up a keyboard shortcut to quickly access VoiceInk from anywhere." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Настройте сочетание клавиш для быстрого доступа к VoiceInk откуда угодно."
+          }
+        }
+      }
+    },
+    "Set up a keyboard shortcut to use VoiceInk anywhere" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Настройте сочетание клавиш, чтобы использовать VoiceInk где угодно"
+          }
+        }
+      }
+    },
+    "Settings" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Настройки"
+          }
+        }
+      }
+    },
+    "Settings imported successfully from %@.\n\nImported: %@." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Settings imported successfully from %1$@.\n\nImported: %2$@."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Настройки успешно импортированы из %1$@.\n\nИмпортировано: %2$@."
+          }
+        }
+      }
+    },
+    "Shortcut:" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Сочетание:"
+          }
+        }
+      }
+    },
+    "Shortcuts" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Сочетания клавиш"
+          }
+        }
+      }
+    },
+    "Show Announcements" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Показывать объявления"
+          }
+        }
+      }
+    },
+    "Show Dock Icon" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Показывать иконку в Dock"
+          }
+        }
+      }
+    },
+    "Show Live Text Preview" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Показывать предпросмотр текста в реальном времени"
+          }
+        }
+      }
+    },
+    "Show in Finder" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Показать в Finder"
+          }
+        }
+      }
+    },
+    "Skip short transcriptions" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Пропускать короткие транскрипции"
+          }
+        }
+      }
+    },
+    "Slower than Real-time" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Медленнее реального времени"
+          }
+        }
+      }
+    },
+    "Sort alphabetically" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Сортировать по алфавиту"
+          }
+        }
+      }
+    },
+    "Sort by original" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Сортировать по оригиналу"
+          }
+        }
+      }
+    },
+    "Sort by replacement" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Сортировать по замене"
+          }
+        }
+      }
+    },
+    "Sound" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Звук"
+          }
+        }
+      }
+    },
+    "Sound Feedback" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Звуковая обратная связь"
+          }
+        }
+      }
+    },
+    "Speed" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Скорость"
+          }
+        }
+      }
+    },
+    "Start" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Старт"
+          }
+        }
+      }
+    },
+    "Start Sound" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Звук начала"
+          }
+        }
+      }
+    },
+    "Start or stop the VoiceInk mini recorder for voice transcription." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Запустить или остановить мини-рекордер VoiceInk для голосовой транскрипции."
+          }
+        }
+      }
+    },
+    "Start with Template" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Начать с шаблона"
+          }
+        }
+      }
+    },
+    "Start your first recording to unlock value insights." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Начните первую запись, чтобы открыть аналитику."
+          }
+        }
+      }
+    },
+    "Stop Sound" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Звук остановки"
+          }
+        }
+      }
+    },
+    "Storage Warning" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Предупреждение о хранилище"
+          }
+        }
+      }
+    },
+    "Supports WAV, MP3, M4A, AIFF, MP4, MOV, AAC, FLAC, CAF, AMR, OGG, OPUS, 3GP" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Поддерживаются WAV, MP3, M4A, AIFF, MP4, MOV, AAC, FLAC, CAF, AMR, OGG, OPUS, 3GP"
+          }
+        }
+      }
+    },
+    "Switch Enhancement Prompt" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Сменить промпт улучшения"
+          }
+        }
+      }
+    },
+    "Switch between your saved prompts using ⌘1 through ⌘0 to activate the corresponding prompt in the order they are saved. Available only when VoiceInk is running and the recorder is visible." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Переключайтесь между сохранёнными промптами с помощью ⌘1–⌘0, активируя соответствующий промпт в порядке сохранения. Доступно только когда VoiceInk запущен и рекордер виден."
+          }
+        }
+      }
+    },
+    "System Information" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Информация о системе"
+          }
+        }
+      }
+    },
+    "System Language" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Системный язык"
+          }
+        }
+      }
+    },
+    "System Prompt" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Системный промпт"
+          }
+        }
+      }
+    },
+    "Test" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Проверить"
+          }
+        }
+      }
+    },
+    "Thank you for supporting VoiceInk" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Спасибо за поддержку VoiceInk"
+          }
+        }
+      }
+    },
+    "The AI provider's server encountered an error. Please try again later." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "На сервере AI-провайдера произошла ошибка. Повторите попытку позже."
+          }
+        }
+      }
+    },
+    "The API request failed with status code %lld: %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "The API request failed with status code %1$lld: %2$@"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Запрос к API завершился ошибкой со статусом %1$lld: %2$@"
+          }
+        }
+      }
+    },
+    "The API returned an empty or invalid response." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "API вернул пустой или некорректный ответ."
+          }
+        }
+      }
+    },
+    "The app '%@' is already configured in the '%@' power mode." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "The app '%1$@' is already configured in the '%2$@' power mode."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Приложение «%1$@» уже настроено в Power Mode «%2$@»."
+          }
+        }
+      }
+    },
+    "The audio file to transcribe could not be found." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Не удалось найти аудиофайл для транскрипции."
+          }
+        }
+      }
+    },
+    "The core transcription engine failed." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Сбой основного движка транскрипции."
+          }
+        }
+      }
+    },
+    "The downloaded Core ML model archive might be corrupted. Try deleting the model and downloading it again. Check available disk space." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Загруженный архив модели Core ML может быть повреждён. Попробуйте удалить модель и загрузить заново. Проверьте свободное место на диске."
+          }
+        }
+      }
+    },
+    "The emoji \"%@\" is currently used by one or more Power Modes and cannot be removed." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Эмодзи «%@» сейчас используется одним или несколькими Power Mode и не может быть удалён."
+          }
+        }
+      }
+    },
+    "The imported settings file (version %@) is from a different version than your application (version %@). Proceeding with import, but be aware of potential incompatibilities." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The imported settings file (version %1$@) is from a different version than your application (version %2$@). Proceeding with import, but be aware of potential incompatibilities."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Импортируемый файл настроек (версия %1$@) относится к другой версии, чем ваше приложение (версия %2$@). Импорт продолжится, но возможны несовместимости."
+          }
+        }
+      }
+    },
+    "The model provider is not supported by this service." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Провайдер модели не поддерживается этим сервисом."
+          }
+        }
+      }
+    },
+    "The provided API key is invalid." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Указанный API-ключ недействителен."
+          }
+        }
+      }
+    },
+    "The settings export operation was canceled." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Экспорт настроек отменён."
+          }
+        }
+      }
+    },
+    "The settings import operation was canceled." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Импорт настроек отменён."
+          }
+        }
+      }
+    },
+    "The transcription language is automatically detected by the model." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Язык транскрипции определяется моделью автоматически."
+          }
+        }
+      }
+    },
+    "The website '%@' is already configured in the '%@' power mode." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "The website '%1$@' is already configured in the '%2$@' power mode."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Сайт «%1$@» уже настроен в Power Mode «%2$@»."
+          }
+        }
+      }
+    },
+    "This action cannot be undone. Are you sure you want to delete %lld item%@?" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This action cannot be undone. Are you sure you want to delete %1$lld item%2$@?"
+          }
+        },
+        "ru" : {
+          "variations" : {
+            "plural" : {
+              "few" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Это действие нельзя отменить. Удалить %lld элемента?"
+                }
+              },
+              "many" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Это действие нельзя отменить. Удалить %lld элементов?"
+                }
+              },
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Это действие нельзя отменить. Удалить %lld элемент?"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Это действие нельзя отменить. Удалить %lld элемента?"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "This can happen due to an issue with the audio recording or insufficient system resources. Please try again, or restart the app." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Это может быть связано с проблемой аудиозаписи или нехваткой системных ресурсов. Попробуйте снова или перезапустите приложение."
+          }
+        }
+      }
+    },
+    "This filler word is already in the list." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Это слово-паразит уже есть в списке."
+          }
+        }
+      }
+    },
+    "This helps to improve the accuracy of transcription." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Это помогает повысить точность транскрипции."
+          }
+        }
+      }
+    },
+    "This is an English-optimized model and only supports English transcription." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Эта модель оптимизирована под английский и поддерживает только английскую транскрипцию."
+          }
+        }
+      }
+    },
+    "This language is not supported by Apple Speech." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Этот язык не поддерживается Apple Speech."
+          }
+        }
+      }
+    },
+    "This license can be activated on up to %lld devices" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Максимальное число устройств для активации лицензии: %lld"
+          }
+        }
+      }
+    },
+    "This model only supports real-time streaming" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Эта модель поддерживает только потоковую передачу в реальном времени"
+          }
+        }
+      }
+    },
+    "This model supports multiple languages. Select a specific language or auto-detect(if available)" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Эта модель поддерживает несколько языков. Выберите конкретный язык или автоопределение (если доступно)"
+          }
+        }
+      }
+    },
+    "This will delete %lld audio files (%@)." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This will delete %1$lld audio files (%2$@)."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Будет удалено аудиофайлов: %1$lld (%2$@)."
+          }
+        }
+      }
+    },
+    "Timeout" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Тайм-аут"
+          }
+        }
+      }
+    },
+    "Timeout duration" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Длительность тайм-аута"
+          }
+        }
+      }
+    },
+    "Tip Jar" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Поддержать автора"
+          }
+        }
+      }
+    },
+    "Tip: Use ⌃⌘Space for emoji picker or paste an emoji." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Совет: используйте ⌃⌘Space для выбора эмодзи или вставьте эмодзи."
+          }
+        }
+      }
+    },
+    "Toggle AI Enhancement" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Переключить AI-улучшение"
+          }
+        }
+      }
+    },
+    "Toggle Enhancement" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Переключить улучшение"
+          }
+        }
+      }
+    },
+    "Toggle Inspector" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Переключить инспектор"
+          }
+        }
+      }
+    },
+    "Toggle Menu Bar Only" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Переключить режим только в строке меню"
+          }
+        }
+      }
+    },
+    "Toggle Recorder" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Переключить рекордер"
+          }
+        }
+      }
+    },
+    "Toggle Sidebar" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Переключить боковую панель"
+          }
+        }
+      }
+    },
+    "Toggle VoiceInk Recorder" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Переключить рекордер VoiceInk"
+          }
+        }
+      }
+    },
+    "Transcribe what you say to text instantly with AI" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Мгновенно превращайте речь в текст с помощью AI"
+          }
+        }
+      }
+    },
+    "Transcript Cleanup" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Очистка транскриптов"
+          }
+        }
+      }
+    },
+    "Transcript Formatting" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Форматирование транскрипта"
+          }
+        }
+      }
+    },
+    "Transcription" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Транскрипция"
+          }
+        }
+      }
+    },
+    "Transcription Language" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Язык транскрипции"
+          }
+        }
+      }
+    },
+    "Transcription Model: %@" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Модель транскрипции: %@"
+          }
+        }
+      }
+    },
+    "Transcription Models" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Модели транскрипции"
+          }
+        }
+      }
+    },
+    "Trigger Scenarios" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Сценарии срабатывания"
+          }
+        }
+      }
+    },
+    "Trigger Words" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Триггер-слова"
+          }
+        }
+      }
+    },
+    "Try It Out!" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Попробуйте!"
+          }
+        }
+      }
+    },
+    "Try a different search term" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Попробуйте другой поисковый запрос"
+          }
+        }
+      }
+    },
+    "Try selecting a different model or redownloading the current model." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Попробуйте выбрать другую модель или загрузить текущую заново."
+          }
+        }
+      }
+    },
+    "Turn this on if transcriptions with local models are taking longer than expected. Runs silent background transcription on app launch and wake to trigger optimization." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Включите, если транскрипция локальными моделями занимает дольше обычного. Выполняет тихую фоновую транскрипцию при запуске и пробуждении для запуска оптимизации."
+          }
+        }
+      }
+    },
+    "Unavailable" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Недоступно"
+          }
+        }
+      }
+    },
+    "Update Model" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Обновить модель"
+          }
+        }
+      }
+    },
+    "Update the word or phrase that should be automatically replaced." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Обновите слово или фразу, которые должны заменяться автоматически."
+          }
+        }
+      }
+    },
+    "Upgrade to Pro" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Перейти на Pro"
+          }
+        }
+      }
+    },
+    "Upgrade to VoiceInk Pro" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Перейти на VoiceInk Pro"
+          }
+        }
+      }
+    },
+    "Use Cloud" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Использовать облако"
+          }
+        }
+      }
+    },
+    "Use System Template" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Использовать системный шаблон"
+          }
+        }
+      }
+    },
+    "Use clipboard text to understand context for better enhancement." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Использовать текст из буфера обмена для понимания контекста и лучшего улучшения."
+          }
+        }
+      }
+    },
+    "User Message" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Сообщение пользователя"
+          }
+        }
+      }
+    },
+    "Validation Errors" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ошибки проверки"
+          }
+        }
+      }
+    },
+    "Verification failed" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Проверка не пройдена"
+          }
+        }
+      }
+    },
+    "Verify" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Проверить"
+          }
+        }
+      }
+    },
+    "Verify and Save" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Проверить и сохранить"
+          }
+        }
+      }
+    },
+    "Verifying..." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Проверка..."
+          }
+        }
+      }
+    },
+    "Version Mismatch" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Несовпадение версий"
+          }
+        }
+      }
+    },
+    "View details" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Показать подробности"
+          }
+        }
+      }
+    },
+    "View transcription and enhancement model performance" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Просмотр производительности моделей транскрипции и улучшения"
+          }
+        }
+      }
+    },
+    "Vocabulary" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Словарь"
+          }
+        }
+      }
+    },
+    "Vocabulary Words (%lld)" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Словарные слова (%lld)"
+          }
+        }
+      }
+    },
+    "Voice Activity Detection (VAD)" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Обнаружение голосовой активности (VAD)"
+          }
+        }
+      }
+    },
+    "VoiceInk" : {
+      "shouldTranslate" : false
+    },
+    "VoiceInk Insights" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Аналитика VoiceInk"
+          }
+        }
+      }
+    },
+    "VoiceInk Onboarding" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Знакомство с VoiceInk"
+          }
+        }
+      }
+    },
+    "VoiceInk Pro" : {
+      "shouldTranslate" : false
+    },
+    "VoiceInk cannot initialize its storage system. The app cannot continue.\n\nPlease try reinstalling the app or contact support if the issue persists." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "VoiceInk не может инициализировать систему хранения. Приложение не может продолжить работу.\n\nПопробуйте переустановить приложение или обратитесь в поддержку, если проблема сохраняется."
+          }
+        }
+      }
+    },
+    "VoiceInk captures on-screen text to understand the context of your voice input, which significantly improves transcription accuracy. Your privacy is important: this data is processed locally and is not stored." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "VoiceInk считывает текст с экрана, чтобы понимать контекст вашего голосового ввода, что значительно повышает точность транскрипции. Ваша конфиденциальность важна: эти данные обрабатываются локально и не сохраняются."
+          }
+        }
+      }
+    },
+    "VoiceInk couldn't access its storage location. Your transcriptions will not be saved between sessions." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "VoiceInk не смог получить доступ к месту хранения. Ваши транскрипции не будут сохраняться между сессиями."
+          }
+        }
+      }
+    },
+    "VoiceInk needs Accessibility permission to work reliably across your entire Mac" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "VoiceInk нужно разрешение универсального доступа для надёжной работы на всём вашем Mac"
+          }
+        }
+      }
+    },
+    "VoiceInk needs to restart to apply the new interface language." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Для применения нового языка интерфейса нужно перезапустить VoiceInk."
+          }
+        }
+      }
+    },
+    "VoiceInk recorder dismissed" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Рекордер VoiceInk закрыт"
+          }
+        }
+      }
+    },
+    "VoiceInk recorder toggled" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Рекордер VoiceInk переключён"
+          }
+        }
+      }
+    },
+    "VoiceInk temporarily uses the clipboard to paste transcription. When enabled, it restores your previous clipboard content after the selected delay. When disabled, the pasted transcription stays on your clipboard." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "VoiceInk временно использует буфер обмена для вставки транскрипции. Если включено, прежнее содержимое буфера восстанавливается после выбранной задержки. Если отключено, вставленная транскрипция остаётся в буфере обмена."
+          }
+        }
+      }
+    },
+    "VoiceInk uses Accessibility permissions to paste the transcribed text directly into other applications at your cursor's position. This allows for a seamless dictation experience across your Mac." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "VoiceInk использует разрешение универсального доступа, чтобы вставлять расшифрованный текст прямо в другие приложения в позицию курсора. Это обеспечивает бесшовный голосовой ввод на всём вашем Mac."
+          }
+        }
+      }
+    },
+    "VoiceInk uses Accessibility to work reliably across apps." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "VoiceInk использует универсальный доступ для надёжной работы в разных приложениях."
+          }
+        }
+      }
+    },
+    "VoiceInk — Transcription History" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "VoiceInk — История транскрипций"
+          }
+        }
+      }
+    },
+    "Voicing, Voice ink" : {
+      "shouldTranslate" : false
+    },
+    "Voicing, Voice ink, Voiceing" : {
+      "shouldTranslate" : false
+    },
+    "Waiting" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ожидание"
+          }
+        }
+      }
+    },
+    "We'll download the optimized model to get you started." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Мы загрузим оптимизированную модель, чтобы вы могли начать."
+          }
+        }
+      }
+    },
+    "Websites" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Сайты"
+          }
+        }
+      }
+    },
+    "Welcome to VoiceInk" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Добро пожаловать в VoiceInk"
+          }
+        }
+      }
+    },
+    "Welcome to the Future of Typing" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Добро пожаловать в будущее печати"
+          }
+        }
+      }
+    },
+    "When enabled, Power Mode preferences stay active after you stop recording instead of reverting to your original preferences. They will only change when a different Power Mode activates." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Если включено, настройки Power Mode остаются активными после остановки записи, а не возвращаются к исходным. Они изменятся только при активации другого Power Mode."
+          }
+        }
+      }
+    },
+    "With" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "С"
+          }
+        }
+      }
+    },
+    "Word Replacement" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Замена слова"
+          }
+        }
+      }
+    },
+    "You can only customize the trigger words for system prompts." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Для системных промптов можно настроить только триггер-слова."
+          }
+        }
+      }
+    },
+    "You can use VoiceInk Pro on all your personal devices" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Вы можете использовать VoiceInk Pro на всех своих личных устройствах"
+          }
+        }
+      }
+    },
+    "You have saved " : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Вы сэкономили "
+          }
+        }
+      }
+    },
+    "You'll see the introduction screens again the next time you launch the app." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Вводные экраны снова появятся при следующем запуске приложения."
+          }
+        }
+      }
+    },
+    "Your Shortcut" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ваше сочетание"
+          }
+        }
+      }
+    },
+    "Your settings have been successfully exported to %@." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ваши настройки успешно экспортированы в %@."
+          }
+        }
+      }
+    },
+    "Your transcription history will appear here" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Здесь появится история ваших транскрипций"
+          }
+        }
+      }
+    },
+    "characters" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "символов"
+          }
+        }
+      }
+    },
+    "e.g. Prakash, VoiceInk" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "напр. Prakash, VoiceInk"
+          }
+        }
+      }
+    },
+    "e.g. gemini-3.1-pro-preview, gpt-5.5" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "напр. gemini-3.1-pro-preview, gpt-5.5"
+          }
+        }
+      }
+    },
+    "e.g. https://api.openai.com/v1/chat/completions" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "напр. https://api.openai.com/v1/chat/completions"
+          }
+        }
+      }
+    },
+    "e.g. my email, my mail" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "напр. мой имейл, моя почта"
+          }
+        }
+      }
+    },
+    "e.g. support@tryvoiceink.com" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "напр. support@tryvoiceink.com"
+          }
+        }
+      }
+    },
+    "https://tryvoiceink.com" : {
+      "shouldTranslate" : false
+    },
+    "macOS 26+" : {
+      "shouldTranslate" : false
+    },
+    "ms" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "мс"
+          }
+        }
+      }
+    },
+    "my website link" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ссылка на мой сайт"
+          }
+        }
+      }
+    },
+    "or" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "или"
+          }
+        }
+      }
+    },
+    "v%@" : {
+      "shouldTranslate" : false
+    },
+    "|" : {
+      "shouldTranslate" : false
+    },
+    "••••••••" : {
+      "shouldTranslate" : false
+    },
+    "➕" : {
+      "shouldTranslate" : false
+    }
+  },
+  "version" : "1.0"
+}
