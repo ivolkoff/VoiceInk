@@ -23,6 +23,8 @@ struct SettingsView: View {
     @AppStorage(PasteMethod.userDefaultsKey) private var pasteMethodRawValue = PasteMethod.standard.rawValue
     @AppStorage(SelectedTextEnhancementSettings.maxInputLengthKey) private var selectedTextMaxInputLength = SelectedTextEnhancementSettings.defaultMaxInputLength
     @State private var showResetOnboardingAlert = false
+    @State private var interfaceLanguage: InterfaceLanguage = .current
+    @State private var showInterfaceLanguageRestartAlert = false
     @State private var hasCancelRecordingShortcut = ShortcutStore.shortcut(for: .cancelRecorder) != nil
     @State private var cancelRecordingShortcutRecorderResetID = 0
 
@@ -259,6 +261,22 @@ struct SettingsView: View {
                 }
                 .pickerStyle(.segmented)
 
+                Picker("Interface Language", selection: $interfaceLanguage) {
+                    ForEach(InterfaceLanguage.allCases) { language in
+                        Text(language.displayName).tag(language)
+                    }
+                }
+                .onChange(of: interfaceLanguage) { _, newValue in
+                    if newValue.apply() {
+                        showInterfaceLanguageRestartAlert = true
+                    }
+                }
+                .alert("Restart Required", isPresented: $showInterfaceLanguageRestartAlert) {
+                    Button("Restart Now") { InterfaceLanguage.relaunchApp() }
+                    Button("Later", role: .cancel) {}
+                } message: {
+                    Text("VoiceInk needs to restart to apply the new interface language.")
+                }
             }
 
             // MARK: - Experimental
@@ -385,8 +403,8 @@ struct SettingsView: View {
 struct ExpandableSettingsRow<Content: View>: View {
     @Binding var isExpanded: Bool
     @Binding var isEnabled: Bool
-    let label: String
-    var infoMessage: String? = nil
+    let label: LocalizedStringKey
+    var infoMessage: LocalizedStringKey? = nil
     var infoURL: String? = nil
     @ViewBuilder let content: () -> Content
 
