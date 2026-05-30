@@ -25,7 +25,8 @@ struct MenuBarView: View {
             }
 
             Button {
-                Task { await recordingShortcutManager.enhanceSelectedText() }
+                // Menu closing shifts keyboard focus; delay capture so it returns to the source app.
+                Task { await recordingShortcutManager.enhanceSelectedText(focusSettleDelay: 0.4) }
             } label: {
                 menuItemLabel("Enhance Selected Text", shortcut: ShortcutStore.shortcut(for: .enhanceSelectedText))
             }

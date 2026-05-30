@@ -153,13 +153,10 @@ run:
 
 # Run a local/self-signed build by executing the Mach-O directly.
 #
-# Why not `open`: for a self-signed (non Developer ID) app, launching through
-# Launch Services (open / Finder / Dock) makes macOS apply stricter Input
-# Monitoring enforcement to the CGEventTap, so global hotkeys silently do not
-# receive events even when Input Monitoring + Accessibility are granted.
-# Executing the binary directly bypasses Launch Services and the hotkeys work.
-# The app still shows in the Dock and behaves like a normal launch; stdout/
-# stderr go to the log file below.
+# Diagnostic fallback. Debug/LOCAL_BUILD registers supported global shortcuts through
+# Carbon, so normal `open` / Finder launches should work. Modifier-only shortcuts
+# still keep a CGEventTap fallback, so this target remains useful when diagnosing
+# TCC/Input Monitoring behavior.
 run-direct:
 	@APP="$(LOCAL_INSTALL_DIR)/VoiceInk.app"; \
 	BIN="$$APP/Contents/MacOS/VoiceInk"; \

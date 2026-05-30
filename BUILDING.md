@@ -91,7 +91,7 @@ it survives rebuilds.
 
 ```bash
 make local-signed                 # builds, re-signs with "VoiceInk Local", installs to /Applications
-make run-direct                   # launch it (see "Global hotkeys" below for why not `open`)
+open /Applications/VoiceInk.app   # launch normally
 ```
 
 One-time certificate setup (named `VoiceInk Local`, must be a **Code Signing**
@@ -138,16 +138,17 @@ default (`LOCAL_INSTALL_DIR`), not `~/Downloads`, because `~/Downloads` is often
 under a backup/sync tool (Backblaze) that keeps re-injecting those placeholder
 files and can break the signature seal.
 
-### Global hotkeys: launch with `make run-direct`, not `open`
+### Global hotkeys in local builds
 
-A self-signed (non Developer ID) app has a quirk: when launched through **Launch
-Services** (`open`, Finder, Dock), macOS applies **stricter Input Monitoring
-enforcement** to the app's `CGEventTap`, so **global hotkeys silently receive no
-events** — even when both *Input Monitoring* and *Accessibility* are granted in
-System Settings. The tap is created but never fires; nothing logs an error.
+Debug and `LOCAL_BUILD` register supported global shortcuts through Carbon
+`RegisterEventHotKey`, which works for normal `open`, Finder, Dock, and Xcode
+launches without relying on the `CGEventTap` path that is sensitive to local
+signing/TCC state.
 
-Launching the Mach-O binary **directly** bypasses Launch Services and the hotkeys
-work:
+Modifier-only shortcuts still keep the existing `CGEventTap` fallback because
+they need press/release tracking and side-specific modifier behavior. If a
+modifier-only shortcut does not fire after a local rebuild, grant Accessibility
+and Input Monitoring again, or use the direct launcher while diagnosing:
 
 ```bash
 make run-direct
@@ -162,10 +163,6 @@ Permissions to grant once (System Settings → Privacy & Security):
   `CGPreflightListenEventAccess()`; without it the tap is never installed.
 - **Accessibility** — required: the tap uses `.defaultTap` (interception), and
   capturing the current selection needs it too.
-
-The only real fix that makes `open`/Finder work is signing with a **Developer ID**
-certificate + hardened runtime (paid Apple Developer account). For local dev,
-`make run-direct` is the workaround.
 
 ---
 

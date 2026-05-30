@@ -18,7 +18,10 @@ final class SelectedTextEnhancementService {
         self.enhancementService = enhancementService
     }
 
-    func run() async {
+    /// - Parameter focusSettleDelay: time to wait before capturing the selection. Menu-bar
+    ///   triggers need a brief delay so keyboard focus returns to the source app after the
+    ///   menu closes; the global shortcut leaves focus untouched and passes `0`.
+    func run(focusSettleDelay: TimeInterval = 0) async {
         guard !isRunning else {
             logger.notice("Ignoring enhance-selected-text trigger: a run is already in progress")
             return
@@ -30,6 +33,10 @@ final class SelectedTextEnhancementService {
         guard enhancementService.isEnhancementEnabled, enhancementService.isConfigured else {
             notify("Enable and configure AI Enhancement to use this shortcut", type: .error)
             return
+        }
+
+        if focusSettleDelay > 0 {
+            try? await Task.sleep(nanoseconds: UInt64(focusSettleDelay * 1_000_000_000))
         }
 
         // Capture the selection (with select-all fallback when an editable field is focused).

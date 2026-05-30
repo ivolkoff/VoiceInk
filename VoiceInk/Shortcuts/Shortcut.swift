@@ -70,6 +70,14 @@ struct Shortcut: Codable, Equatable {
         )
     }
 
+    var carbonModifierFlags: UInt32 {
+        UInt32(modifierFlags.shortcutCarbonModifiers)
+    }
+
+    var canRegisterWithCarbonHotKey: Bool {
+        kind == .key
+    }
+
     func conflicts(with other: Shortcut) -> Bool {
         kind == other.kind &&
             keyCode == other.keyCode &&
@@ -435,5 +443,31 @@ private extension NSEvent.ModifierFlags {
         }
 
         return flags
+    }
+
+    var shortcutCarbonModifiers: Int {
+        var modifiers = 0
+
+        if contains(.control) {
+            modifiers |= Int(controlKey)
+        }
+
+        if contains(.option) {
+            modifiers |= Int(optionKey)
+        }
+
+        if contains(.shift) {
+            modifiers |= Int(shiftKey)
+        }
+
+        if contains(.command) {
+            modifiers |= Int(cmdKey)
+        }
+
+        if contains(.function) {
+            modifiers |= 1 << 17
+        }
+
+        return modifiers
     }
 }
