@@ -218,6 +218,34 @@ struct APIKeyManagementView: View {
                             }
                     }
 
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Example")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+
+                        HStack {
+                            Text("claude --model haiku --strict-mcp-config --setting-sources \"\" -p \"$VOICEINK_FULL_PROMPT\"")
+                                .font(.system(.caption, design: .monospaced))
+                                .foregroundColor(.secondary)
+                                .lineLimit(1)
+                                .truncationMode(.middle)
+
+                            Button {
+                                NSPasteboard.general.clearContents()
+                                NSPasteboard.general.setString("claude --model haiku --strict-mcp-config --setting-sources \"\" -p \"$VOICEINK_FULL_PROMPT\"", forType: .string)
+                            } label: {
+                                Image(systemName: "doc.on.doc")
+                                    .font(.caption)
+                            }
+                            .buttonStyle(.plain)
+                            .help("Copy command")
+                        }
+                        .padding(.horizontal, 6)
+                        .padding(.vertical, 4)
+                        .background(Color(NSColor.textBackgroundColor))
+                        .cornerRadius(6)
+                    }
+
                     Picker("Timeout", selection: $localCLITimeoutSeconds) {
                         Text("15s").tag(15.0)
                         Text("30s").tag(30.0)

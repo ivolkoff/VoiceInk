@@ -30,8 +30,8 @@ final class SelectedTextEnhancementService {
         defer { isRunning = false }
 
         // Guard: enhancement must be enabled and configured (before any capture side effects).
-        guard enhancementService.isEnhancementEnabled, enhancementService.isConfigured else {
-            notify(String(localized: "Enable and configure AI Enhancement to use this shortcut"), type: .error)
+        guard enhancementService.isConfigured else {
+            notify(String(localized: "Configure AI Enhancement to use this shortcut"), type: .error)
             return
         }
 
