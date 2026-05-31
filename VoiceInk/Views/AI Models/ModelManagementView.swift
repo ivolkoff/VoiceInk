@@ -210,6 +210,11 @@ struct ModelManagementView: View {
                                     Task { await whisperModelManager.downloadModel(whisperModel) }
                                 }
                             },
+                            cancelAction: {
+                                if let whisperModel = model as? WhisperModel {
+                                    whisperModelManager.cancelDownload(whisperModel.name)
+                                }
+                            },
                             editAction: model.provider == .custom ? { customModel in
                                 customModelToEdit = customModel
                             } : nil

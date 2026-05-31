@@ -12,6 +12,7 @@ struct FluidAudioDownloadStatus {
 class FluidAudioModelManager: ObservableObject {
     @Published private var downloadStatuses: [String: FluidAudioDownloadStatus] = [:]
     private var activeDownloadIDs: [String: UUID] = [:]
+    private var activeDownloadTasks: [String: Task<Void, Never>] = [:]
 
     var onModelDeleted: ((String) -> Void)?
     var onModelsChanged: (() -> Void)?
@@ -74,6 +75,7 @@ class FluidAudioModelManager: ObservableObject {
         )
         defer {
             clearDownloadStatus(for: modelName, downloadID: downloadID)
+            activeDownloadTasks.removeValue(forKey: modelName)
             onModelsChanged?()
         }
 
@@ -84,14 +86,29 @@ class FluidAudioModelManager: ObservableObject {
             }
         }
 
-        do {
-            _ = try await AsrModels.downloadAndLoad(
-                version: version,
-                progressHandler: progressHandler
-            )
-        } catch {
-            logger.error("❌ FluidAudio download failed for \(modelName, privacy: .public): \(error.localizedDescription, privacy: .public)")
+        let downloadTask = Task {
+            do {
+                _ = try await AsrModels.downloadAndLoad(
+                    version: version,
+                    progressHandler: progressHandler
+                )
+            } catch {
+                if error is CancellationError {
+                    logger.notice("FluidAudio download cancelled for \(modelName, privacy: .public)")
+                } else {
+                    logger.error("❌ FluidAudio download failed for \(modelName, privacy: .public): \(error.localizedDescription, privacy: .public)")
+                }
+            }
         }
+
+        activeDownloadTasks[modelName] = downloadTask
+        _ = await downloadTask.value
+    }
+
+    func cancelDownload(_ modelName: String) {
+        activeDownloadTasks[modelName]?.cancel()
+        activeDownloadTasks.removeValue(forKey: modelName)
+        downloadStatuses[modelName] = nil
     }
 
     // MARK: - Delete

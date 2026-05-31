@@ -142,6 +142,21 @@ struct FluidAudioModelCardView: View {
                 }
                 .buttonStyle(.bordered)
                 .controlSize(.small)
+            } else if isDownloading {
+                Button(action: {
+                    fluidAudioModelManager.cancelDownload(model.name)
+                }) {
+                    HStack(spacing: 4) {
+                        Text("Cancel")
+                        Image(systemName: "xmark.circle")
+                    }
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundColor(.white)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 6)
+                    .background(Capsule().fill(Color.red.opacity(0.8)))
+                }
+                .buttonStyle(.plain)
             } else {
                 Button(action: {
                     Task {
@@ -149,7 +164,7 @@ struct FluidAudioModelCardView: View {
                     }
                 }) {
                     HStack(spacing: 4) {
-                        Text(isDownloading ? "Downloading..." : "Download")
+                        Text("Download")
                         Image(systemName: "arrow.down.circle")
                     }
                     .font(.system(size: 12, weight: .medium))
@@ -159,7 +174,6 @@ struct FluidAudioModelCardView: View {
                     .background(Capsule().fill(Color.accentColor))
                 }
                 .buttonStyle(.plain)
-                .disabled(isDownloading)
             }
 
             if isDownloaded {

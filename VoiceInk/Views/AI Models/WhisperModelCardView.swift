@@ -13,6 +13,7 @@ struct WhisperModelCardView: View {
     var deleteAction: () -> Void
     var setDefaultAction: () -> Void
     var downloadAction: () -> Void
+    var cancelAction: () -> Void = {}
     private var isDownloading: Bool {
         downloadProgress.keys.contains(model.name + "_main") || 
         downloadProgress.keys.contains(model.name + "_coreml")
@@ -119,10 +120,27 @@ struct WhisperModelCardView: View {
                 }
                 .buttonStyle(.bordered)
                 .controlSize(.small)
+            } else if isDownloading {
+                Button(action: cancelAction) {
+                    HStack(spacing: 4) {
+                        Text("Cancel")
+                            .font(.system(size: 12, weight: .medium))
+                        Image(systemName: "xmark.circle")
+                            .font(.system(size: 12, weight: .medium))
+                    }
+                    .foregroundColor(.white)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 6)
+                    .background(
+                        Capsule()
+                            .fill(Color.red.opacity(0.8))
+                    )
+                }
+                .buttonStyle(.plain)
             } else {
                 Button(action: downloadAction) {
                     HStack(spacing: 4) {
-                        Text(isDownloading ? "Downloading..." : "Download")
+                        Text("Download")
                             .font(.system(size: 12, weight: .medium))
                         Image(systemName: "arrow.down.circle")
                             .font(.system(size: 12, weight: .medium))
@@ -137,7 +155,6 @@ struct WhisperModelCardView: View {
                     )
                 }
                 .buttonStyle(.plain)
-                .disabled(isDownloading)
             }
             
             if isDownloaded {

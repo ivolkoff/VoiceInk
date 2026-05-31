@@ -65,6 +65,9 @@ class WhisperModelManager: ObservableObject {
     let modelsDirectory: URL
     let whisperPrompt = WhisperPrompt()
 
+    /// Tracks active download tasks keyed by progress key (e.g. "modelName_main").
+    private var activeDownloadTasks: [String: URLSessionDownloadTask] = [:]
+
     /// Called when a model is deleted, passing the model name.
     /// TranscriptionModelManager listens to clear currentTranscriptionModel if needed.
     var onModelDeleted: ((String) -> Void)?
@@ -136,7 +139,11 @@ class WhisperModelManager: ObservableObject {
                 }
             }
 
-            let task = URLSession.shared.downloadTask(with: url) { tempURL, response, error in
+            let task = URLSession.shared.downloadTask(with: url) { [weak self] tempURL, response, error in
+                DispatchQueue.main.async {
+                    self?.activeDownloadTasks.removeValue(forKey: progressKey)
+                }
+
                 if let error = error {
                     finishOnce(.failure(error))
                     return
@@ -159,6 +166,7 @@ class WhisperModelManager: ObservableObject {
                 }
             }
 
+            self.activeDownloadTasks[progressKey] = task
             task.resume()
 
             var lastUpdateTime = Date()
@@ -290,6 +298,23 @@ class WhisperModelManager: ObservableObject {
     private func handleModelDownloadError(_ model: WhisperModel, _ error: Error) {
         self.downloadProgress.removeValue(forKey: model.name + "_main")
         self.downloadProgress.removeValue(forKey: model.name + "_coreml")
+        self.activeDownloadTasks.removeValue(forKey: model.name + "_main")
+        self.activeDownloadTasks.removeValue(forKey: model.name + "_coreml")
+    }
+
+    /// Cancel an ongoing model download.
+    func cancelDownload(_ modelName: String) {
+        let mainKey = modelName + "_main"
+        let coreMLKey = modelName + "_coreml"
+
+        for key in [mainKey, coreMLKey] {
+            if let task = activeDownloadTasks.removeValue(forKey: key) {
+                task.cancel()
+            }
+        }
+
+        downloadProgress.removeValue(forKey: mainKey)
+        downloadProgress.removeValue(forKey: coreMLKey)
     }
 
     func deleteModel(_ model: WhisperModelFile) async {
