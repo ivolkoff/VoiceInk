@@ -216,6 +216,16 @@
     "1.5×": {
       "shouldTranslate": false
     },
+    "100% offline & private": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "100% офлайн и конфиденциально"
+          }
+        }
+      }
+    },
     "120s": {
       "localizations": {
         "ru": {
@@ -1562,6 +1572,16 @@
         }
       }
     },
+    "Click the text area on the right": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Нажмите на текстовое поле справа"
+          }
+        }
+      }
+    },
     "Clipboard Context": {
       "localizations": {
         "ru": {
@@ -1608,6 +1628,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Завершите настройку, чтобы начать"
+          }
+        }
+      }
+    },
+    "Continue": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Продолжить"
           }
         }
       }
@@ -2252,6 +2282,16 @@
         }
       }
     },
+    "Download Model": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Загрузить модель"
+          }
+        }
+      }
+    },
     "Download this Apple Speech language before transcribing.": {
       "localizations": {
         "ru": {
@@ -2408,6 +2448,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Эмодзи используется"
+          }
+        }
+      }
+    },
+    "Enable Access": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Предоставить доступ"
           }
         }
       }
@@ -3352,6 +3402,16 @@
         }
       }
     },
+    "Microphone:": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Микрофон:"
+          }
+        }
+      }
+    },
     "Middle-Click Recording": {
       "localizations": {
         "ru": {
@@ -4144,6 +4204,26 @@
         }
       }
     },
+    "Press your shortcut key": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Нажмите ваше сочетание клавиш"
+          }
+        }
+      }
+    },
+    "Press your shortcut key again": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Снова нажмите ваше сочетание клавиш"
+          }
+        }
+      }
+    },
     "Prewarm model (Experimental)": {
       "localizations": {
         "ru": {
@@ -4847,6 +4927,16 @@
         }
       }
     },
+    "Select Device": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Выбрать устройство"
+          }
+        }
+      }
+    },
     "Select Language": {
       "localizations": {
         "ru": {
@@ -4988,6 +5078,16 @@
         }
       }
     },
+    "Set Shortcut": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Назначить сочетание"
+          }
+        }
+      }
+    },
     "Set as Default": {
       "localizations": {
         "ru": {
@@ -5124,6 +5224,26 @@
         }
       }
     },
+    "Skip Tour": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Пропустить обзор"
+          }
+        }
+      }
+    },
+    "Skip for now": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Пропустить"
+          }
+        }
+      }
+    },
     "Skip short transcriptions": {
       "localizations": {
         "ru": {
@@ -5190,6 +5310,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Звуковая обратная связь"
+          }
+        }
+      }
+    },
+    "Speak something": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Скажите что-нибудь"
           }
         }
       }
@@ -6683,6 +6813,26 @@
         }
       }
     },
+    "Your Vibe-Coding Assistant": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ваш ассистент для Vibe-Coding"
+          }
+        }
+      }
+    },
+    "Your Writing Assistant": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ваш ассистент для письма"
+          }
+        }
+      }
+    },
     "Recommended": {
       "localizations": {
         "ru": {
@@ -6729,6 +6879,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Неизвестно"
+          }
+        }
+      }
+    },
+    "Unknown Device": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Неизвестное устройство"
           }
         }
       }
@@ -6849,6 +7009,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Замена слов"
+          }
+        }
+      }
+    },
+    "Works Everywhere on Mac with a click": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Работает везде на Mac в один клик"
           }
         }
       }
