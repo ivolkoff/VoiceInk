@@ -153,7 +153,7 @@ struct OnboardingTutorialView: View {
         }
     }
     
-    private func getInstructionText(for step: Int) -> String {
+    private func getInstructionText(for step: Int) -> LocalizedStringKey {
         switch step {
         case 1: return "Click the text area on the right"
         case 2: return "Press your shortcut key"
@@ -163,7 +163,7 @@ struct OnboardingTutorialView: View {
         }
     }
     
-    private func instructionStep(number: Int, text: String) -> some View {
+    private func instructionStep(number: Int, text: LocalizedStringKey) -> some View {
         HStack(spacing: 20) {
             Text("\(number)")
                 .font(.system(size: 20, weight: .bold, design: .rounded))

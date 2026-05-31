@@ -108,16 +108,27 @@ struct OnboardingModelDownloadView: View {
                         
                         // Action buttons
                         VStack(spacing: 16) {
-                            Button(action: handleAction) {
-                                Text(getButtonTitle())
-                                    .font(.headline)
-                                    .foregroundColor(.white)
-                                    .frame(width: 200, height: 50)
-                                    .background(Color.accentColor)
-                                    .cornerRadius(25)
+                            if isDownloading {
+                                Button(action: cancelDownload) {
+                                    Text("Cancel")
+                                        .font(.headline)
+                                        .foregroundColor(.white)
+                                        .frame(width: 200, height: 50)
+                                        .background(Color.red.opacity(0.8))
+                                        .cornerRadius(25)
+                                }
+                                .buttonStyle(ScaleButtonStyle())
+                            } else {
+                                Button(action: handleAction) {
+                                    Text(getButtonTitle())
+                                        .font(.headline)
+                                        .foregroundColor(.white)
+                                        .frame(width: 200, height: 50)
+                                        .background(Color.accentColor)
+                                        .cornerRadius(25)
+                                }
+                                .buttonStyle(ScaleButtonStyle())
                             }
-                            .buttonStyle(ScaleButtonStyle())
-                            .disabled(isDownloading)
                             
                             if !isModelSet {
                                 SkipButton(text: "Skip for now") {
@@ -187,7 +198,14 @@ struct OnboardingModelDownloadView: View {
         }
     }
 
-    private func getButtonTitle() -> String {
+    private func cancelDownload() {
+        whisperModelManager.cancelDownload(turboModel.name)
+        withAnimation {
+            isDownloading = false
+        }
+    }
+
+    private func getButtonTitle() -> LocalizedStringKey {
         if isModelSet {
             return "Continue"
         } else if isDownloading {
