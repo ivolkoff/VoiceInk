@@ -11,6 +11,7 @@ struct ShortcutRecorder: View {
     @State private var recorderID = UUID()
     @State private var shortcut: Shortcut?
     @State private var previousShortcut: Shortcut?
+    @State private var showClearConfirmation = false
 
     init(
         action: ShortcutAction,
@@ -59,6 +60,28 @@ struct ShortcutRecorder: View {
             .accessibilityLabel(accessibilityLabel)
             .help(accessibilityLabel)
 
+            if let shortcut, !recorder.isRecording {
+                Button {
+                    showClearConfirmation = true
+                } label: {
+                    Image(systemName: "xmark.circle.fill")
+                        .font(.system(size: 11))
+                        .foregroundStyle(.red)
+                        .opacity(0.7)
+                }
+                .buttonStyle(.plain)
+                .help("Remove shortcut")
+            }
+        }
+        .alert("Remove this shortcut?", isPresented: $showClearConfirmation) {
+            Button("Cancel", role: .cancel) { }
+            Button("Remove", role: .destructive) {
+                ShortcutStore.setShortcut(nil, for: action)
+                shortcut = nil
+                onShortcutChanged()
+            }
+        } message: {
+            Text("The keyboard shortcut will be unassigned.")
         }
         .onReceive(NotificationCenter.default.publisher(for: ShortcutStore.shortcutDidChange)) { notification in
             guard let changedAction = notification.object as? ShortcutAction, changedAction == action else { return }

@@ -7466,6 +7466,36 @@
           }
         }
       }
+    },
+    "Remove shortcut": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Сбросить сочетание"
+          }
+        }
+      }
+    },
+    "Remove this shortcut?": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Сбросить это сочетание?"
+          }
+        }
+      }
+    },
+    "The keyboard shortcut will be unassigned.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Сочетание клавиш будет удалено."
+          }
+        }
+      }
     }
   },
   "version": "1.0"
