@@ -69,7 +69,11 @@ enum DictionaryService {
             .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
             .filter { !$0.isEmpty }
 
-        guard !tokens.isEmpty, !replacement.isEmpty else { return nil }
+        guard !tokens.isEmpty else { return nil }
+
+        let trimmedOriginal = tokens.joined(separator: ", ")
+        let trimmedReplacement = replacement.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmedReplacement.isEmpty else { return nil }
 
         for existingEntry in existing {
             let existingTokens = existingEntry.originalText
@@ -84,7 +88,7 @@ enum DictionaryService {
             }
         }
 
-        let entry = WordReplacement(originalText: original, replacementText: replacement)
+        let entry = WordReplacement(originalText: trimmedOriginal, replacementText: trimmedReplacement)
         context.insert(entry)
         do {
             try context.save()

@@ -299,6 +299,103 @@ class ImportExportService {
         }
     }
 
+    // MARK: - Dictionary-only Export/Import
+
+    @MainActor
+    func exportDictionary(modelContext: ModelContext) {
+        let vocabularyDescriptor = FetchDescriptor<VocabularyWord>()
+        let replacementsDescriptor = FetchDescriptor<WordReplacement>()
+
+        let exportedDictionaryItems: [WordBackup]? = {
+            guard let items = try? modelContext.fetch(vocabularyDescriptor), !items.isEmpty else { return nil }
+            return items.map { WordBackup(word: $0.word) }
+        }()
+
+        let exportedWordReplacements: [String: String]? = {
+            guard let replacements = try? modelContext.fetch(replacementsDescriptor), !replacements.isEmpty else { return nil }
+            return Dictionary(replacements.map { ($0.originalText, $0.replacementText) }, uniquingKeysWith: { _, last in last })
+        }()
+
+        // Build JSON manually so only dictionary fields appear in the output.
+        // The structure is compatible with BackupFile's decodeIfPresent decoder.
+        var dict: [String: Any] = [
+            "version": currentSettingsVersion
+        ]
+        if let words = exportedDictionaryItems {
+            dict["vocabularyWords"] = words.map { ["word": $0.word] }
+        }
+        if let replacements = exportedWordReplacements {
+            dict["wordReplacements"] = replacements
+        }
+
+        do {
+            let jsonData = try JSONSerialization.data(withJSONObject: dict, options: .prettyPrinted)
+
+            let savePanel = NSSavePanel()
+            savePanel.allowedContentTypes = [UTType.json]
+            let dateFormatter = DateFormatter()
+            dateFormatter.dateFormat = "yyyy_MM_dd"
+            let dateString = dateFormatter.string(from: Date())
+            savePanel.nameFieldStringValue = "VoiceInk_Dictionary_\(dateString).json"
+            savePanel.title = String(localized: "Export Dictionary")
+            savePanel.message = String(localized: "Choose a location to save your dictionary.")
+
+            DispatchQueue.main.async {
+                if savePanel.runModal() == .OK {
+                    if let url = savePanel.url {
+                        do {
+                            try jsonData.write(to: url)
+                            NotificationManager.shared.showNotification(
+                                title: String(localized: "Dictionary exported successfully"),
+                                type: .success
+                            )
+                        } catch {
+                            self.showAlert(title: String(localized: "Export Error"), message: String(localized: "Could not save dictionary to file: \(error.localizedDescription)"))
+                        }
+                    }
+                }
+            }
+        } catch {
+            self.showAlert(title: String(localized: "Export Error"), message: String(localized: "Could not encode dictionary to JSON: \(error.localizedDescription)"))
+        }
+    }
+
+    @MainActor
+    func importDictionary(modelContext: ModelContext) {
+        let openPanel = NSOpenPanel()
+        openPanel.allowedContentTypes = [UTType.json]
+        openPanel.canChooseFiles = true
+        openPanel.canChooseDirectories = false
+        openPanel.allowsMultipleSelection = false
+        openPanel.title = String(localized: "Import Dictionary")
+        openPanel.message = String(localized: "Choose a dictionary backup file.")
+
+        guard openPanel.runModal() == .OK else {
+            showAlert(title: String(localized: "Import Canceled"), message: String(localized: "The import operation was canceled."))
+            return
+        }
+
+        guard let url = openPanel.url else {
+            showAlert(title: String(localized: "Import Error"), message: String(localized: "Could not get the file URL from the open panel."))
+            return
+        }
+
+        do {
+            let jsonData = try Data(contentsOf: url)
+            let decoder = JSONDecoder()
+            let backup = try decoder.decode(BackupFile.self, from: jsonData)
+
+            try BackupImporter.importDictionary(from: backup, modelContext: modelContext)
+
+            showImportSuccessAlert(
+                message: String(localized: "Dictionary imported successfully from \(url.lastPathComponent)."),
+                needsAPIKeyReminder: false
+            )
+        } catch {
+            showAlert(title: String(localized: "Import Error"), message: String(localized: "Error importing dictionary: \(error.localizedDescription). The file might be corrupted or not in the correct format."))
+        }
+    }
+
     private func presentImportSelectionDialog() -> Set<BackupCategory>? {
         let accessory = BackupOptions()
         let alert = NSAlert()

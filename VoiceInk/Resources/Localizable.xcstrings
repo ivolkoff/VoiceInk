@@ -4,6 +4,54 @@
     "": {
       "shouldTranslate": false
     },
+    "\"%@\" already in this replacement": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "\"%@\" already in this replacement"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "«%@» уже есть в этой замене"
+          }
+        }
+      }
+    },
+    "Replacement added: %@ → %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Replacement added: %@ → %@"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Добавлена замена: %@ → %@"
+          }
+        }
+      }
+    },
+    "Word added: %@ → %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Word added: %@ → %@"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Слово добавлено: %@ → %@"
+          }
+        }
+      }
+    },
     "\n\nIMPORTANT: If you were using AI enhancement features, please make sure to reconfigure your API keys in the Enhancement section.": {
       "localizations": {
         "ru": {
@@ -7493,6 +7541,126 @@
           "stringUnit": {
             "state": "translated",
             "value": "Сочетание клавиш будет удалено."
+          }
+        }
+      }
+    },
+    "Export Dictionary": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Экспорт словаря"
+          }
+        }
+      }
+    },
+    "Choose a location to save your dictionary.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Выберите место для сохранения словаря."
+          }
+        }
+      }
+    },
+    "Dictionary exported successfully": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Словарь успешно экспортирован"
+          }
+        }
+      }
+    },
+    "Could not save dictionary to file: %@": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Не удалось сохранить словарь в файл: %@"
+          }
+        }
+      }
+    },
+    "Could not encode dictionary to JSON: %@": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Не удалось закодировать словарь в JSON: %@"
+          }
+        }
+      }
+    },
+    "Import Dictionary": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Импорт словаря"
+          }
+        }
+      }
+    },
+    "Choose a dictionary backup file.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Выберите файл резервной копии словаря."
+          }
+        }
+      }
+    },
+    "Dictionary imported successfully from %@.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Словарь успешно импортирован из %@."
+          }
+        }
+      }
+    },
+    "Error importing dictionary: %@. The file might be corrupted or not in the correct format.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ошибка импорта словаря: %@. Возможно, файл повреждён или имеет неверный формат."
+          }
+        }
+      }
+    },
+    "Export or import your vocabulary words and word replacements.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Экспортируйте или импортируйте словарные слова и замены слов."
+          }
+        }
+      }
+    },
+    "Export…": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Экспорт…"
+          }
+        }
+      }
+    },
+    "Import…": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Импорт…"
           }
         }
       }

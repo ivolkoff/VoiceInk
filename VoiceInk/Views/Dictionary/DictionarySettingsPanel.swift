@@ -1,6 +1,8 @@
 import SwiftUI
+import SwiftData
 
 struct DictionarySettingsPanel: View {
+    @Environment(\.modelContext) private var modelContext
     let onDismiss: () -> Void
 
     var body: some View {
@@ -43,6 +45,23 @@ struct DictionarySettingsPanel: View {
                     Text("Shortcuts")
                 }
 
+                Section {
+                    LabeledContent("Export Dictionary") {
+                        Button("Export…") {
+                            ImportExportService.shared.exportDictionary(modelContext: modelContext)
+                        }
+                    }
+
+                    LabeledContent("Import Dictionary") {
+                        Button("Import…") {
+                            ImportExportService.shared.importDictionary(modelContext: modelContext)
+                        }
+                    }
+                } header: {
+                    Text("Backup")
+                } footer: {
+                    Text("Export or import your vocabulary words and word replacements.")
+                }
             }
             .formStyle(.grouped)
             .scrollContentBackground(.hidden)

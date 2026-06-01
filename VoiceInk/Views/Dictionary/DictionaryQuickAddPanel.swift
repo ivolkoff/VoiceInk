@@ -19,18 +19,20 @@ final class DictionaryQuickAddManager {
         isVisible ? hide() : show(modelContainer: modelContainer)
     }
 
+    private static let panelWidth: CGFloat = 540
+
     func show(modelContainer: ModelContainer) {
         guard !isVisible else { return }
 
         previousApp = NSWorkspace.shared.frontmostApplication
 
-        let initialSize = NSSize(width: 500, height: DictionaryQuickAddView.Mode.vocabulary.panelHeight)
+        let initialSize = NSSize(width: Self.panelWidth, height: DictionaryQuickAddView.Mode.insert.panelHeight)
         let newPanel = DictionaryQuickAddPanel(manager: self, size: initialSize)
 
         let view = DictionaryQuickAddView(
             onDismiss: { [weak self] in self?.hide() },
             onResize: { [weak self] height in
-                self?.panel?.resize(to: NSSize(width: 500, height: height))
+                self?.panel?.resize(to: NSSize(width: Self.panelWidth, height: height))
             }
         )
         .modelContainer(modelContainer)
@@ -121,12 +123,13 @@ class DictionaryQuickAddPanel: NSPanel {
 
 struct DictionaryQuickAddView: View {
     enum Mode: CaseIterable {
-        case vocabulary, replacement
+        case vocabulary, replacement, insert
 
         var label: String {
             switch self {
             case .vocabulary: return "Vocabulary"
             case .replacement: return "Word Replacement"
+            case .insert: return "Insert"
             }
         }
 
@@ -134,6 +137,7 @@ struct DictionaryQuickAddView: View {
             switch self {
             case .vocabulary: return "character.book.closed.fill"
             case .replacement: return "arrow.2.squarepath"
+            case .insert: return "text.insert"
             }
         }
 
@@ -141,6 +145,7 @@ struct DictionaryQuickAddView: View {
             switch self {
             case .vocabulary: return 130
             case .replacement: return 164
+            case .insert: return 340
             }
         }
     }
@@ -149,14 +154,16 @@ struct DictionaryQuickAddView: View {
     @Query private var vocabularyWords: [VocabularyWord]
     @Query private var wordReplacements: [WordReplacement]
 
-    @State private var mode: Mode = .vocabulary
+    @State private var mode: Mode = .insert
     @State private var wordInput = ""
     @State private var originalInput = ""
     @State private var replacementInput = ""
+    @State private var insertSearch = ""
+    @State private var selectedText = ""
     @State private var errorMessage: String?
     @FocusState private var focusedField: Field?
 
-    enum Field: Hashable { case word, original, replacement }
+    enum Field: Hashable { case word, original, replacement, insertSearch }
 
     let onDismiss: () -> Void
     let onResize: (CGFloat) -> Void
@@ -172,37 +179,57 @@ struct DictionaryQuickAddView: View {
                     .foregroundColor(.red)
                     .padding(.horizontal, 16)
                     .padding(.bottom, 6)
+            } else if mode == .insert, let warning = selectedTextDuplicateWarning {
+                Text(warning)
+                    .font(.caption)
+                    .foregroundColor(.orange)
+                    .padding(.horizontal, 16)
+                    .padding(.bottom, 6)
             }
             Divider().opacity(0.4)
             hintBar
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .frame(maxWidth: .infinity)
+        .fixedSize(horizontal: false, vertical: true)
         .background(VisualEffectView(material: .popover, blendingMode: .behindWindow))
         .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
         .overlay(
             RoundedRectangle(cornerRadius: 16, style: .continuous)
                 .strokeBorder(Color.primary.opacity(0.07), lineWidth: 0.5)
         )
+        .background(
+            GeometryReader { proxy in
+                Color.clear.preference(key: PanelHeightKey.self, value: proxy.size.height)
+            }
+        )
+        .onPreferenceChange(PanelHeightKey.self) { height in
+            if height > 0 { onResize(height) }
+        }
         .onKeyPress(.escape) {
             onDismiss()
             return .handled
         }
         .onAppear {
-            DispatchQueue.main.async { focusedField = .word }
+            DispatchQueue.main.async {
+                focusedField = mode == .insert ? .insertSearch : .word
+            }
+            Task {
+                selectedText = await SelectedTextService.fetchSelectedText() ?? ""
+            }
         }
         .onChange(of: mode) { _, newMode in
             wordInput = ""
             originalInput = ""
             replacementInput = ""
+            insertSearch = ""
             errorMessage = nil
             DispatchQueue.main.async {
-                focusedField = newMode == .vocabulary ? .word : .original
+                switch newMode {
+                case .vocabulary: focusedField = .word
+                case .insert: focusedField = .insertSearch
+                case .replacement: focusedField = .original
+                }
             }
-            onResize(newMode.panelHeight)
-        }
-        .onChange(of: errorMessage) { _, newError in
-            let height = mode.panelHeight + (newError != nil ? 24 : 0)
-            onResize(height)
         }
     }
 
@@ -240,10 +267,10 @@ struct DictionaryQuickAddView: View {
 
     @ViewBuilder
     private var inputArea: some View {
-        if mode == .vocabulary {
-            vocabularyInput
-        } else {
-            replacementInputView
+        switch mode {
+        case .vocabulary: vocabularyInput
+        case .replacement: replacementInputView
+        case .insert: insertView
         }
     }
 
@@ -292,23 +319,307 @@ struct DictionaryQuickAddView: View {
         .padding(.vertical, 12)
     }
 
+    // MARK: - Insert View
+
+    private var selectedTextDuplicateWarning: String? {
+        guard !selectedText.isEmpty else { return nil }
+        let lower = selectedText.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        for replacement in wordReplacements {
+            let tokens = replacement.originalText
+                .split(separator: ",")
+                .map { $0.trimmingCharacters(in: .whitespacesAndNewlines).lowercased() }
+            if tokens.contains(lower) {
+                return "\"\(selectedText)\" уже есть в заменах слов"
+            }
+        }
+        return nil
+    }
+
+    private var filteredReplacements: [WordReplacement] {
+        guard !insertSearch.isEmpty else { return wordReplacements }
+        let query = insertSearch.lowercased()
+        return wordReplacements.filter {
+            $0.originalText.lowercased().contains(query) ||
+            $0.replacementText.lowercased().contains(query)
+        }
+    }
+
+    @ViewBuilder
+    private var insertView: some View {
+        VStack(spacing: 8) {
+            // Selected text context
+            if !selectedText.isEmpty {
+                HStack(spacing: 10) {
+                    Text("Заменить")
+                        .font(.system(size: 12, weight: .medium))
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
+                        .fixedSize()
+                    Text(selectedText)
+                        .font(.system(size: 14, weight: .medium))
+                        .foregroundStyle(.primary)
+                        .lineLimit(1)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                }
+                .padding(.horizontal, 14)
+                .padding(.top, 10)
+            }
+
+            HStack(spacing: 10) {
+                Image(systemName: "magnifyingglass")
+                    .font(.system(size: 12))
+                    .foregroundStyle(.secondary)
+                TextField("", text: $insertSearch, prompt: Text(selectedText.isEmpty ? "Поиск замен…" : "На что…").foregroundColor(.secondary))
+                    .textFieldStyle(.roundedBorder)
+                    .font(.system(size: 14))
+                    .focused($focusedField, equals: .insertSearch)
+                    .onSubmit { submitInsertSearch() }
+            }
+            .padding(.horizontal, 14)
+            .padding(.top, selectedText.isEmpty ? 10 : 0)
+
+            if wordReplacements.isEmpty {
+                emptyInsertView
+            } else if filteredReplacements.isEmpty {
+                VStack(spacing: 6) {
+                    Image(systemName: "magnifyingglass")
+                        .font(.system(size: 18))
+                        .foregroundStyle(.tertiary)
+                    Text(selectedText.isEmpty ? "Нет совпадений — ↵ для нового слова" : "Нет совпадений — ↵ для добавления")
+                        .font(.system(size: 12))
+                        .foregroundStyle(.tertiary)
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 30)
+            } else {
+                ScrollView {
+                    LazyVStack(spacing: 0) {
+                        ForEach(filteredReplacements) { replacement in
+                            InsertReplacementRow(
+                                replacement: replacement,
+                                onEdit: { editReplacement(replacement) }
+                            )
+                            if replacement.id != filteredReplacements.last?.id {
+                                Divider()
+                            }
+                        }
+                    }
+                }
+                .frame(minHeight: 100, maxHeight: 240)
+                .padding(.horizontal, 4)
+                .padding(.bottom, 4)
+            }
+        }
+    }
+
+    private var emptyInsertView: some View {
+        VStack(spacing: 10) {
+            Image(systemName: "tray")
+                .font(.system(size: 24))
+                .foregroundStyle(.tertiary)
+
+            Text("Нет замен слов")
+                .font(.system(size: 13))
+                .foregroundStyle(.secondary)
+
+            Button {
+                withAnimation(.easeInOut(duration: 0.15)) { mode = .replacement }
+            } label: {
+                Text("Добавить замену")
+                    .font(.system(size: 12, weight: .medium))
+            }
+            .buttonStyle(.borderedProminent)
+            .controlSize(.small)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .padding(.vertical, 30)
+    }
+
+    private func editReplacement(_ replacement: WordReplacement) {
+        if !selectedText.isEmpty {
+            // Append selected text to existing entry instead of replacing it
+            let newToken = selectedText.trimmingCharacters(in: .whitespacesAndNewlines)
+            let existingTokens = replacement.originalText
+                .split(separator: ",")
+                .map { $0.trimmingCharacters(in: .whitespacesAndNewlines).lowercased() }
+            if existingTokens.contains(newToken.lowercased()) {
+                errorMessage = String.localizedStringWithFormat(String(localized: "\"%@\" already in this replacement"), newToken)
+                return
+            }
+            replacement.originalText += ", " + newToken
+            try? modelContext.save()
+            NotificationManager.shared.showNotification(
+                title: String.localizedStringWithFormat(String(localized: "Word added: %@ → %@"), newToken, replacement.replacementText),
+                type: .success,
+                duration: 2.5
+            )
+            onDismiss()
+            return
+        }
+        insertSearch = ""
+        withAnimation(.easeInOut(duration: 0.15)) { mode = .replacement }
+        DispatchQueue.main.async {
+            self.originalInput = replacement.originalText
+            self.replacementInput = replacement.replacementText
+        }
+    }
+
+    private func submitInsertSearch() {
+        let text = insertSearch.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !text.isEmpty else { return }
+
+        let matches = filteredReplacements
+        if matches.isEmpty {
+            if selectedText.isEmpty {
+                // No selected text → navigate to Replacement tab with typed text as original
+                insertSearch = ""
+                withAnimation(.easeInOut(duration: 0.15)) { mode = .replacement }
+                DispatchQueue.main.async {
+                    self.originalInput = text
+                    self.replacementInput = ""
+                }
+            } else {
+                // Selected text = original, typed text = replacement → add immediately
+                let err = DictionaryService.addWordReplacement(
+                    original: selectedText,
+                    replacement: text,
+                    existing: Array(wordReplacements),
+                    context: modelContext
+                )
+                if let err {
+                    errorMessage = err
+                } else {
+                    NotificationManager.shared.showNotification(
+                        title: String.localizedStringWithFormat(String(localized: "Replacement added: %@ → %@"), selectedText, text),
+                        type: .success,
+                        duration: 2.5
+                    )
+                    onDismiss()
+                }
+            }
+        } else if !selectedText.isEmpty {
+            // Match found + selected text present → append to existing entry
+            let match = matches[0]
+            let newToken = selectedText.trimmingCharacters(in: .whitespacesAndNewlines)
+            let existingTokens = match.originalText
+                .split(separator: ",")
+                .map { $0.trimmingCharacters(in: .whitespacesAndNewlines).lowercased() }
+            if existingTokens.contains(newToken.lowercased()) {
+                errorMessage = String.localizedStringWithFormat(String(localized: "\"%@\" already in this replacement"), newToken)
+                return
+            }
+            match.originalText += ", " + newToken
+            try? modelContext.save()
+            NotificationManager.shared.showNotification(
+                title: String.localizedStringWithFormat(String(localized: "Word added: %@ → %@"), newToken, match.replacementText),
+                type: .success,
+                duration: 2.5
+            )
+            onDismiss()
+        } else {
+            editReplacement(matches[0])
+        }
+    }
+
+    // MARK: - Insert Row
+
+    private struct InsertReplacementRow: View {
+        let replacement: WordReplacement
+        let onEdit: () -> Void
+        @State private var isHovered = false
+
+        var body: some View {
+            Button(action: onEdit) {
+                HStack(spacing: 8) {
+                    Text(replacement.originalText)
+                        .font(.system(size: 13))
+                        .lineLimit(1)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+
+                    Image(systemName: "arrow.right")
+                        .foregroundColor(.secondary)
+                        .font(.system(size: 10))
+                        .frame(width: 10)
+
+                    Text(replacement.replacementText)
+                        .font(.system(size: 13, weight: .medium))
+                        .lineLimit(1)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+
+                    Image(systemName: "pencil.circle.fill")
+                        .font(.system(size: 13))
+                        .symbolRenderingMode(.hierarchical)
+                        .foregroundColor(isHovered ? Color.accentColor : Color.secondary.opacity(0.5))
+                }
+                .padding(.horizontal, 10)
+                .padding(.vertical, 7)
+                .contentShape(Rectangle())
+                .background(isHovered ? Color.primary.opacity(0.06) : Color.clear)
+                .cornerRadius(6)
+            }
+            .buttonStyle(.plain)
+            .onHover { hover in
+                withAnimation(.easeInOut(duration: 0.15)) { isHovered = hover }
+            }
+        }
+    }
+
     // MARK: - Hint Bar
 
     private var hintBar: some View {
         HStack {
             Spacer()
             HStack(spacing: 14) {
-                HStack(spacing: 4) {
-                    KeyHint("↵")
-                    Text("Add")
-                        .font(.system(size: 11))
-                        .foregroundStyle(.tertiary)
-                }
-                HStack(spacing: 4) {
-                    KeyHint("esc")
-                    Text("Dismiss")
-                        .font(.system(size: 11))
-                        .foregroundStyle(.tertiary)
+                if mode == .insert {
+                    if selectedText.isEmpty {
+                        if wordReplacements.isEmpty {
+                            HStack(spacing: 4) {
+                                KeyHint("esc")
+                                Text("Dismiss")
+                                    .font(.system(size: 11))
+                                    .foregroundStyle(.tertiary)
+                            }
+                        } else {
+                        HStack(spacing: 4) {
+                            KeyHint("↵")
+                            Text("Новое слово или правка")
+                                .font(.system(size: 11))
+                                .foregroundStyle(.tertiary)
+                        }
+                            HStack(spacing: 4) {
+                                KeyHint("esc")
+                                Text("Dismiss")
+                                    .font(.system(size: 11))
+                                    .foregroundStyle(.tertiary)
+                            }
+                        }
+                    } else {
+                        HStack(spacing: 4) {
+                            KeyHint("↵")
+                            Text("Добавить замену")
+                                .font(.system(size: 11))
+                                .foregroundStyle(.tertiary)
+                        }
+                        HStack(spacing: 4) {
+                            KeyHint("esc")
+                            Text("Dismiss")
+                                .font(.system(size: 11))
+                                .foregroundStyle(.tertiary)
+                        }
+                    }
+                } else {
+                    HStack(spacing: 4) {
+                        KeyHint("↵")
+                        Text("Add")
+                            .font(.system(size: 11))
+                            .foregroundStyle(.tertiary)
+                    }
+                    HStack(spacing: 4) {
+                        KeyHint("esc")
+                        Text("Dismiss")
+                            .font(.system(size: 11))
+                            .foregroundStyle(.tertiary)
+                    }
                 }
             }
         }
@@ -336,7 +647,21 @@ struct DictionaryQuickAddView: View {
             errorMessage = error
             return
         }
+        NotificationManager.shared.showNotification(
+            title: String.localizedStringWithFormat(String(localized: "Replacement added: %@ → %@"), original, replacement),
+            type: .success,
+            duration: 2.5
+        )
         onDismiss()
+    }
+}
+
+// MARK: - Height Preference
+
+private struct PanelHeightKey: PreferenceKey {
+    static var defaultValue: CGFloat = 0
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+        value = max(value, nextValue())
     }
 }
 

@@ -122,13 +122,14 @@ struct EditReplacementSheet: View {
 
     // MARK: – Actions
     private func saveChanges() {
-        let newOriginal = originalWord.trimmingCharacters(in: .whitespacesAndNewlines)
-        let newReplacement = replacementWord
-        let tokens = newOriginal
+        let trimmedReplacement = replacementWord.trimmingCharacters(in: .whitespacesAndNewlines)
+        let tokens = originalWord
+            .trimmingCharacters(in: .whitespacesAndNewlines)
             .split(separator: ",")
             .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
             .filter { !$0.isEmpty }
-        guard !tokens.isEmpty, !newReplacement.isEmpty else { return }
+        let newOriginal = tokens.joined(separator: ", ")
+        guard !tokens.isEmpty, !trimmedReplacement.isEmpty else { return }
 
         // Check for duplicates (excluding current replacement)
         let newTokensPairs = tokens.map { (original: $0, lowercased: $0.lowercased()) }
@@ -158,7 +159,7 @@ struct EditReplacementSheet: View {
 
         // Update the replacement
         replacement.originalText = newOriginal
-        replacement.replacementText = newReplacement
+        replacement.replacementText = trimmedReplacement
 
         do {
             try modelContext.save()

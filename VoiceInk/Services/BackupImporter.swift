@@ -211,7 +211,7 @@ enum BackupImporter {
     }
 
     @MainActor
-    private static func importDictionary(from backup: BackupFile, modelContext: ModelContext) throws {
+    static func importDictionary(from backup: BackupFile, modelContext: ModelContext) throws {
         var insertedWords = 0
         var insertedReplacements = 0
         var skippedInvalidReplacements = 0
