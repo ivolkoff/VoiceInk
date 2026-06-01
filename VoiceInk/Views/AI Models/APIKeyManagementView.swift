@@ -224,7 +224,7 @@ struct APIKeyManagementView: View {
                             .foregroundColor(.secondary)
 
                         HStack {
-                            Text("claude --model haiku --strict-mcp-config --setting-sources \"\" -p \"$VOICEINK_FULL_PROMPT\"")
+                            Text("claude --model sonnet --strict-mcp-config --setting-sources \"\" -p \"$VOICEINK_FULL_PROMPT\"")
                                 .font(.system(.caption, design: .monospaced))
                                 .foregroundColor(.secondary)
                                 .lineLimit(1)
@@ -232,7 +232,7 @@ struct APIKeyManagementView: View {
 
                             Button {
                                 NSPasteboard.general.clearContents()
-                                NSPasteboard.general.setString("claude --model haiku --strict-mcp-config --setting-sources \"\" -p \"$VOICEINK_FULL_PROMPT\"", forType: .string)
+                                NSPasteboard.general.setString("claude --model sonnet --strict-mcp-config --setting-sources \"\" -p \"$VOICEINK_FULL_PROMPT\"", forType: .string)
                             } label: {
                                 Image(systemName: "doc.on.doc")
                                     .font(.caption)
