@@ -25,10 +25,10 @@
 
 ## 5. Verification
 
-- [ ] 5.1 With text selected in a target app, pressing the shortcut replaces the selection with the AI result
-- [ ] 5.2 With nothing selected in an editable field, select-all fallback captures the field and enhances it
-- [ ] 5.3 Input exceeding the max length aborts with a notice and no AI call / no paste
-- [ ] 5.4 Enhancement disabled/unconfigured shows the proper notice and does not paste
-- [ ] 5.5 Simulated AI failure leaves the original selection intact and notifies the user
-- [ ] 5.6 Clipboard contents are preserved after the action (save/restore works)
-- [ ] 5.7 Voice/transcription flow is unaffected (regression check)
+- [x] 5.1 With text selected in a target app, pressing the shortcut replaces the selection with the AI result
+- [x] 5.2 With nothing selected in an editable field, select-all fallback captures the field and enhances it
+- [x] 5.3 Input exceeding the max length aborts with a notice and no AI call / no paste
+- [x] 5.4 Enhancement disabled/unconfigured shows the proper notice and does not paste
+- [x] 5.5 Simulated AI failure leaves the original selection intact and notifies the user
+- [x] 5.6 Clipboard contents are preserved after the action (save/restore works)
+- [x] 5.7 Voice/transcription flow is unaffected (regression check)

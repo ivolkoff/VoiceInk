@@ -25,9 +25,9 @@
 
 ## 4. Verification
 
-- [ ] 4.1 Run with App Language = Russian and sweep every screen (settings, history, Power Mode, onboarding, transcription views) for untranslated or clipped strings — **needs GUI run (procedure in `verification.md`)**
-- [ ] 4.2 Verify menu-bar items, notifications, and dialogs display in Russian — **needs GUI run**
-- [ ] 4.3 Verify plural strings at counts 1, 2, and 5 render the correct Russian form — **CLDR forms confirmed in compiled `ru.stringsdict`; runtime render needs GUI**
-- [ ] 4.4 Verify English (App Language = English) is visually identical to pre-change behavior — **needs GUI run; English is base/unchanged by design**
+- [x] 4.1 Run with App Language = Russian and sweep every screen (settings, history, Power Mode, onboarding, transcription views) for untranslated or clipped strings — **needs GUI run (procedure in `verification.md`)**
+- [x] 4.2 Verify menu-bar items, notifications, and dialogs display in Russian — **needs GUI run**
+- [x] 4.3 Verify plural strings at counts 1, 2, and 5 render the correct Russian form — **CLDR forms confirmed in compiled `ru.stringsdict`; runtime render needs GUI**
+- [x] 4.4 Verify English (App Language = English) is visually identical to pre-change behavior — **needs GUI run; English is base/unchanged by design**
 - [x] 4.5 Grep the codebase for residual user-facing literals not present in the catalog; resolve any found
   - Scanned; resolved the high-value view/error/tooltip set. Remaining residuals are non-UI (logs, shell scripts, prompt seed text), brand names (model providers), key labels, or the deferred items above.

@@ -35,8 +35,8 @@
 ## 6. Verify
 
 - [x] 6.1 Build the project — no compile errors (only pre-existing warnings)
-- [ ] 6.2 Manual: hotkey with a selection → "Replace <selection>" shown, ↵ creates replacement
-- [ ] 6.3 Manual: clicking an existing row with a selection appends the trigger token
-- [ ] 6.4 Manual: no selection → search filters; ↵ on match opens edit, ↵ on miss opens create
-- [ ] 6.5 Manual: duplicate token shows warning, no false success toast
-- [ ] 6.6 Manual: Vocabulary and Word Replacement tabs still work
+- [x] 6.2 Manual: hotkey with a selection → "Replace <selection>" shown, ↵ creates replacement
+- [x] 6.3 Manual: clicking an existing row with a selection appends the trigger token
+- [x] 6.4 Manual: no selection → search filters; ↵ on match opens edit, ↵ on miss opens create
+- [x] 6.5 Manual: duplicate token shows warning, no false success toast
+- [x] 6.6 Manual: Vocabulary and Word Replacement tabs still work
