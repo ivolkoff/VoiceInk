@@ -248,7 +248,7 @@ class PowerModeManager: ObservableObject {
                 for urlConfig in urlConfigs {
                     let configURL = cleanURL(urlConfig.url)
                     
-                    if cleanedURL.contains(configURL) {
+                    if cleanedURL == configURL || cleanedURL.hasPrefix(configURL + "/") {
                         return config
                     }
                 }

@@ -615,6 +615,7 @@ struct ConfigurationView: View {
     private func addWebsite() {
         guard !newWebsiteURL.isEmpty else { return }
         let cleanedURL = powerModeManager.cleanURL(newWebsiteURL)
+        guard !cleanedURL.isEmpty else { return }
         websiteConfigs.append(URLConfig(url: cleanedURL))
         newWebsiteURL = ""
     }

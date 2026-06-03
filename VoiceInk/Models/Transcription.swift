@@ -80,5 +80,7 @@ final class Transcription {
         promptName = nil
         aiRequestSystemMessage = nil
         aiRequestUserMessage = nil
+        powerModeName = nil
+        powerModeEmoji = nil
     }
 }

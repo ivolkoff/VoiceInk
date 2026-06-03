@@ -166,8 +166,9 @@ class AudioProcessor {
         let int16Samples = samples.map { max(-1.0, min(1.0, $0)) * Float(Int16.max) }.map { Int16($0) }
 
         // Copy samples to buffer
+        guard !int16Samples.isEmpty else { return }
         int16Samples.withUnsafeBufferPointer { int16Buffer in
-            let int16Pointer = int16Buffer.baseAddress!
+            guard let int16Pointer = int16Buffer.baseAddress else { return }
             buffer.int16ChannelData![0].update(from: int16Pointer, count: int16Samples.count)
         }
         buffer.frameLength = AVAudioFrameCount(samples.count)

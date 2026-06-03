@@ -70,6 +70,7 @@ class PowerModeSessionManager {
             )
             saveSession(newSession)
 
+            NotificationCenter.default.removeObserver(self, name: .AppSettingsDidChange, object: nil)
             NotificationCenter.default.addObserver(self, selector: #selector(updateSessionSnapshot), name: .AppSettingsDidChange, object: nil)
         }
 

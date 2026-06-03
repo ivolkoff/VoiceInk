@@ -95,6 +95,7 @@ class LicenseViewModel: ObservableObject {
     
     func validateLicense() async {
         guard !licenseKey.isEmpty else {
+            isValidating = false
             validationSuccess = false
             validationMessage = "Please enter a license key"
             return

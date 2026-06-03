@@ -80,7 +80,7 @@ final class AnnouncementManager {
         let bottomPadding: CGFloat = 24
         let x = visibleFrame.midX - (panel.frame.width / 2)
         // Ensure bottom padding, but if the panel is taller, anchor its bottom at padding
-        let y = max(visibleFrame.minY + bottomPadding, visibleFrame.minY + bottomPadding)
+        let y = visibleFrame.minY + bottomPadding
         panel.setFrameOrigin(NSPoint(x: x, y: y))
     }
 }

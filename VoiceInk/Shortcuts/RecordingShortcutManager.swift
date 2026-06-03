@@ -193,20 +193,20 @@ class RecordingShortcutManager: ObservableObject {
         let downMonitor = NSEvent.addGlobalMonitorForEvents(matching: .otherMouseDown) { [weak self] event in
             guard let self = self, event.buttonNumber == 2 else { return }
 
-            self.middleClickTask?.cancel()
-            self.middleClickTask = Task {
-                do {
-                    let delay = UInt64(self.middleClickActivationDelay) * 1_000_000 // ms to ns
-                    try await Task.sleep(nanoseconds: delay)
-                    
-                    guard self.isMiddleClickToggleEnabled, !Task.isCancelled else { return }
-                    
-                    Task { @MainActor in
+            Task { @MainActor in
+                self.middleClickTask?.cancel()
+                self.middleClickTask = Task {
+                    do {
+                        let delay = UInt64(self.middleClickActivationDelay) * 1_000_000 // ms to ns
+                        try await Task.sleep(nanoseconds: delay)
+                        
+                        guard self.isMiddleClickToggleEnabled, !Task.isCancelled else { return }
                         guard self.canHandleShortcutAction else { return }
+                        
                         await self.recorderUIManager.toggleMiniRecorder()
+                    } catch {
+                        // Cancelled
                     }
-                } catch {
-                    // Cancelled
                 }
             }
         }
@@ -214,7 +214,9 @@ class RecordingShortcutManager: ObservableObject {
         // Mouse Up
         let upMonitor = NSEvent.addGlobalMonitorForEvents(matching: .otherMouseUp) { [weak self] event in
             guard let self = self, event.buttonNumber == 2 else { return }
-            self.middleClickTask?.cancel()
+            Task { @MainActor in
+                self.middleClickTask?.cancel()
+            }
         }
 
         middleClickMonitors = [downMonitor, upMonitor]

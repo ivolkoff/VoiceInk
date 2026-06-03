@@ -3,6 +3,7 @@ import SwiftUI
 struct CopyIconButton: View {
     let textToCopy: String
     @State private var copied = false
+    @State private var resetWork: DispatchWorkItem?
 
     var body: some View {
         Button(action: copy) {
@@ -20,8 +21,11 @@ struct CopyIconButton: View {
     private func copy() {
         let _ = ClipboardManager.copyToClipboard(textToCopy)
         withAnimation { copied = true }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+        resetWork?.cancel()
+        let work = DispatchWorkItem {
             withAnimation { copied = false }
         }
+        resetWork = work
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5, execute: work)
     }
 }

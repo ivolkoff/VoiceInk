@@ -45,9 +45,11 @@ enum TranscriptionLanguageSupport {
             return "en"
         }
 
-        return languages.keys.sorted { lhs, rhs in
+        let sorted = languages.keys.sorted { lhs, rhs in
             languages[lhs, default: lhs] < languages[rhs, default: rhs]
-        }.first ?? "en"
+        }
+        assert(!sorted.isEmpty, "validLanguageOrFallback: languages dictionary is empty, falling back to 'en'")
+        return sorted.first ?? "en"
     }
 
     private static func assemblyAILanguages(usesRealtime: Bool) -> [String: String] {

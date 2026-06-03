@@ -42,7 +42,7 @@ class VoiceInkEngine: NSObject, ObservableObject {
         self.transcriptionModelManager = transcriptionModelManager
         self.enhancementService = enhancementService
 
-        let appSupportDirectory = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
+        let appSupportDirectory = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first ?? URL(fileURLWithPath: NSTemporaryDirectory())
             .appendingPathComponent("com.prakashjoshipax.VoiceInk")
         self.recordingsDirectory = appSupportDirectory.appendingPathComponent("Recordings")
 
@@ -105,8 +105,12 @@ class VoiceInkEngine: NSObject, ObservableObject {
                         transcriptionStatus: .pending
                     )
                     modelContext.insert(transcription)
-                    try? modelContext.save()
-                    NotificationCenter.default.post(name: .transcriptionCreated, object: transcription)
+                    do {
+                        try modelContext.save()
+                        NotificationCenter.default.post(name: .transcriptionCreated, object: transcription)
+                    } catch {
+                        logger.error("❌ Failed to save pending transcription: \(error.localizedDescription, privacy: .public)")
+                    }
 
                     await runPipeline(on: transcription, audioURL: recordedFile)
                 } else {
@@ -312,6 +316,7 @@ class VoiceInkEngine: NSObject, ObservableObject {
             shouldFinishSessionImmediately = true
         case .transcribing, .enhancing:
             requestRecordingCancellation()
+            shouldCancelRecording = false
             partialTranscript = ""
             recordingState = .idle
             shouldFinishSessionImmediately = false
@@ -449,6 +454,11 @@ class VoiceInkEngine: NSObject, ObservableObject {
         await whisperModelManager.cleanupResources()
         await serviceRegistry.cleanup()
         logger.notice("cleanupResources: completed")
+    }
+
+    deinit {
+        NotificationCenter.default.removeObserver(self, name: .licenseStatusChanged, object: nil)
+        NotificationCenter.default.removeObserver(self, name: .promptDidChange, object: nil)
     }
 
     // MARK: - Notification Handling

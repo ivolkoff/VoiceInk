@@ -217,8 +217,8 @@ class AIEnhancementService: ObservableObject {
                 return activePrompt.finalPromptText + finalContextSection
             }
         } else {
-            let defaultPrompt = allPrompts.first(where: { $0.id == PredefinedPrompts.defaultPromptId }) ?? allPrompts.first!
-            return defaultPrompt.finalPromptText + finalContextSection
+            let defaultPrompt = allPrompts.first(where: { $0.id == PredefinedPrompts.defaultPromptId }) ?? allPrompts.first
+            return (defaultPrompt?.finalPromptText ?? "Improve the following transcript.") + finalContextSection
         }
     }
 

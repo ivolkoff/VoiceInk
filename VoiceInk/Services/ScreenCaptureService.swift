@@ -34,7 +34,7 @@ class ScreenCaptureService: ObservableObject {
 
         isCapturing = true
         defer {
-            DispatchQueue.main.async { self.isCapturing = false }
+            self.isCapturing = false
         }
 
         do {

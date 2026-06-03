@@ -20,7 +20,7 @@ struct ClipboardManager {
         }
 
         if let bundleIdentifier = Bundle.main.bundleIdentifier {
-            pasteboard.setString(bundleIdentifier, forType: sourceType)
+            pasteboard.setString(bundleIdentifier, forType: sourceType) // Non-fatal: metadata only
         }
 
         if transient {

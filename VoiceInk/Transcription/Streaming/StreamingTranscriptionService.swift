@@ -99,6 +99,8 @@ class StreamingTranscriptionService {
         self.onPartialTranscript = onPartialTranscript
     }
 
+    private var disconnectTask: Task<Void, Never>?
+
     deinit {
         onPartialTranscript = nil
         sendTask?.cancel()
@@ -115,6 +117,10 @@ class StreamingTranscriptionService {
 
     /// Start a streaming transcription session for the given model.
     func startStreaming(model: any TranscriptionModel) async throws {
+        // Ensure any previous disconnect completes before starting a new stream
+        try? await disconnectTask?.value
+        disconnectTask = nil
+
         let start = Date()
         state = .connecting
         committedSegments = []
@@ -122,7 +128,7 @@ class StreamingTranscriptionService {
         firstPartialLogged = false
         firstCommitLogged = false
 
-        let provider = createProvider(for: model)
+        let provider = try createProvider(for: model)
         self.provider = provider
 
         let selectedLanguage = UserDefaults.standard.string(forKey: "SelectedLanguage") ?? "auto"
@@ -209,7 +215,7 @@ class StreamingTranscriptionService {
         let providerToDisconnect = provider
         provider = nil
 
-        Task {
+        disconnectTask = Task {
             await providerToDisconnect?.disconnect()
         }
 
@@ -219,16 +225,16 @@ class StreamingTranscriptionService {
 
     // MARK: - Private
 
-    private func createProvider(for model: any TranscriptionModel) -> StreamingTranscriptionProvider {
+    private func createProvider(for model: any TranscriptionModel) throws -> StreamingTranscriptionProvider {
         if model.provider == .fluidAudio {
             guard let fluidAudioService else {
-                fatalError("FluidAudioTranscriptionService required for FluidAudio streaming. Ensure it is passed to StreamingTranscriptionService.")
+                throw StreamingTranscriptionError.connectionFailed("FluidAudioTranscriptionService required for FluidAudio streaming.")
             }
             return FluidAudioStreamingProvider(fluidAudioService: fluidAudioService)
         }
         guard let cloudProvider = CloudProviderRegistry.provider(for: model.provider),
               let streamingProvider = cloudProvider.makeStreamingProvider(modelContext: modelContext) else {
-            fatalError("Unsupported streaming provider: \(model.provider). Check supportsStreaming() before calling startStreaming().")
+            throw StreamingTranscriptionError.connectionFailed("Unsupported streaming provider: \(model.provider).")
         }
         return streamingProvider
     }

@@ -10,14 +10,14 @@ struct OnboardingModelDownloadView: View {
     @State private var isModelSet = false
     @State private var showTutorial = false
     
-    private let turboModel = TranscriptionModelRegistry.models.first { $0.name == "ggml-large-v3-turbo-q5_0" } as! WhisperModel
+    private let turboModel: WhisperModel? = TranscriptionModelRegistry.models.first { $0.name == "ggml-large-v3-turbo-q5_0" } as? WhisperModel
     
     var body: some View {
         ZStack {
             if showTutorial {
                 OnboardingTutorialView(hasCompletedOnboarding: $hasCompletedOnboarding)
                     .transition(.move(edge: .trailing).combined(with: .opacity))
-            } else {
+            } else if let turboModel {
                 GeometryReader { geometry in
                     // Reusable background
                     OnboardingBackgroundView()
@@ -162,12 +162,14 @@ struct OnboardingModelDownloadView: View {
     }
     
     private func checkModelStatus() {
+        guard let turboModel else { return }
         if whisperModelManager.availableModels.contains(where: { $0.name == turboModel.name }) {
             isModelSet = transcriptionModelManager.currentTranscriptionModel?.name == turboModel.name
         }
     }
 
     private func handleAction() {
+        guard let turboModel else { return }
         if isModelSet {
             withAnimation {
                 showTutorial = true
@@ -199,6 +201,7 @@ struct OnboardingModelDownloadView: View {
     }
 
     private func cancelDownload() {
+        guard let turboModel else { return }
         whisperModelManager.cancelDownload(turboModel.name)
         withAnimation {
             isDownloading = false
@@ -206,6 +209,7 @@ struct OnboardingModelDownloadView: View {
     }
 
     private func getButtonTitle() -> LocalizedStringKey {
+        guard let turboModel else { return "Continue" }
         if isModelSet {
             return "Continue"
         } else if isDownloading {

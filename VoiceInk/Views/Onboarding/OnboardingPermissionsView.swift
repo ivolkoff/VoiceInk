@@ -38,6 +38,8 @@ struct OnboardingPermissionsView: View {
     @State private var scale: CGFloat = 0.8
     @State private var opacity: CGFloat = 0
     @State private var showModelDownload = false
+    @State private var accessibilityTimer: Timer?
+    @State private var screenRecordingTimer: Timer?
     
     private let permissions: [OnboardingPermission] = [
         OnboardingPermission(
@@ -248,6 +250,12 @@ struct OnboardingPermissionsView: View {
             // Ensure audio devices are loaded
             audioDeviceManager.loadAvailableDevices()
         }
+        .onDisappear {
+            accessibilityTimer?.invalidate()
+            accessibilityTimer = nil
+            screenRecordingTimer?.invalidate()
+            screenRecordingTimer = nil
+        }
     }
     
     private func animateIn() {
@@ -328,15 +336,17 @@ struct OnboardingPermissionsView: View {
             AXIsProcessTrustedWithOptions(options)
             
             // Start checking for permission status
-            Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { timer in
+            let timer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { timer in
                 if AXIsProcessTrusted() {
                     timer.invalidate()
+                    accessibilityTimer = nil
                     permissionStates[currentPermissionIndex] = true
                     withAnimation {
                         showAnimation = true
                     }
                 }
             }
+            accessibilityTimer = timer
             
         case .screenRecording:
             // First try to request permission programmatically
@@ -348,15 +358,17 @@ struct OnboardingPermissionsView: View {
             }
             
             // Start checking for permission status
-            Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { timer in
+            let timer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { timer in
                 if CGPreflightScreenCaptureAccess() {
                     timer.invalidate()
+                    screenRecordingTimer = nil
                     permissionStates[currentPermissionIndex] = true
                     withAnimation {
                         showAnimation = true
                     }
                 }
             }
+            screenRecordingTimer = timer
             
         case .keyboardShortcut:
             // The shortcut recorder handles this step directly.

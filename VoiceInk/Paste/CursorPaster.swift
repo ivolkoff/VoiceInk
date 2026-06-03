@@ -220,21 +220,24 @@ class CursorPaster {
         guard AXIsProcessTrusted() else { return }
 
         let source = CGEventSource(stateID: .privateState)
-        let enterDown = CGEvent(keyboardEventSource: source, virtualKey: 0x24, keyDown: true)
-        let enterUp   = CGEvent(keyboardEventSource: source, virtualKey: 0x24, keyDown: false)
+        guard let enterDown = CGEvent(keyboardEventSource: source, virtualKey: 0x24, keyDown: true),
+              let enterUp = CGEvent(keyboardEventSource: source, virtualKey: 0x24, keyDown: false) else {
+            logger.error("Failed to create keyboard events for auto-send")
+            return
+        }
 
         switch key {
         case .none: return
         case .enter: break
         case .shiftEnter:
-            enterDown?.flags = .maskShift
-            enterUp?.flags   = .maskShift
+            enterDown.flags = .maskShift
+            enterUp.flags   = .maskShift
         case .commandEnter:
-            enterDown?.flags = .maskCommand
-            enterUp?.flags   = .maskCommand
+            enterDown.flags = .maskCommand
+            enterUp.flags   = .maskCommand
         }
 
-        enterDown?.post(tap: .cghidEventTap)
-        enterUp?.post(tap: .cghidEventTap)
+        enterDown.post(tap: .cghidEventTap)
+        enterUp.post(tap: .cghidEventTap)
     }
 }

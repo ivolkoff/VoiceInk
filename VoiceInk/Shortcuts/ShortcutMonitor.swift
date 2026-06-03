@@ -270,6 +270,10 @@ final class ShortcutMonitor {
         switch Int(GetEventKind(event)) {
         case kEventHotKeyPressed:
             if onShortcutPressed != nil {
+                state.isDown = true
+                state.pressedAt = eventTime
+                state.isInterrupted = false
+                shortcuts[action] = state
                 dispatchShortcutPressed(for: action, eventTime: eventTime)
                 return noErr
             }

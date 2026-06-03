@@ -5,6 +5,10 @@ import SwiftUI
 class SoundManager: ObservableObject {
     static let shared = SoundManager()
 
+    deinit {
+        NotificationCenter.default.removeObserver(self, name: NSNotification.Name("CustomSoundsChanged"), object: nil)
+    }
+
     private let playbackEngine = SoundPlaybackEngine()
     @AppStorage("isSoundFeedbackEnabled") private var isSoundFeedbackEnabled = true
 
