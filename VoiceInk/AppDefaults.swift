@@ -27,6 +27,7 @@ enum AppDefaults {
             "RemovePunctuation": false,
             "LowercaseTranscription": false,
             "SelectedLanguage": "en",
+            "MatchLanguageToKeyboardLayout": true,
             "AppendTrailingSpace": true,
             "showLiveTextPreview": false,
             "RecorderType": "mini",

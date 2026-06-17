@@ -59,7 +59,9 @@ class WhisperTranscriptionService: TranscriptionService {
         await whisperContext.setPrompt(currentPrompt)
 
         // Transcribe
-        let success = await whisperContext.fullTranscribe(samples: data)
+        let resolvedLanguage = TranscriptionLanguagePreference.layoutOverride(for: model)
+            ?? (UserDefaults.standard.string(forKey: "SelectedLanguage") ?? "auto")
+        let success = await whisperContext.fullTranscribe(samples: data, language: resolvedLanguage)
 
         guard success else {
             logger.error("❌ Core transcription engine failed (whisper_full).")

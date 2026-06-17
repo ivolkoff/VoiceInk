@@ -9,6 +9,7 @@ enum LanguageDisplayMode {
 struct LanguageSelectionView: View {
     @ObservedObject var transcriptionModelManager: TranscriptionModelManager
     @AppStorage("SelectedLanguage") private var selectedLanguage: String = "en"
+    @AppStorage("MatchLanguageToKeyboardLayout") private var matchKeyboardLayout: Bool = true
     // Add display mode parameter with full as the default
     var displayMode: LanguageDisplayMode = .full
     @ObservedObject var whisperPrompt: WhisperPrompt
@@ -125,6 +126,10 @@ struct LanguageSelectionView: View {
                     .disabled(true)
                 } else if isMultilingualModel() {
                     VStack(alignment: .leading, spacing: 8) {
+                        Toggle("Match transcription language to keyboard layout", isOn: $matchKeyboardLayout)
+                            .toggleStyle(.switch)
+                            .controlSize(.small)
+
                         HStack(spacing: 8) {
                             Picker("Select Language", selection: selectedLanguageBinding) {
                                 ForEach(
@@ -146,7 +151,9 @@ struct LanguageSelectionView: View {
                         }
 
                         Text(
-                            "This model supports multiple languages. Select a specific language or auto-detect(if available)"
+                            matchKeyboardLayout
+                                ? "Transcription follows your current keyboard layout. The selection above is used as a fallback when the layout language isn't supported."
+                                : "This model supports multiple languages. Select a specific language or auto-detect(if available)"
                         )
                         .font(.caption)
                         .foregroundColor(.secondary)

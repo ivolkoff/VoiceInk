@@ -45,7 +45,7 @@ class CloudTranscriptionService: TranscriptionService {
     func transcribe(audioURL: URL, model: any TranscriptionModel) async throws -> String {
         let audioData = try loadAudioData(from: audioURL)
         let fileName = audioURL.lastPathComponent
-        let language = selectedLanguage()
+        let language = selectedLanguage(for: model)
 
         do {
             if model.provider == .custom {
@@ -93,8 +93,9 @@ class CloudTranscriptionService: TranscriptionService {
         return apiKey
     }
 
-    private func selectedLanguage() -> String? {
-        let lang = UserDefaults.standard.string(forKey: "SelectedLanguage") ?? "auto"
+    private func selectedLanguage(for model: any TranscriptionModel) -> String? {
+        let lang = TranscriptionLanguagePreference.layoutOverride(for: model)
+            ?? (UserDefaults.standard.string(forKey: "SelectedLanguage") ?? "auto")
         return (lang == "auto" || lang.isEmpty) ? nil : lang
     }
 

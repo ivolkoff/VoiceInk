@@ -4,6 +4,38 @@
     "": {
       "shouldTranslate": false
     },
+    "Match transcription language to keyboard layout": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Match transcription language to keyboard layout"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Язык распознавания по раскладке клавиатуры"
+          }
+        }
+      }
+    },
+    "Transcription follows your current keyboard layout. The selection above is used as a fallback when the layout language isn't supported.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Transcription follows your current keyboard layout. The selection above is used as a fallback when the layout language isn't supported."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Распознавание следует текущей раскладке клавиатуры. Выбор выше используется как запасной, если язык раскладки не поддерживается."
+          }
+        }
+      }
+    },
     "\"%@\" already in this replacement": {
       "localizations": {
         "en": {

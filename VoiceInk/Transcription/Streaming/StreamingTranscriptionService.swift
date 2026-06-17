@@ -131,7 +131,8 @@ class StreamingTranscriptionService {
         let provider = try createProvider(for: model)
         self.provider = provider
 
-        let selectedLanguage = UserDefaults.standard.string(forKey: "SelectedLanguage") ?? "auto"
+        let selectedLanguage = TranscriptionLanguagePreference.layoutOverride(for: model)
+            ?? (UserDefaults.standard.string(forKey: "SelectedLanguage") ?? "auto")
         logger.notice("Streaming start requested model=\(model.displayName, privacy: .public) language=\(selectedLanguage, privacy: .public)")
 
         try await provider.connect(model: model, language: selectedLanguage)

@@ -101,7 +101,8 @@ class FluidAudioTranscriptionService: TranscriptionService {
         }
 
         let languageHint = Self.languageHint(
-            from: UserDefaults.standard.string(forKey: "SelectedLanguage"),
+            from: TranscriptionLanguagePreference.layoutOverride(for: model)
+                ?? UserDefaults.standard.string(forKey: "SelectedLanguage"),
             model: model
         )
         let audioSamples = try readAudioSamples(from: audioURL)

@@ -12,7 +12,7 @@ class OpenAICompatibleTranscriptionService {
         request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
         request.setValue("Bearer \(model.apiKey)", forHTTPHeaderField: "Authorization")
 
-        let body = try buildRequestBody(audioURL: audioURL, modelName: model.modelName, boundary: boundary)
+        let body = try buildRequestBody(audioURL: audioURL, model: model, boundary: boundary)
         let (data, response) = try await URLSession.shared.upload(for: request, from: body)
 
         guard let httpResponse = response as? HTTPURLResponse else {
@@ -31,12 +31,14 @@ class OpenAICompatibleTranscriptionService {
         }
     }
 
-    private func buildRequestBody(audioURL: URL, modelName: String, boundary: String) throws -> Data {
+    private func buildRequestBody(audioURL: URL, model: CustomCloudModel, boundary: String) throws -> Data {
         guard let audioData = try? Data(contentsOf: audioURL) else {
             throw CloudTranscriptionError.audioFileNotFound
         }
 
-        let selectedLanguage = UserDefaults.standard.string(forKey: "SelectedLanguage") ?? "auto"
+        let modelName = model.modelName
+        let selectedLanguage = TranscriptionLanguagePreference.layoutOverride(for: model)
+            ?? (UserDefaults.standard.string(forKey: "SelectedLanguage") ?? "auto")
         let prompt = UserDefaults.standard.string(forKey: "TranscriptionPrompt") ?? ""
         let crlf = "\r\n"
         var body = Data()
