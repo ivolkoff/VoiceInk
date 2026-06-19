@@ -6,13 +6,12 @@ enum KeyboardLayoutLanguageService {
     /// Base, lowercased language code of the active keyboard layout (e.g. "en", "ru"),
     /// or `nil` if it cannot be determined.
     ///
-    /// TIS APIs must be queried on the main thread; this hops to main when called
-    /// from a background context (transcription engines run off-main).
+    /// Reading the current keyboard input source is thread-safe, so this runs on the
+    /// calling thread directly. It must NOT hop to the main thread with a blocking
+    /// `DispatchQueue.main.sync`: transcription engines call this from the Swift
+    /// concurrency cooperative pool, and blocking that on main causes a hang.
     static func currentLanguageCode() -> String? {
-        if Thread.isMainThread {
-            return readCurrentLayoutLanguage()
-        }
-        return DispatchQueue.main.sync { readCurrentLayoutLanguage() }
+        readCurrentLayoutLanguage()
     }
 
     /// Normalizes an ISO code to its base, lowercased language (e.g. "en-US" -> "en").
