@@ -7696,6 +7696,76 @@
           }
         }
       }
+    },
+    "Paste in Chunks": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Вставлять по частям"
+          }
+        }
+      }
+    },
+    "Chunk Size": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Размер части"
+          }
+        }
+      }
+    },
+    "250 characters": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "250 символов"
+          }
+        }
+      }
+    },
+    "500 characters": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "500 символов"
+          }
+        }
+      }
+    },
+    "750 characters": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "750 символов"
+          }
+        }
+      }
+    },
+    "1000 characters": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1000 символов"
+          }
+        }
+      }
+    },
+    "Some terminal apps (such as Claude Code) collapse a single large paste into a \"[Pasted text]\" placeholder. When enabled, VoiceInk pastes the transcription in smaller pieces so the full text stays visible inline. A smaller chunk size avoids the placeholder in more apps but makes pasting slightly slower.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Некоторые терминальные приложения (например, Claude Code) сворачивают одну большую вставку в заглушку «[Pasted text]». Когда включено, VoiceInk вставляет транскрипцию небольшими частями, чтобы весь текст оставался видимым в строке. Меньший размер части избегает заглушки в большем числе приложений, но немного замедляет вставку."
+          }
+        }
+      }
     }
   },
   "version": "1.0"
