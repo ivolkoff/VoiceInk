@@ -304,4 +304,50 @@ class CursorPaster {
         enterDown.post(tap: .cghidEventTap)
         enterUp.post(tap: .cghidEventTap)
     }
+
+    // MARK: - Selection (for safe re-transcribe replace)
+
+    /// Selects `count` characters backward from the caret by posting Shift+Left `count` times.
+    /// Paced with `pasteShortcutEventDelay` so events aren't coalesced/dropped. Returns `false`
+    /// (and selects nothing) without Accessibility permission, so callers must not proceed to a
+    /// destructive paste when this fails.
+    @MainActor
+    @discardableResult
+    static func selectBackward(count: Int) async -> Bool {
+        guard count > 0 else { return true }
+        guard AXIsProcessTrusted() else {
+            logger.error("Accessibility permission is required to select text with simulated key events")
+            return false
+        }
+
+        let source = CGEventSource(stateID: .privateState)
+        for _ in 0..<count {
+            guard let down = CGEvent(keyboardEventSource: source, virtualKey: 0x7B, keyDown: true),
+                  let up = CGEvent(keyboardEventSource: source, virtualKey: 0x7B, keyDown: false) else {
+                logger.error("Failed to create Shift+Left keyboard events")
+                return false
+            }
+            down.flags = .maskShift
+            up.flags = .maskShift
+            down.post(tap: .cghidEventTap)
+            await wait(pasteShortcutEventDelay)
+            up.post(tap: .cghidEventTap)
+            await wait(pasteShortcutEventDelay)
+        }
+        return true
+    }
+
+    /// Collapses the current selection by posting Right arrow (caret moves to the selection end),
+    /// so aborting a replace leaves the user's text untouched rather than selected.
+    @MainActor
+    static func collapseSelectionForward() {
+        guard AXIsProcessTrusted() else { return }
+        let source = CGEventSource(stateID: .privateState)
+        guard let down = CGEvent(keyboardEventSource: source, virtualKey: 0x7C, keyDown: true),
+              let up = CGEvent(keyboardEventSource: source, virtualKey: 0x7C, keyDown: false) else {
+            return
+        }
+        down.post(tap: .cghidEventTap)
+        up.post(tap: .cghidEventTap)
+    }
 }

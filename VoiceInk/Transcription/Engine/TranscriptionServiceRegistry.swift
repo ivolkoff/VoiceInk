@@ -37,10 +37,10 @@ class TranscriptionServiceRegistry {
         }
     }
 
-    func transcribe(audioURL: URL, model: any TranscriptionModel) async throws -> String {
+    func transcribe(audioURL: URL, model: any TranscriptionModel, language: String? = nil) async throws -> String {
         let service = service(for: model.provider)
         logger.debug("Transcribing with \(model.displayName, privacy: .public) using \(String(describing: type(of: service)), privacy: .public)")
-        return try await service.transcribe(audioURL: audioURL, model: model)
+        return try await service.transcribe(audioURL: audioURL, model: model, language: language)
     }
 
     /// Creates a streaming or file-based session depending on the model's capabilities.

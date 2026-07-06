@@ -43,7 +43,7 @@ class NativeAppleTranscriptionService: TranscriptionService {
             ?? localeIdentifier
     }
 
-    func transcribe(audioURL: URL, model: any TranscriptionModel) async throws -> String {
+    func transcribe(audioURL: URL, model: any TranscriptionModel, language: String?) async throws -> String {
         guard model is NativeAppleModel else {
             throw ServiceError.invalidModel
         }
@@ -60,7 +60,8 @@ class NativeAppleTranscriptionService: TranscriptionService {
         let audioDuration = Double(audioFile.length) / audioFile.processingFormat.sampleRate
         
         // Apple Speech stores and consumes actual BCP-47 locale identifiers directly.
-        let selectedLanguage = TranscriptionLanguagePreference.layoutOverride(for: model)
+        let selectedLanguage = language
+            ?? TranscriptionLanguagePreference.layoutOverride(for: model)
             ?? (UserDefaults.standard.string(forKey: "SelectedLanguage") ?? "en-US")
         let locale = Locale(identifier: selectedLanguage)
 

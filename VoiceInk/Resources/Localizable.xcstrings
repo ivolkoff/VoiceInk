@@ -7766,6 +7766,256 @@
           }
         }
       }
+    },
+    "Finish recording before re-transcribing": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Завершите запись перед повторным распознаванием"
+          }
+        }
+      }
+    },
+    "Couldn't detect the keyboard layout language": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Не удалось определить язык раскладки клавиатуры"
+          }
+        }
+      }
+    },
+    "No recent dictation to re-transcribe": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Нет недавней диктовки для повторного распознавания"
+          }
+        }
+      }
+    },
+    "No matching transcription to re-transcribe": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Нет подходящей транскрипции для повторного распознавания"
+          }
+        }
+      }
+    },
+    "Audio file not found — can't re-transcribe": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Аудиофайл не найден — повторное распознавание невозможно"
+          }
+        }
+      }
+    },
+    "Keyboard layout language isn't supported by this model": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Язык раскладки клавиатуры не поддерживается этой моделью"
+          }
+        }
+      }
+    },
+    "Grant Accessibility permission to replace text": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Предоставьте разрешение «Универсальный доступ», чтобы заменить текст"
+          }
+        }
+      }
+    },
+    "Switch back to the app where you dictated": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Вернитесь в приложение, где вы диктовали"
+          }
+        }
+      }
+    },
+    "Re-transcribing…": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Повторное распознавание…"
+          }
+        }
+      }
+    },
+    "Re-transcription failed: %@": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Не удалось повторно распознать: %@"
+          }
+        }
+      }
+    },
+    "Re-transcribed in %@": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Повторно распознано на языке %@"
+          }
+        }
+      }
+    },
+    "Couldn't safely replace — re-transcription copied to clipboard": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Не удалось безопасно заменить — результат скопирован в буфер обмена"
+          }
+        }
+      }
+    },
+    "Re-transcribe Last in Keyboard Language": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Повторно распознать последнюю на языке раскладки"
+          }
+        }
+      }
+    },
+    "Re-transcribes your last recording in the language of the current keyboard layout and replaces the pasted text. Switch layout, then press this. Falls back to the clipboard if it can't safely replace.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Повторно распознаёт последнюю запись на языке текущей раскладки клавиатуры и заменяет вставленный текст. Переключите раскладку, затем нажмите. Если безопасно заменить нельзя — результат попадёт в буфер обмена."
+          }
+        }
+      }
+    },
+    "Re-transcribe in %@?": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Повторно распознать на языке %@?"
+          }
+        }
+      }
+    },
+    "Replaces the transcription text and discards any enhancement. This can't be undone.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Заменит текст транскрипции и удалит улучшение. Это действие нельзя отменить."
+          }
+        }
+      }
+    },
+    "Re-transcribe": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Повторно распознать"
+          }
+        }
+      }
+    },
+    "Re-transcribe in another language": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Повторно распознать на другом языке"
+          }
+        }
+      }
+    },
+    "Finish recording first": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Сначала завершите запись"
+          }
+        }
+      }
+    },
+    "Retranscription successful": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Повторное распознавание выполнено"
+          }
+        }
+      }
+    },
+    "Re-enhancement successful": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Повторное улучшение выполнено"
+          }
+        }
+      }
+    },
+    "Retranscription failed": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Повторное распознавание не удалось"
+          }
+        }
+      }
+    },
+    "Re-enhancement failed": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Повторное улучшение не удалось"
+          }
+        }
+      }
+    },
+    "AI Enhancement is not enabled or configured": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "AI-улучшение не включено или не настроено"
+          }
+        }
+      }
+    },
+    "Language not supported by the current model": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Язык не поддерживается текущей моделью"
+          }
+        }
+      }
     }
   },
   "version": "1.0"

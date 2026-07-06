@@ -1,7 +1,7 @@
 import Foundation
 
 class OpenAICompatibleTranscriptionService {
-    func transcribe(audioURL: URL, model: CustomCloudModel) async throws -> String {
+    func transcribe(audioURL: URL, model: CustomCloudModel, language: String? = nil) async throws -> String {
         guard let url = URL(string: model.apiEndpoint) else {
             throw NSError(domain: "CustomWhisperTranscriptionService", code: -1, userInfo: [NSLocalizedDescriptionKey: "Invalid API endpoint URL"])
         }
@@ -12,7 +12,7 @@ class OpenAICompatibleTranscriptionService {
         request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
         request.setValue("Bearer \(model.apiKey)", forHTTPHeaderField: "Authorization")
 
-        let body = try buildRequestBody(audioURL: audioURL, model: model, boundary: boundary)
+        let body = try buildRequestBody(audioURL: audioURL, model: model, boundary: boundary, languageOverride: language)
         let (data, response) = try await URLSession.shared.upload(for: request, from: body)
 
         guard let httpResponse = response as? HTTPURLResponse else {
@@ -31,13 +31,14 @@ class OpenAICompatibleTranscriptionService {
         }
     }
 
-    private func buildRequestBody(audioURL: URL, model: CustomCloudModel, boundary: String) throws -> Data {
+    private func buildRequestBody(audioURL: URL, model: CustomCloudModel, boundary: String, languageOverride: String? = nil) throws -> Data {
         guard let audioData = try? Data(contentsOf: audioURL) else {
             throw CloudTranscriptionError.audioFileNotFound
         }
 
         let modelName = model.modelName
-        let selectedLanguage = TranscriptionLanguagePreference.layoutOverride(for: model)
+        let selectedLanguage = languageOverride
+            ?? TranscriptionLanguagePreference.layoutOverride(for: model)
             ?? (UserDefaults.standard.string(forKey: "SelectedLanguage") ?? "auto")
         let prompt = UserDefaults.standard.string(forKey: "TranscriptionPrompt") ?? ""
         let crlf = "\r\n"

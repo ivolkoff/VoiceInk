@@ -1,5 +1,6 @@
 import Foundation
 import SwiftData
+import AppKit
 import os
 
 /// Handles the full post-recording pipeline:
@@ -120,6 +121,7 @@ class TranscriptionPipeline {
             transcription.duration = actualDuration
             transcription.transcriptionModelName = model.displayName
             transcription.transcriptionDuration = transcriptionDuration
+            transcription.language = TranscriptionLanguagePreference.resolvedLanguage(for: model)
             finalPastedText = cleanedText
 
             if let enhancementService, enhancementService.isConfigured {
@@ -224,8 +226,22 @@ class TranscriptionPipeline {
 
             let appendSpace = UserDefaults.standard.bool(forKey: "AppendTrailingSpace")
             let pastedText = textToPaste + (appendSpace ? " " : "")
-            _ = await CursorPaster.startPasteAtCursor(pastedText).value
+            let pasteResult = await CursorPaster.startPasteAtCursor(pastedText).value
             let autoSendKey = PowerModeManager.shared.currentActiveConfiguration?.autoSendKey
+
+            // Record the exact paste so the re-transcribe-last hotkey can safely replace it.
+            // Skip when AutoSend fired: the text was submitted, so it can't be replaced in place.
+            if autoSendKey?.isEnabled == true {
+                LastPasteTracker.shared.clear()
+            } else {
+                LastPasteTracker.shared.record(
+                    transcriptionID: transcription.id,
+                    pastedText: pastedText,
+                    targetBundleID: NSWorkspace.shared.frontmostApplication?.bundleIdentifier,
+                    posted: pasteResult.didPostPasteCommand
+                )
+            }
+
             SoundManager.shared.playStopSound()
             await restorePromptDetectionSettingsAndDismiss {
                 if let autoSendKey, autoSendKey.isEnabled {
@@ -236,6 +252,8 @@ class TranscriptionPipeline {
                 }
             }
         } else {
+            // Nothing pasted this run — drop any prior paste context so the hotkey can't act on it.
+            LastPasteTracker.shared.clear()
             await restorePromptDetectionSettingsAndDismiss()
         }
 

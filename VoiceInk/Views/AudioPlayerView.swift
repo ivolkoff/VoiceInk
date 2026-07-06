@@ -336,6 +336,37 @@ private struct AsyncCircleButton: View {
     }
 }
 
+private struct CircleMenuButton<MenuContent: View>: View {
+    let icon: String
+    let isLoading: Bool
+    @ViewBuilder var content: () -> MenuContent
+
+    var body: some View {
+        Menu {
+            content()
+        } label: {
+            Circle()
+                .fill(Color.primary.opacity(0.06))
+                .frame(width: 32, height: 32)
+                .overlay(
+                    Group {
+                        if isLoading {
+                            ProgressView()
+                                .controlSize(.small)
+                        } else {
+                            Image(systemName: icon)
+                                .font(.system(size: 14, weight: .semibold))
+                                .foregroundStyle(.primary)
+                        }
+                    }
+                )
+        }
+        .menuStyle(.borderlessButton)
+        .menuIndicator(.hidden)
+        .frame(width: 32, height: 32)
+    }
+}
+
 private struct StatusBanner: View {
     let message: String
     let isError: Bool
@@ -377,6 +408,8 @@ struct AudioPlayerView: View {
     @State private var isHovering = false
     @State private var isRetranscribing = false
     @State private var isReEnhancing = false
+    @State private var isReTranscribingLanguage = false
+    @State private var retranscribeTask: Task<Void, Never>?
     @State private var bannerState: BannerState?
     @State private var showPromptPopover = false
     @EnvironmentObject private var engine: VoiceInkEngine
@@ -384,7 +417,38 @@ struct AudioPlayerView: View {
     @Environment(\.modelContext) private var modelContext
 
     private var isOperationInProgress: Bool {
-        isRetranscribing || isReEnhancing
+        isRetranscribing || isReEnhancing || isReTranscribingLanguage
+    }
+
+    /// The current model, only when re-transcribing an existing record in a chosen language makes
+    /// sense: a real record, a multilingual model, and not Gemini (which ignores the language and
+    /// always autodetects). Otherwise the language menu is hidden.
+    private var languageRetranscribeModel: (any TranscriptionModel)? {
+        guard transcription != nil,
+              let model = engine.transcriptionModelManager.currentTranscriptionModel,
+              model.isMultilingualModel,
+              model.provider != .gemini else { return nil }
+        return model
+    }
+
+    /// Whether `code` is the language this recording was transcribed in (exact or base match,
+    /// e.g. stored "en-US" matches menu "en").
+    private func isCurrentLanguage(_ code: String) -> Bool {
+        guard let lang = transcription?.language else { return false }
+        if lang == code { return true }
+        // Base-match only bridges a base code and a regional one ("en" <-> "en-US");
+        // two regional codes ("en-US" vs "en-GB") are distinct.
+        guard !lang.contains("-") || !code.contains("-") else { return false }
+        let base = KeyboardLayoutLanguageService.normalize(lang)
+        return base != nil && base == KeyboardLayoutLanguageService.normalize(code)
+    }
+
+    /// Menu languages for `model`, excluding the "auto" entry, sorted by display name.
+    private func languageMenuItems(for model: any TranscriptionModel) -> [(code: String, name: String)] {
+        TranscriptionLanguageSupport.languages(for: model)
+            .filter { $0.key != "auto" }
+            .map { (code: $0.key, name: $0.value) }
+            .sorted { $0.name < $1.name }
     }
 
     private var transcriptionService: AudioTranscriptionService {
@@ -458,6 +522,27 @@ struct AudioPlayerView: View {
                     .disabled(isOperationInProgress)
                     .help("Retranscribe this audio")
 
+                    if let langModel = languageRetranscribeModel {
+                        CircleMenuButton(icon: "character.bubble", isLoading: isReTranscribingLanguage) {
+                            ForEach(languageMenuItems(for: langModel), id: \.code) { item in
+                                Button {
+                                    startLanguageRetranscribe(language: item.code)
+                                } label: {
+                                    // Checkmark the language this recording is currently in.
+                                    if isCurrentLanguage(item.code) {
+                                        Label(item.name, systemImage: "checkmark")
+                                    } else {
+                                        Text(item.name)
+                                    }
+                                }
+                            }
+                        }
+                        .disabled(isOperationInProgress || engine.recordingState != .idle)
+                        .help(engine.recordingState == .idle
+                              ? "Re-transcribe in another language"
+                              : "Finish recording first")
+                    }
+
                     if transcription != nil {
                         AsyncCircleButton(
                             defaultIcon: "wand.and.stars",
@@ -492,19 +577,20 @@ struct AudioPlayerView: View {
         }
         .onDisappear {
             playerManager.cleanup()
+            retranscribeTask?.cancel()
         }
         .overlay(
             VStack {
                 if let state = bannerState {
                     switch state {
                     case .retranscribeSuccess:
-                        StatusBanner(message: "Retranscription successful", isError: false)
+                        StatusBanner(message: String(localized: "Retranscription successful"), isError: false)
                     case .reEnhanceSuccess:
-                        StatusBanner(message: "Re-enhancement successful", isError: false)
+                        StatusBanner(message: String(localized: "Re-enhancement successful"), isError: false)
                     case .retranscribeError(let message):
-                        StatusBanner(message: message.isEmpty ? "Retranscription failed" : message, isError: true)
+                        StatusBanner(message: message.isEmpty ? String(localized: "Retranscription failed") : message, isError: true)
                     case .reEnhanceError(let message):
-                        StatusBanner(message: message.isEmpty ? "Re-enhancement failed" : message, isError: true)
+                        StatusBanner(message: message.isEmpty ? String(localized: "Re-enhancement failed") : message, isError: true)
                     }
                 }
                 Spacer()
@@ -529,7 +615,7 @@ struct AudioPlayerView: View {
         guard let transcription = transcription else { return }
 
         guard enhancementService.isEnhancementEnabled, enhancementService.isConfigured else {
-            showTemporaryBanner(.reEnhanceError("AI Enhancement is not enabled or configured"))
+            showTemporaryBanner(.reEnhanceError(String(localized: "AI Enhancement is not enabled or configured")))
             return
         }
 
@@ -560,9 +646,43 @@ struct AudioPlayerView: View {
         }
     }
 
+    private func startLanguageRetranscribe(language: String) {
+        guard let model = engine.transcriptionModelManager.currentTranscriptionModel else {
+            showTemporaryBanner(.retranscribeError(String(localized: "No transcription model selected")))
+            return
+        }
+        // The model may have changed since the menu was built; refuse a language it can't do.
+        guard TranscriptionLanguageSupport.languages(for: model)[language] != nil else {
+            showTemporaryBanner(.retranscribeError(String(localized: "Language not supported by the current model")))
+            return
+        }
+
+        isReTranscribingLanguage = true
+        bannerState = nil
+
+        retranscribeTask = Task {
+            do {
+                // Create a NEW record in the chosen language (like the retranscribe button),
+                // so the original is never overwritten — no confirmation needed.
+                _ = try await transcriptionService.retranscribeAudio(from: url, using: model, language: language)
+                await MainActor.run {
+                    isReTranscribingLanguage = false
+                    showTemporaryBanner(.retranscribeSuccess)
+                }
+            } catch is CancellationError {
+                await MainActor.run { isReTranscribingLanguage = false }
+            } catch {
+                await MainActor.run {
+                    isReTranscribingLanguage = false
+                    showTemporaryBanner(.retranscribeError(error.localizedDescription))
+                }
+            }
+        }
+    }
+
     private func retranscribeAudio() {
         guard let currentTranscriptionModel = engine.transcriptionModelManager.currentTranscriptionModel else {
-            showTemporaryBanner(.retranscribeError("No transcription model selected"))
+            showTemporaryBanner(.retranscribeError(String(localized: "No transcription model selected")))
             return
         }
 

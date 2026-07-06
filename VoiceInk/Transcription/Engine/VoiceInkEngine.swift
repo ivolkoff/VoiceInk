@@ -126,6 +126,9 @@ class VoiceInkEngine: NSObject, ObservableObject {
             }
         } else {
             logger.notice("toggleRecord: entering start-recording branch")
+            // Capture the keyboard layout now, while the target app still owns the input
+            // source, so language-matching reflects what the user is typing in.
+            KeyboardLayoutLanguageService.captureCurrentLayout()
             guard transcriptionModelManager.currentTranscriptionModel != nil else {
                 NotificationManager.shared.showNotification(title: String(localized: "No AI Model Selected"), type: .error)
                 return
