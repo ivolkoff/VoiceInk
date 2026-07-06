@@ -7956,6 +7956,66 @@
           }
         }
       }
+    },
+    "Retranscription successful": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Повторное распознавание выполнено"
+          }
+        }
+      }
+    },
+    "Re-enhancement successful": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Повторное улучшение выполнено"
+          }
+        }
+      }
+    },
+    "Retranscription failed": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Повторное распознавание не удалось"
+          }
+        }
+      }
+    },
+    "Re-enhancement failed": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Повторное улучшение не удалось"
+          }
+        }
+      }
+    },
+    "AI Enhancement is not enabled or configured": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "AI-улучшение не включено или не настроено"
+          }
+        }
+      }
+    },
+    "Language not supported by the current model": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Язык не поддерживается текущей моделью"
+          }
+        }
+      }
     }
   },
   "version": "1.0"

@@ -605,13 +605,13 @@ struct AudioPlayerView: View {
                 if let state = bannerState {
                     switch state {
                     case .retranscribeSuccess:
-                        StatusBanner(message: "Retranscription successful", isError: false)
+                        StatusBanner(message: String(localized: "Retranscription successful"), isError: false)
                     case .reEnhanceSuccess:
-                        StatusBanner(message: "Re-enhancement successful", isError: false)
+                        StatusBanner(message: String(localized: "Re-enhancement successful"), isError: false)
                     case .retranscribeError(let message):
-                        StatusBanner(message: message.isEmpty ? "Retranscription failed" : message, isError: true)
+                        StatusBanner(message: message.isEmpty ? String(localized: "Retranscription failed") : message, isError: true)
                     case .reEnhanceError(let message):
-                        StatusBanner(message: message.isEmpty ? "Re-enhancement failed" : message, isError: true)
+                        StatusBanner(message: message.isEmpty ? String(localized: "Re-enhancement failed") : message, isError: true)
                     }
                 }
                 Spacer()
@@ -636,7 +636,7 @@ struct AudioPlayerView: View {
         guard let transcription = transcription else { return }
 
         guard enhancementService.isEnhancementEnabled, enhancementService.isConfigured else {
-            showTemporaryBanner(.reEnhanceError("AI Enhancement is not enabled or configured"))
+            showTemporaryBanner(.reEnhanceError(String(localized: "AI Enhancement is not enabled or configured")))
             return
         }
 
@@ -670,12 +670,12 @@ struct AudioPlayerView: View {
     private func startLanguageRetranscribe(language: String) {
         guard let transcription = transcription else { return }
         guard let model = engine.transcriptionModelManager.currentTranscriptionModel else {
-            showTemporaryBanner(.retranscribeError("No transcription model selected"))
+            showTemporaryBanner(.retranscribeError(String(localized: "No transcription model selected")))
             return
         }
         // The model may have changed since the menu was built; refuse a language it can't do.
         guard TranscriptionLanguageSupport.languages(for: model)[language] != nil else {
-            showTemporaryBanner(.retranscribeError("Language not supported by the current model"))
+            showTemporaryBanner(.retranscribeError(String(localized: "Language not supported by the current model")))
             return
         }
 
@@ -702,7 +702,7 @@ struct AudioPlayerView: View {
 
     private func retranscribeAudio() {
         guard let currentTranscriptionModel = engine.transcriptionModelManager.currentTranscriptionModel else {
-            showTemporaryBanner(.retranscribeError("No transcription model selected"))
+            showTemporaryBanner(.retranscribeError(String(localized: "No transcription model selected")))
             return
         }
 
