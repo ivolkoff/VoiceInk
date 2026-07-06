@@ -121,6 +121,7 @@ class TranscriptionPipeline {
             transcription.duration = actualDuration
             transcription.transcriptionModelName = model.displayName
             transcription.transcriptionDuration = transcriptionDuration
+            transcription.language = TranscriptionLanguagePreference.resolvedLanguage(for: model)
             finalPastedText = cleanedText
 
             if let enhancementService, enhancementService.isConfigured {

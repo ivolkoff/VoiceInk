@@ -94,7 +94,8 @@ class AudioTranscriptionService: ObservableObject {
                 transcriptionModelName: transcription.transcriptionModelName,
                 transcriptionDuration: transcription.transcriptionDuration,
                 transcriptionStatus: transcription.transcriptionStatus,
-                timestamp: transcription.timestamp
+                timestamp: transcription.timestamp,
+                language: transcription.language
             )
 
             transcription.text = cleanedText
@@ -107,6 +108,7 @@ class AudioTranscriptionService: ObservableObject {
             transcription.transcriptionModelName = model.displayName
             transcription.transcriptionDuration = transcriptionDuration
             transcription.transcriptionStatus = TranscriptionStatus.completed.rawValue
+            transcription.language = language
             // Bump so the auto-cleanup sweep treats it as fresh instead of deleting it.
             transcription.timestamp = Date()
 
@@ -124,6 +126,7 @@ class AudioTranscriptionService: ObservableObject {
                 transcription.transcriptionDuration = old.transcriptionDuration
                 transcription.transcriptionStatus = old.transcriptionStatus
                 transcription.timestamp = old.timestamp
+                transcription.language = old.language
                 logger.error("❌ Failed to save re-transcription: \(error.localizedDescription, privacy: .public)")
                 throw error
             }

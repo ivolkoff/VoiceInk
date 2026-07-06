@@ -28,6 +28,9 @@ final class Transcription {
     var powerModeName: String?
     var powerModeEmoji: String?
     var transcriptionStatus: String?
+    /// The language the audio was transcribed in (the resolved code, e.g. "en", "ru", "en-US",
+    /// "auto"). `nil` for records created before this was tracked.
+    var language: String?
 
     init(text: String,
          duration: TimeInterval,
@@ -42,7 +45,8 @@ final class Transcription {
          aiRequestUserMessage: String? = nil,
          powerModeName: String? = nil,
          powerModeEmoji: String? = nil,
-         transcriptionStatus: TranscriptionStatus = .pending) {
+         transcriptionStatus: TranscriptionStatus = .pending,
+         language: String? = nil) {
         self.id = UUID()
         self.text = text
         self.enhancedText = enhancedText
@@ -59,6 +63,7 @@ final class Transcription {
         self.powerModeName = powerModeName
         self.powerModeEmoji = powerModeEmoji
         self.transcriptionStatus = transcriptionStatus.rawValue
+        self.language = language
     }
 
     func markAsCanceledTranscription(

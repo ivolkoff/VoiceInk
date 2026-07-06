@@ -437,6 +437,18 @@ struct AudioPlayerView: View {
         return model
     }
 
+    /// Whether `code` is the language this recording was transcribed in (exact or base match,
+    /// e.g. stored "en-US" matches menu "en").
+    private func isCurrentLanguage(_ code: String) -> Bool {
+        guard let lang = transcription?.language else { return false }
+        if lang == code { return true }
+        // Base-match only bridges a base code and a regional one ("en" <-> "en-US");
+        // two regional codes ("en-US" vs "en-GB") are distinct.
+        guard !lang.contains("-") || !code.contains("-") else { return false }
+        let base = KeyboardLayoutLanguageService.normalize(lang)
+        return base != nil && base == KeyboardLayoutLanguageService.normalize(code)
+    }
+
     /// Menu languages for `model`, excluding the "auto" entry, sorted by display name.
     private func languageMenuItems(for model: any TranscriptionModel) -> [(code: String, name: String)] {
         TranscriptionLanguageSupport.languages(for: model)
@@ -519,8 +531,15 @@ struct AudioPlayerView: View {
                     if let langModel = languageRetranscribeModel {
                         CircleMenuButton(icon: "character.bubble", isLoading: isReTranscribingLanguage) {
                             ForEach(languageMenuItems(for: langModel), id: \.code) { item in
-                                Button(item.name) {
+                                Button {
                                     pendingLanguage = PendingLanguage(code: item.code, name: item.name)
+                                } label: {
+                                    // Checkmark the language this recording is currently in.
+                                    if isCurrentLanguage(item.code) {
+                                        Label(item.name, systemImage: "checkmark")
+                                    } else {
+                                        Text(item.name)
+                                    }
                                 }
                             }
                         }

@@ -34,6 +34,13 @@ enum TranscriptionLanguagePreference {
         return supportedCode(forLayoutLanguage: layout, model: model)
     }
 
+    /// The language a normal (non-overridden) transcription of `model` resolves to — the same
+    /// `layoutOverride ?? SelectedLanguage` resolution the services use. Stored on a record so the
+    /// UI can show which language it was transcribed in.
+    static func resolvedLanguage(for model: any TranscriptionModel) -> String? {
+        layoutOverride(for: model) ?? UserDefaults.standard.string(forKey: "SelectedLanguage")
+    }
+
     /// Resolves a layout base language (e.g. "en", "ru") to a concrete code the model
     /// supports: an exact base match, else a deterministic BCP-47 variant ("en" -> "en-US"
     /// for Apple native), else `nil` when the model does not support that language.
