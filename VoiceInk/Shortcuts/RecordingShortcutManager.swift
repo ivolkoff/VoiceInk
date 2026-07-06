@@ -316,6 +316,12 @@ class RecordingShortcutManager: ObservableObject {
                 serviceRegistry: engine.serviceRegistry,
                 enhancementService: engine.enhancementService
             )
+        case .retranscribeLastInLayoutLanguage:
+            await RetranscribeLastInLayoutLanguageService.run(
+                modelContext: engine.modelContext,
+                transcriptionModelManager: engine.transcriptionModelManager,
+                engine: engine
+            )
         case .openHistoryWindow:
             HistoryWindowController.shared.showHistoryWindow(
                 modelContainer: engine.modelContext.container,

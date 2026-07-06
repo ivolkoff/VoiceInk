@@ -50,7 +50,12 @@ class AudioTranscriptionService: ObservableObject {
     /// down a live recording's whisper/fluidAudio context. Callers must additionally refuse to run
     /// while a recording is in progress. Does NOT post `.transcriptionCompleted`: that notification
     /// drives auto-cleanup, which would delete the record we just overwrote.
-    func retranscribeInPlace(_ transcription: Transcription, language: String, using model: any TranscriptionModel) async throws {
+    ///
+    /// Returns the cleaned re-transcription text. Transcription success always returns the text —
+    /// even if the record was deleted mid-flight and persistence was skipped — so the hotkey caller
+    /// can still replace the on-screen text. A `save()` failure rolls back and throws.
+    @discardableResult
+    func retranscribeInPlace(_ transcription: Transcription, language: String, using model: any TranscriptionModel) async throws -> String {
         guard let urlString = transcription.audioFileURL,
               let url = URL(string: urlString),
               FileManager.default.fileExists(atPath: url.path) else {
@@ -123,6 +128,8 @@ class AudioTranscriptionService: ObservableObject {
                 throw error
             }
         }
+
+        return cleanedText
     }
 
     func retranscribeAudio(from url: URL, using model: any TranscriptionModel) async throws -> Transcription {

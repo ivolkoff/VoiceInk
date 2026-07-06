@@ -74,8 +74,9 @@ struct RetranscribeInPlaceTests {
         let fake = FakeTranscriber(returnText: "hello world")
         let service = AudioTranscriptionService(modelContext: context, serviceRegistry: fake, enhancementService: nil)
 
-        try await service.retranscribeInPlace(transcription, language: "ru", using: makeModel())
+        let returned = try await service.retranscribeInPlace(transcription, language: "ru", using: makeModel())
 
+        #expect(returned == "hello world")
         #expect(fake.capturedLanguage == "ru")
         #expect(transcription.text == "hello world")
         #expect(transcription.enhancedText == nil)

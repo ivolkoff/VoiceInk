@@ -6,6 +6,7 @@ enum ShortcutAction: Hashable {
     case pasteLastTranscription
     case pasteLastEnhancement
     case retryLastTranscription
+    case retranscribeLastInLayoutLanguage
     case cancelRecorder
     case openHistoryWindow
     case quickAddToDictionary
@@ -41,6 +42,8 @@ enum ShortcutAction: Hashable {
             return "pasteLastEnhancement"
         case .retryLastTranscription:
             return "retryLastTranscription"
+        case .retranscribeLastInLayoutLanguage:
+            return "retranscribeLastInLayoutLanguage"
         case .cancelRecorder:
             return "cancelRecorder"
         case .openHistoryWindow:
@@ -74,6 +77,8 @@ enum ShortcutAction: Hashable {
             return String(localized: "Paste Last Enhanced Transcription")
         case .retryLastTranscription:
             return String(localized: "Retry Last Transcription")
+        case .retranscribeLastInLayoutLanguage:
+            return String(localized: "Re-transcribe Last in Keyboard Language")
         case .cancelRecorder:
             return String(localized: "Cancel Recording")
         case .openHistoryWindow:
@@ -106,6 +111,7 @@ enum ShortcutAction: Hashable {
         .pasteLastTranscription,
         .pasteLastEnhancement,
         .retryLastTranscription,
+        .retranscribeLastInLayoutLanguage,
         .openHistoryWindow,
         .quickAddToDictionary,
         .enhanceSelectedText

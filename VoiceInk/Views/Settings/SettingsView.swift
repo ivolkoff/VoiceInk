@@ -106,6 +106,18 @@ struct SettingsView: View {
                 }
 
                 LabeledContent {
+                    ShortcutRecorder(action: .retranscribeLastInLayoutLanguage) {
+                        recordingShortcutManager.updateShortcutStatus()
+                    }
+                        .controlSize(.small)
+                } label: {
+                    HStack(spacing: 4) {
+                        Text("Re-transcribe Last in Keyboard Language")
+                        InfoTip("Re-transcribes your last recording in the language of the current keyboard layout and replaces the pasted text. Switch layout, then press this. Falls back to the clipboard if it can't safely replace.")
+                    }
+                }
+
+                LabeledContent {
                     ShortcutRecorder(action: .enhanceSelectedText) {
                         recordingShortcutManager.updateShortcutStatus()
                     }
