@@ -336,11 +336,6 @@ private struct AsyncCircleButton: View {
     }
 }
 
-private struct PendingLanguage {
-    let code: String
-    let name: String
-}
-
 private struct CircleMenuButton<MenuContent: View>: View {
     let icon: String
     let isLoading: Bool
@@ -414,7 +409,6 @@ struct AudioPlayerView: View {
     @State private var isRetranscribing = false
     @State private var isReEnhancing = false
     @State private var isReTranscribingLanguage = false
-    @State private var pendingLanguage: PendingLanguage?
     @State private var retranscribeTask: Task<Void, Never>?
     @State private var bannerState: BannerState?
     @State private var showPromptPopover = false
@@ -532,7 +526,7 @@ struct AudioPlayerView: View {
                         CircleMenuButton(icon: "character.bubble", isLoading: isReTranscribingLanguage) {
                             ForEach(languageMenuItems(for: langModel), id: \.code) { item in
                                 Button {
-                                    pendingLanguage = PendingLanguage(code: item.code, name: item.name)
+                                    startLanguageRetranscribe(language: item.code)
                                 } label: {
                                     // Checkmark the language this recording is currently in.
                                     if isCurrentLanguage(item.code) {
@@ -584,21 +578,6 @@ struct AudioPlayerView: View {
         .onDisappear {
             playerManager.cleanup()
             retranscribeTask?.cancel()
-        }
-        .confirmationDialog(
-            pendingLanguage.map { String(localized: "Re-transcribe in \($0.name)?") } ?? "",
-            isPresented: Binding(
-                get: { pendingLanguage != nil },
-                set: { if !$0 { pendingLanguage = nil } }
-            ),
-            presenting: pendingLanguage
-        ) { lang in
-            Button("Re-transcribe", role: .destructive) {
-                startLanguageRetranscribe(language: lang.code)
-            }
-            Button("Cancel", role: .cancel) {}
-        } message: { _ in
-            Text("Replaces the transcription text and discards any enhancement. This can't be undone.")
         }
         .overlay(
             VStack {
@@ -668,7 +647,6 @@ struct AudioPlayerView: View {
     }
 
     private func startLanguageRetranscribe(language: String) {
-        guard let transcription = transcription else { return }
         guard let model = engine.transcriptionModelManager.currentTranscriptionModel else {
             showTemporaryBanner(.retranscribeError(String(localized: "No transcription model selected")))
             return
@@ -684,7 +662,9 @@ struct AudioPlayerView: View {
 
         retranscribeTask = Task {
             do {
-                try await transcriptionService.retranscribeInPlace(transcription, language: language, using: model)
+                // Create a NEW record in the chosen language (like the retranscribe button),
+                // so the original is never overwritten — no confirmation needed.
+                _ = try await transcriptionService.retranscribeAudio(from: url, using: model, language: language)
                 await MainActor.run {
                     isReTranscribingLanguage = false
                     showTemporaryBanner(.retranscribeSuccess)

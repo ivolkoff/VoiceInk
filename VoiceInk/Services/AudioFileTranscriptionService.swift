@@ -135,18 +135,20 @@ class AudioTranscriptionService: ObservableObject {
         return cleanedText
     }
 
-    func retranscribeAudio(from url: URL, using model: any TranscriptionModel) async throws -> Transcription {
+    func retranscribeAudio(from url: URL, using model: any TranscriptionModel, language: String? = nil) async throws -> Transcription {
         guard FileManager.default.fileExists(atPath: url.path) else {
             throw TranscriptionError.noAudioFile
         }
-        
+
+        let recordLanguage = language ?? TranscriptionLanguagePreference.resolvedLanguage(for: model)
+
         await MainActor.run {
             isTranscribing = true
         }
         
         do {
             let transcriptionStart = Date()
-            var text = try await serviceRegistry.transcribe(audioURL: url, model: model, language: nil)
+            var text = try await serviceRegistry.transcribe(audioURL: url, model: model, language: language)
             let transcriptionDuration = Date().timeIntervalSince(transcriptionStart)
             text = TranscriptionOutputFilter.filter(text)
             text = text.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -213,7 +215,8 @@ class AudioTranscriptionService: ObservableObject {
                         aiRequestSystemMessage: enhancementService.lastSystemMessageSent,
                         aiRequestUserMessage: enhancementService.lastUserMessageSent,
                         powerModeName: powerModeName,
-                        powerModeEmoji: powerModeEmoji
+                        powerModeEmoji: powerModeEmoji,
+                        language: recordLanguage
                     )
                     modelContext.insert(newTranscription)
                     do {
@@ -244,7 +247,8 @@ class AudioTranscriptionService: ObservableObject {
                         promptName: nil,
                         transcriptionDuration: transcriptionDuration,
                         powerModeName: powerModeName,
-                        powerModeEmoji: powerModeEmoji
+                        powerModeEmoji: powerModeEmoji,
+                        language: recordLanguage
                     )
                     modelContext.insert(newTranscription)
                     do {
@@ -270,7 +274,8 @@ class AudioTranscriptionService: ObservableObject {
                     promptName: nil,
                     transcriptionDuration: transcriptionDuration,
                     powerModeName: powerModeName,
-                    powerModeEmoji: powerModeEmoji
+                    powerModeEmoji: powerModeEmoji,
+                    language: recordLanguage
                 )
                 modelContext.insert(newTranscription)
                 do {
