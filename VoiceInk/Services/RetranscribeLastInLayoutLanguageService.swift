@@ -142,7 +142,7 @@ enum RetranscribeLastInLayoutLanguageService {
     }
 
     @MainActor
-    private static func notify(_ title: String, _ type: AppNotificationView.NotificationType, isLoading: Bool = false) {
-        NotificationManager.shared.showNotification(title: title, type: type, isLoading: isLoading)
+    private static func notify(_ title: String.LocalizationValue, _ type: AppNotificationView.NotificationType, isLoading: Bool = false) {
+        NotificationManager.shared.showNotification(title: String(localized: title), type: type, isLoading: isLoading)
     }
 }

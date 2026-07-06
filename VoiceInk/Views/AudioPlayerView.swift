@@ -567,7 +567,7 @@ struct AudioPlayerView: View {
             retranscribeTask?.cancel()
         }
         .confirmationDialog(
-            pendingLanguage.map { "Re-transcribe in \($0.name)?" } ?? "",
+            pendingLanguage.map { String(localized: "Re-transcribe in \($0.name)?") } ?? "",
             isPresented: Binding(
                 get: { pendingLanguage != nil },
                 set: { if !$0 { pendingLanguage = nil } }
