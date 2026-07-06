@@ -92,7 +92,7 @@ class FluidAudioTranscriptionService: TranscriptionService {
         try await ensureModelsLoaded(for: version(for: model))
     }
 
-    func transcribe(audioURL: URL, model: any TranscriptionModel) async throws -> String {
+    func transcribe(audioURL: URL, model: any TranscriptionModel, language: String?) async throws -> String {
         let targetVersion = version(for: model)
         try await ensureModelsLoaded(for: targetVersion)
 
@@ -101,7 +101,8 @@ class FluidAudioTranscriptionService: TranscriptionService {
         }
 
         let languageHint = Self.languageHint(
-            from: TranscriptionLanguagePreference.layoutOverride(for: model)
+            from: language
+                ?? TranscriptionLanguagePreference.layoutOverride(for: model)
                 ?? UserDefaults.standard.string(forKey: "SelectedLanguage"),
             model: model
         )

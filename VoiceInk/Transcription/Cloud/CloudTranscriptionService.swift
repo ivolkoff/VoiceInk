@@ -42,17 +42,17 @@ class CloudTranscriptionService: TranscriptionService {
         self.modelContext = modelContext
     }
 
-    func transcribe(audioURL: URL, model: any TranscriptionModel) async throws -> String {
+    func transcribe(audioURL: URL, model: any TranscriptionModel, language languageOverride: String?) async throws -> String {
         let audioData = try loadAudioData(from: audioURL)
         let fileName = audioURL.lastPathComponent
-        let language = selectedLanguage(for: model)
+        let language = selectedLanguage(for: model, override: languageOverride)
 
         do {
             if model.provider == .custom {
                 guard let customModel = model as? CustomCloudModel else {
                     throw CloudTranscriptionError.unsupportedProvider
                 }
-                return try await openAICompatibleService.transcribe(audioURL: audioURL, model: customModel)
+                return try await openAICompatibleService.transcribe(audioURL: audioURL, model: customModel, language: languageOverride)
             }
 
             guard let cloudProvider = CloudProviderRegistry.provider(for: model.provider) else {
@@ -93,8 +93,9 @@ class CloudTranscriptionService: TranscriptionService {
         return apiKey
     }
 
-    private func selectedLanguage(for model: any TranscriptionModel) -> String? {
-        let lang = TranscriptionLanguagePreference.layoutOverride(for: model)
+    private func selectedLanguage(for model: any TranscriptionModel, override: String? = nil) -> String? {
+        let lang = override
+            ?? TranscriptionLanguagePreference.layoutOverride(for: model)
             ?? (UserDefaults.standard.string(forKey: "SelectedLanguage") ?? "auto")
         return (lang == "auto" || lang.isEmpty) ? nil : lang
     }

@@ -14,7 +14,7 @@ class WhisperTranscriptionService: TranscriptionService {
         self.modelProvider = modelProvider
     }
 
-    func transcribe(audioURL: URL, model: any TranscriptionModel) async throws -> String {
+    func transcribe(audioURL: URL, model: any TranscriptionModel, language: String?) async throws -> String {
         guard model.provider == .whisper else {
             throw VoiceInkEngineError.modelLoadFailed
         }
@@ -54,12 +54,15 @@ class WhisperTranscriptionService: TranscriptionService {
         // Read audio data
         let data = try readAudioSamples(audioURL)
 
-        // Set prompt
-        let currentPrompt = UserDefaults.standard.string(forKey: "TranscriptionPrompt") ?? ""
+        // Set prompt. The stored "TranscriptionPrompt" is a sample sentence derived from the
+        // user's SelectedLanguage; feeding it into a decode forced to a different language
+        // corrupts the output, so skip it when an explicit language override is given.
+        let currentPrompt = language == nil ? (UserDefaults.standard.string(forKey: "TranscriptionPrompt") ?? "") : ""
         await whisperContext.setPrompt(currentPrompt)
 
         // Transcribe
-        let resolvedLanguage = TranscriptionLanguagePreference.layoutOverride(for: model)
+        let resolvedLanguage = language
+            ?? TranscriptionLanguagePreference.layoutOverride(for: model)
             ?? (UserDefaults.standard.string(forKey: "SelectedLanguage") ?? "auto")
         let success = await whisperContext.fullTranscribe(samples: data, language: resolvedLanguage)
 

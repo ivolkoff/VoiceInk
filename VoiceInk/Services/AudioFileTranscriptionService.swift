@@ -4,6 +4,15 @@ import AVFoundation
 import SwiftData
 import os
 
+/// The subset of `TranscriptionServiceRegistry` that `AudioTranscriptionService` depends on.
+/// Exists so re-transcription can be unit-tested with a fake transcriber.
+@MainActor
+protocol AudioTranscribing {
+    func transcribe(audioURL: URL, model: any TranscriptionModel, language: String?) async throws -> String
+}
+
+extension TranscriptionServiceRegistry: AudioTranscribing {}
+
 @MainActor
 class AudioTranscriptionService: ObservableObject {
     @Published var isTranscribing = false
@@ -13,7 +22,7 @@ class AudioTranscriptionService: ObservableObject {
     private let enhancementService: AIEnhancementService?
     private let promptDetectionService = PromptDetectionService()
     private let logger = Logger(subsystem: "com.prakashjoshipax.voiceink", category: "AudioTranscriptionService")
-    private let serviceRegistry: TranscriptionServiceRegistry
+    private let serviceRegistry: AudioTranscribing
 
     enum TranscriptionError: Error {
         case noAudioFile
@@ -28,12 +37,94 @@ class AudioTranscriptionService: ObservableObject {
         self.serviceRegistry = TranscriptionServiceRegistry(modelProvider: engine.whisperModelManager, modelsDirectory: engine.whisperModelManager.modelsDirectory, modelContext: modelContext)
     }
 
-    init(modelContext: ModelContext, serviceRegistry: TranscriptionServiceRegistry, enhancementService: AIEnhancementService?) {
+    init(modelContext: ModelContext, serviceRegistry: AudioTranscribing, enhancementService: AIEnhancementService?) {
         self.modelContext = modelContext
         self.enhancementService = enhancementService
         self.serviceRegistry = serviceRegistry
     }
     
+    /// Re-transcribes an existing recording's saved audio in an explicitly chosen language and
+    /// overwrites the given record in place (raw text only — enhancement fields are cleared).
+    ///
+    /// Uses this service's own `serviceRegistry`, never the shared engine one, so it cannot tear
+    /// down a live recording's whisper/fluidAudio context. Callers must additionally refuse to run
+    /// while a recording is in progress. Does NOT post `.transcriptionCompleted`: that notification
+    /// drives auto-cleanup, which would delete the record we just overwrote.
+    func retranscribeInPlace(_ transcription: Transcription, language: String, using model: any TranscriptionModel) async throws {
+        guard let urlString = transcription.audioFileURL,
+              let url = URL(string: urlString),
+              FileManager.default.fileExists(atPath: url.path) else {
+            throw TranscriptionError.noAudioFile
+        }
+
+        await MainActor.run { isTranscribing = true }
+        defer { Task { @MainActor in isTranscribing = false } }
+
+        let transcriptionStart = Date()
+        var text = try await serviceRegistry.transcribe(audioURL: url, model: model, language: language)
+        let transcriptionDuration = Date().timeIntervalSince(transcriptionStart)
+        text = TranscriptionOutputFilter.filter(text)
+        text = text.trimmingCharacters(in: .whitespacesAndNewlines)
+
+        if UserDefaults.standard.bool(forKey: "IsTextFormattingEnabled") {
+            text = WhisperTextFormatter.format(text)
+        }
+
+        text = WordReplacementService.shared.applyReplacements(to: text, using: modelContext)
+        let cleanedText = TranscriptionOutputFilter.applyUserCleanupPreferences(text)
+
+        try await MainActor.run {
+            // The record may have been deleted (user delete, auto-cleanup sweep) during the await.
+            guard !transcription.isDeleted, transcription.modelContext != nil else { return }
+
+            // Snapshot fields we overwrite so we can roll back on a save failure.
+            let old = (
+                text: transcription.text,
+                enhancedText: transcription.enhancedText,
+                aiEnhancementModelName: transcription.aiEnhancementModelName,
+                promptName: transcription.promptName,
+                enhancementDuration: transcription.enhancementDuration,
+                aiRequestSystemMessage: transcription.aiRequestSystemMessage,
+                aiRequestUserMessage: transcription.aiRequestUserMessage,
+                transcriptionModelName: transcription.transcriptionModelName,
+                transcriptionDuration: transcription.transcriptionDuration,
+                transcriptionStatus: transcription.transcriptionStatus,
+                timestamp: transcription.timestamp
+            )
+
+            transcription.text = cleanedText
+            transcription.enhancedText = nil
+            transcription.aiEnhancementModelName = nil
+            transcription.promptName = nil
+            transcription.enhancementDuration = nil
+            transcription.aiRequestSystemMessage = nil
+            transcription.aiRequestUserMessage = nil
+            transcription.transcriptionModelName = model.displayName
+            transcription.transcriptionDuration = transcriptionDuration
+            transcription.transcriptionStatus = TranscriptionStatus.completed.rawValue
+            // Bump so the auto-cleanup sweep treats it as fresh instead of deleting it.
+            transcription.timestamp = Date()
+
+            do {
+                try modelContext.save()
+            } catch {
+                transcription.text = old.text
+                transcription.enhancedText = old.enhancedText
+                transcription.aiEnhancementModelName = old.aiEnhancementModelName
+                transcription.promptName = old.promptName
+                transcription.enhancementDuration = old.enhancementDuration
+                transcription.aiRequestSystemMessage = old.aiRequestSystemMessage
+                transcription.aiRequestUserMessage = old.aiRequestUserMessage
+                transcription.transcriptionModelName = old.transcriptionModelName
+                transcription.transcriptionDuration = old.transcriptionDuration
+                transcription.transcriptionStatus = old.transcriptionStatus
+                transcription.timestamp = old.timestamp
+                logger.error("❌ Failed to save re-transcription: \(error.localizedDescription, privacy: .public)")
+                throw error
+            }
+        }
+    }
+
     func retranscribeAudio(from url: URL, using model: any TranscriptionModel) async throws -> Transcription {
         guard FileManager.default.fileExists(atPath: url.path) else {
             throw TranscriptionError.noAudioFile
@@ -45,7 +136,7 @@ class AudioTranscriptionService: ObservableObject {
         
         do {
             let transcriptionStart = Date()
-            var text = try await serviceRegistry.transcribe(audioURL: url, model: model)
+            var text = try await serviceRegistry.transcribe(audioURL: url, model: model, language: nil)
             let transcriptionDuration = Date().timeIntervalSince(transcriptionStart)
             text = TranscriptionOutputFilter.filter(text)
             text = text.trimmingCharacters(in: .whitespacesAndNewlines)
