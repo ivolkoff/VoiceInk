@@ -5,6 +5,7 @@ struct Shortcut: Codable, Equatable {
     enum Kind: String, Codable {
         case key
         case modifierOnly
+        case mouseButton
     }
 
     private static let genericModifierKeyCode = UInt16.max
@@ -23,6 +24,15 @@ struct Shortcut: Codable, Equatable {
         kind == .modifierOnly
     }
 
+    var isMouseButton: Bool {
+        kind == .mouseButton
+    }
+
+    // For .mouseButton the button number is stored in `keyCode`.
+    var mouseButton: Int {
+        Int(keyCode)
+    }
+
     var displayString: String {
         displayTokens.joined(separator: " + ")
     }
@@ -37,6 +47,8 @@ struct Shortcut: Codable, Equatable {
             }
 
             return modifierFlags.shortcutDisplayTokens
+        case .mouseButton:
+            return modifierFlags.shortcutDisplayTokens + [Self.mouseButtonName(for: mouseButton)]
         }
     }
 
@@ -60,6 +72,10 @@ struct Shortcut: Codable, Equatable {
             keyCode: keyCode ?? Self.genericModifierKeyCode,
             modifierFlags: modifierFlags
         )
+    }
+
+    static func mouseButton(button: Int, modifierFlags: NSEvent.ModifierFlags) -> Self {
+        Self(kind: .mouseButton, keyCode: UInt16(button), modifierFlags: modifierFlags)
     }
 
     static func fromLegacyShortcut(_ shortcut: LegacyKeyboardShortcut) -> Self {
@@ -88,6 +104,12 @@ struct Shortcut: Codable, Equatable {
         kind == .key &&
             keyCode == eventKeyCode &&
             modifierFlags == Self.normalizedModifierFlags(eventModifierFlags, forKeyCode: eventKeyCode)
+    }
+
+    func matchesMouseEvent(button: Int, modifierFlags eventModifierFlags: NSEvent.ModifierFlags) -> Bool {
+        kind == .mouseButton &&
+            mouseButton == button &&
+            modifierFlags == Self.normalizedModifierFlags(eventModifierFlags, forKeyCode: nil)
     }
 
     func matchesModifierEvent(keyCode eventKeyCode: UInt16, modifierFlags eventModifierFlags: NSEvent.ModifierFlags) -> Bool {
@@ -124,6 +146,8 @@ struct Shortcut: Codable, Equatable {
             return true
         case .key:
             return keyCode != eventKeyCode
+        case .mouseButton:
+            return false
         }
     }
 
@@ -214,6 +238,13 @@ struct Shortcut: Codable, Equatable {
             return "Fn"
         default:
             return nil
+        }
+    }
+
+    private static func mouseButtonName(for button: Int) -> String {
+        switch button {
+        case 2: return "Middle Click"
+        default: return "Mouse \(button + 1)"
         }
     }
 

@@ -44,6 +44,8 @@ enum ShortcutValidator {
 
     private static func userRecordingShortcutError(for shortcut: Shortcut) -> ShortcutValidationError? {
         switch shortcut.kind {
+        case .mouseButton:
+            return nil
         case .modifierOnly:
             return shortcut.modifierFlags.isEmpty ? .plainKeyRequiresModifier : nil
         case .key:

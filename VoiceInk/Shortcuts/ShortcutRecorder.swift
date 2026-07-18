@@ -283,7 +283,7 @@ final class ShortcutRecorderModel: ObservableObject {
     }
 
     private func installRecordingMonitor() {
-        localMonitor = NSEvent.addLocalMonitorForEvents(matching: [.keyDown, .flagsChanged]) { [weak self] event in
+        localMonitor = NSEvent.addLocalMonitorForEvents(matching: [.keyDown, .flagsChanged, .otherMouseDown]) { [weak self] event in
             guard let self else { return event }
             let shouldConsume = self.handleRecordingEvent(event)
             return shouldConsume ? nil : event
@@ -307,9 +307,23 @@ final class ShortcutRecorderModel: ObservableObject {
             return handleKeyDown(keyCode: event.keyCode, modifierFlags: event.modifierFlags)
         case .flagsChanged:
             return handleFlagsChanged(keyCode: event.keyCode, modifierFlags: event.modifierFlags)
+        case .otherMouseDown:
+            return handleMouseDown(button: event.buttonNumber, modifierFlags: event.modifierFlags)
         default:
             return false
         }
+    }
+
+    private func handleMouseDown(button: Int, modifierFlags: NSEvent.ModifierFlags) -> Bool {
+        // .otherMouseDown only fires for non-primary buttons (middle = 2, side = 3+),
+        // so left/right clicks can never become a shortcut.
+        guard button >= 2 else { return false }
+
+        let modifiers = Shortcut.normalizedModifierFlags(modifierFlags, forKeyCode: nil)
+        let shortcut = Shortcut.mouseButton(button: button, modifierFlags: modifiers)
+        previewShortcut = shortcut
+        finish(with: shortcut)
+        return true
     }
 
     private func handleKeyDown(keyCode: UInt16, modifierFlags: NSEvent.ModifierFlags) -> Bool {

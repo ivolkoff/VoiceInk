@@ -9,6 +9,8 @@ final class ShortcutMonitor {
         case keyDown
         case keyUp
         case flagsChanged
+        case mouseDown
+        case mouseUp
     }
 
     private struct ShortcutState {
@@ -93,7 +95,7 @@ final class ShortcutMonitor {
     private func installEventTap() -> Bool {
         #if DEBUG || LOCAL_BUILD
         let tapShortcuts = shortcuts.filter { _, state in
-            state.shortcut.isModifierOnly
+            state.shortcut.isModifierOnly || state.shortcut.isMouseButton
         }
         let carbonShortcuts = shortcuts.filter { _, state in
             state.shortcut.canRegisterWithCarbonHotKey
@@ -350,13 +352,17 @@ final class ShortcutMonitor {
         }
 
         let keyCode = UInt16(event.getIntegerValueField(.keyboardEventKeycode))
+        let mouseButton = Int(event.getIntegerValueField(.mouseEventButtonNumber))
         let modifierFlags = NSEvent.ModifierFlags(rawValue: UInt(event.flags.rawValue))
         if type == .keyDown || type == .keyUp || type == .flagsChanged {
             logger.notice("cg event: type=\(type.rawValue, privacy: .public), keyCode=\(keyCode, privacy: .public), flags=\(modifierFlags.rawValue, privacy: .public)")
+        } else if type == .otherMouseDown || type == .otherMouseUp {
+            logger.notice("cg mouse event: type=\(type.rawValue, privacy: .public), button=\(mouseButton, privacy: .public), flags=\(modifierFlags.rawValue, privacy: .public)")
         }
         return handleEvent(
             kind: eventKind,
             keyCode: keyCode,
+            mouseButton: mouseButton,
             modifierFlags: modifierFlags,
             eventTime: ProcessInfo.processInfo.systemUptime
         )
@@ -386,6 +392,7 @@ final class ShortcutMonitor {
     private func handleEvent(
         kind: EventKind,
         keyCode: UInt16,
+        mouseButton: Int,
         modifierFlags: NSEvent.ModifierFlags,
         eventTime: TimeInterval
     ) -> Bool {
@@ -414,13 +421,24 @@ final class ShortcutMonitor {
                 continue
             }
 
-            let transition = transitionForKeyShortcut(
-                state.shortcut,
-                isDown: state.isDown,
-                kind: kind,
-                keyCode: keyCode,
-                modifierFlags: modifierFlags
-            )
+            let transition: ShortcutTransition
+            if state.shortcut.isMouseButton {
+                transition = transitionForMouseShortcut(
+                    state.shortcut,
+                    isDown: state.isDown,
+                    kind: kind,
+                    button: mouseButton,
+                    modifierFlags: modifierFlags
+                )
+            } else {
+                transition = transitionForKeyShortcut(
+                    state.shortcut,
+                    isDown: state.isDown,
+                    kind: kind,
+                    keyCode: keyCode,
+                    modifierFlags: modifierFlags
+                )
+            }
 
             switch transition {
             case .none:
@@ -482,6 +500,29 @@ final class ShortcutMonitor {
                 forKeyCode: shortcut.keyCode
             )
             return currentFlags.isSuperset(of: shortcut.modifierFlags) ? .suppress : .keyUp
+        default:
+            return .none
+        }
+    }
+
+    private func transitionForMouseShortcut(
+        _ shortcut: Shortcut,
+        isDown: Bool,
+        kind: EventKind,
+        button: Int,
+        modifierFlags: NSEvent.ModifierFlags
+    ) -> ShortcutTransition {
+        switch kind {
+        case .mouseDown:
+            guard shortcut.matchesMouseEvent(button: button, modifierFlags: modifierFlags) else {
+                return .none
+            }
+
+            return isDown ? .suppress : .keyDown
+        case .mouseUp:
+            return isDown && button == shortcut.mouseButton ? .keyUp : .none
+        default:
+            return .none
         }
     }
 
@@ -573,7 +614,9 @@ final class ShortcutMonitor {
     private static let eventMask: CGEventMask = [
         CGEventType.keyDown,
         CGEventType.keyUp,
-        CGEventType.flagsChanged
+        CGEventType.flagsChanged,
+        CGEventType.otherMouseDown,
+        CGEventType.otherMouseUp
     ].reduce(CGEventMask(0)) { mask, type in
         mask | (CGEventMask(1) << Int(type.rawValue))
     }
@@ -588,6 +631,10 @@ private extension ShortcutMonitor.EventKind {
             self = .keyUp
         case .flagsChanged:
             self = .flagsChanged
+        case .otherMouseDown:
+            self = .mouseDown
+        case .otherMouseUp:
+            self = .mouseUp
         default:
             return nil
         }
