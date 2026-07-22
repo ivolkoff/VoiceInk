@@ -245,8 +245,12 @@ class CustomSoundManager: ObservableObject {
             return .success(newFilename)
         }
 
-        if FileManager.default.fileExists(atPath: destinationURL.path) {
-            try? FileManager.default.removeItem(at: destinationURL)
+        // Remove any previously copied file for this slot regardless of extension — keying cleanup
+        // on the exact new filename orphans the old file when the audio format changes (wav -> mp3).
+        if let existing = try? FileManager.default.contentsOfDirectory(at: directory, includingPropertiesForKeys: nil) {
+            for file in existing where file.deletingPathExtension().lastPathComponent == standardName {
+                try? FileManager.default.removeItem(at: file)
+            }
         }
 
         do {

@@ -6,6 +6,11 @@ import MediaRemoteAdapter
 class PlaybackController: ObservableObject {
     static let shared = PlaybackController()
     private var mediaController: MediaRemoteAdapter.MediaController
+    // pauseMedia/resumeMedia are nonisolated async and run off-main (fired from
+    // Recorder's Task blocks), while onTrackInfoReceived writes this state on the
+    // main thread. Guard the shared media state with a lock to avoid a data race on
+    // the TrackInfo struct (its payload holds ARC String/NSImage fields).
+    private let stateLock = NSLock()
     private var wasPlayingWhenRecordingStarted = false
     private var isMediaPlaying = false
     private var lastKnownTrackInfo: TrackInfo?
@@ -36,8 +41,11 @@ class PlaybackController: ObservableObject {
     
     private func setupMediaControllerCallbacks() {
         mediaController.onTrackInfoReceived = { [weak self] trackInfo in
-            self?.isMediaPlaying = trackInfo?.payload.isPlaying ?? false
-            self?.lastKnownTrackInfo = trackInfo
+            guard let self else { return }
+            self.stateLock.lock()
+            self.isMediaPlaying = trackInfo?.payload.isPlaying ?? false
+            self.lastKnownTrackInfo = trackInfo
+            self.stateLock.unlock()
         }
         
         mediaController.onListenerTerminated = { }
@@ -49,28 +57,35 @@ class PlaybackController: ObservableObject {
     
     private func stopMediaTracking() {
         mediaController.stopListening()
+        stateLock.lock()
         isMediaPlaying = false
         lastKnownTrackInfo = nil
         wasPlayingWhenRecordingStarted = false
         originalMediaAppBundleId = nil
+        stateLock.unlock()
     }
-    
+
     func pauseMedia() async {
+        stateLock.lock()
         resumeTask?.cancel()
         resumeTask = nil
-
         wasPlayingWhenRecordingStarted = false
         originalMediaAppBundleId = nil
+        let playing = isMediaPlaying
+        let track = lastKnownTrackInfo
+        stateLock.unlock()
 
         guard isPauseMediaEnabled,
-              isMediaPlaying,
-              lastKnownTrackInfo?.payload.isPlaying == true,
-              let bundleId = lastKnownTrackInfo?.payload.bundleIdentifier else {
+              playing,
+              track?.payload.isPlaying == true,
+              let bundleId = track?.payload.bundleIdentifier else {
             return
         }
 
+        stateLock.lock()
         wasPlayingWhenRecordingStarted = true
         originalMediaAppBundleId = bundleId
+        stateLock.unlock()
 
         try? await Task.sleep(nanoseconds: 50_000_000)
 
@@ -78,13 +93,18 @@ class PlaybackController: ObservableObject {
     }
 
     func resumeMedia() async {
+        stateLock.lock()
         let shouldResume = wasPlayingWhenRecordingStarted
         let originalBundleId = originalMediaAppBundleId
+        let track = lastKnownTrackInfo
+        stateLock.unlock()
         let delay = MediaController.shared.audioResumptionDelay
 
         defer {
+            stateLock.lock()
             wasPlayingWhenRecordingStarted = false
             originalMediaAppBundleId = nil
+            stateLock.unlock()
         }
 
         guard isPauseMediaEnabled,
@@ -97,7 +117,7 @@ class PlaybackController: ObservableObject {
             return
         }
 
-        guard let currentTrackInfo = lastKnownTrackInfo,
+        guard let currentTrackInfo = track,
               let currentBundleId = currentTrackInfo.payload.bundleIdentifier,
               currentBundleId == bundleId,
               currentTrackInfo.payload.isPlaying == false else {
@@ -114,7 +134,9 @@ class PlaybackController: ObservableObject {
             Self.sendMediaPlayPauseKey()
         }
 
+        stateLock.lock()
         resumeTask = task
+        stateLock.unlock()
         await task.value
     }
 

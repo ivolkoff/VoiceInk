@@ -49,7 +49,23 @@ final class CoreAudioRecorder: @unchecked Sendable {
     private var renderBufferSize: UInt32 = 0
 
     /// Called on the audio thread with raw PCM data (16-bit, 16kHz, mono) for streaming.
-    var onAudioChunk: ((_ data: Data) -> Void)?
+    /// Read on the real-time audio thread and written from the main actor mid-recording,
+    /// so guard it with a lock: a closure is a two-word value with ARC traffic, and an
+    /// unsynchronized concurrent read/write can produce a torn or freed function object.
+    private let onAudioChunkLock = NSLock()
+    private var _onAudioChunk: ((_ data: Data) -> Void)?
+    var onAudioChunk: ((_ data: Data) -> Void)? {
+        get {
+            onAudioChunkLock.lock()
+            defer { onAudioChunkLock.unlock() }
+            return _onAudioChunk
+        }
+        set {
+            onAudioChunkLock.lock()
+            _onAudioChunk = newValue
+            onAudioChunkLock.unlock()
+        }
+    }
 
     // MARK: - Initialization
 

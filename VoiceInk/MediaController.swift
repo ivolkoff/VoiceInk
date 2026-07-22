@@ -5,10 +5,17 @@ final class MediaController: ObservableObject {
 
     static let shared = MediaController()
 
+    // mute/unmute run as independent nonisolated async tasks (Recorder fires them
+    // from separate Tasks, and a delayed unmute can still be pending when the next
+    // recording's mute starts), so guard the shared mute-state with a lock.
+    private let stateLock = NSLock()
     private var didMuteAudio = false
     private var wasAudioMutedBeforeRecording = false
     private var unmuteTask: Task<Void, Never>?
     private var muteGeneration: Int = 0
+    // The exact device we muted. macOS can switch the default output mid-recording (AirPods
+    // connect, etc.), so unmute must target the muted device, not whatever is default at stop.
+    private var mutedDeviceID: AudioDeviceID?
 
     @Published var isSystemMuteEnabled: Bool = UserDefaults.standard.bool(forKey: "isSystemMuteEnabled") {
         didSet { UserDefaults.standard.set(isSystemMuteEnabled, forKey: "isSystemMuteEnabled") }
@@ -23,14 +30,18 @@ final class MediaController: ObservableObject {
     func muteSystemAudio() async -> Bool {
         guard isSystemMuteEnabled else { return false }
 
+        stateLock.lock()
         unmuteTask?.cancel()
         unmuteTask = nil
         muteGeneration += 1
+        let previouslyOurs = didMuteAudio
+        stateLock.unlock()
 
         let currentlyMuted = isSystemAudioMuted()
 
         if currentlyMuted {
-            if didMuteAudio {
+            stateLock.lock()
+            if previouslyOurs {
                 // We muted it previously, stay responsible for unmuting
                 wasAudioMutedBeforeRecording = false
             } else {
@@ -38,21 +49,38 @@ final class MediaController: ObservableObject {
                 wasAudioMutedBeforeRecording = true
                 didMuteAudio = false
             }
+            stateLock.unlock()
             return true
         }
 
+        guard let deviceID = getDefaultOutputDevice() else {
+            stateLock.lock()
+            wasAudioMutedBeforeRecording = false
+            didMuteAudio = false
+            stateLock.unlock()
+            return false
+        }
+
+        let success = setMuted(true, on: deviceID)
+        stateLock.lock()
         wasAudioMutedBeforeRecording = false
-        let success = setSystemMuted(true)
         didMuteAudio = success
+        mutedDeviceID = success ? deviceID : nil
+        stateLock.unlock()
         return success
     }
 
     func unmuteSystemAudio() async {
-        guard isSystemMuteEnabled else { return }
-
         let delay = audioResumptionDelay
+
+        stateLock.lock()
         let shouldUnmute = didMuteAudio && !wasAudioMutedBeforeRecording
         let myGeneration = muteGeneration
+        stateLock.unlock()
+
+        // Gate on whether WE actually muted (didMuteAudio), not the live isSystemMuteEnabled flag:
+        // the user can toggle the feature off mid-recording, and that must not strand the output muted.
+        guard shouldUnmute else { return }
 
         let task = Task { [weak self] in
             if delay > 0 {
@@ -61,16 +89,26 @@ final class MediaController: ObservableObject {
 
             guard let self = self else { return }
             guard !Task.isCancelled else { return }
-            guard self.muteGeneration == myGeneration else { return }
 
-            if shouldUnmute {
-                _ = self.setSystemMuted(false)
+            // A newer mute (higher generation) supersedes this pending unmute;
+            // check and clear our state atomically so the two never interleave.
+            self.stateLock.lock()
+            let isCurrent = self.muteGeneration == myGeneration
+            let deviceToUnmute = isCurrent ? self.mutedDeviceID : nil
+            if isCurrent {
+                self.didMuteAudio = false
+                self.mutedDeviceID = nil
             }
+            self.stateLock.unlock()
 
-            self.didMuteAudio = false
+            if let deviceToUnmute {
+                _ = self.setMuted(false, on: deviceToUnmute)
+            }
         }
 
+        stateLock.lock()
         unmuteTask = task
+        stateLock.unlock()
         await task.value
     }
 
@@ -117,9 +155,7 @@ final class MediaController: ObservableObject {
         return status == noErr && muted != 0
     }
 
-    private func setSystemMuted(_ muted: Bool) -> Bool {
-        guard let deviceID = getDefaultOutputDevice() else { return false }
-
+    private func setMuted(_ muted: Bool, on deviceID: AudioDeviceID) -> Bool {
         var muteValue: UInt32 = muted ? 1 : 0
         let propertySize = UInt32(MemoryLayout<UInt32>.size)
 

@@ -196,6 +196,15 @@ class StreamingTranscriptionService {
         state = .done
         await cleanupStreaming()
 
+        // Empty final text means the commit produced no committed segments (lost
+        // ack or partial-only response). The recorded WAV still exists, so throw
+        // to engage the batch fallback instead of returning — and saving/pasting —
+        // an empty, silently-lost transcription.
+        guard !finalText.isEmpty else {
+            logger.warning("Streaming returned empty final text; deferring to batch fallback")
+            throw StreamingTranscriptionError.timeout
+        }
+
         return finalText
     }
 
@@ -351,6 +360,19 @@ class StreamingTranscriptionService {
             group.cancelAll()
             return result
         }
+        // A single commit can emit several committed events back-to-back: FluidAudio's commit()
+        // yields the in-flight pass's confirmed words AND then a separate final-tail pass, both
+        // already buffered on the event stream by the time commit() returns. The event consumer
+        // appends them in its own MainActor turns, so returning on the FIRST ack would read
+        // committedSegments before the tail lands, silently dropping the user's last words. Yield
+        // the MainActor briefly so those already-produced events finish appending.
+        // ponytail: fixed settle window — the tail is buffered and lands in microseconds, so 250ms
+        // is ample; switch to draining an explicit "commit finished" event if a provider ever
+        // produces committed events with real gaps between them.
+        if receivedInTime {
+            try? await Task.sleep(nanoseconds: 250_000_000)
+        }
+
         logger.notice("Streaming final wait finished received=\(receivedInTime, privacy: .public) segments=\(self.committedSegments.count, privacy: .public)")
 
         // Clean up the signal

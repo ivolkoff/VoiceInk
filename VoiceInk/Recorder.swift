@@ -142,7 +142,7 @@ class Recorder: NSObject, ObservableObject {
             }
             logger.notice("startRecording: CoreAudioRecorder started successfully")
 
-            startAudioMeterTimer()
+            startAudioMeterTimer(for: coreAudioRecorder)
             Task { [weak self] in
                 guard let self else { return }
                 await self.playbackController.pauseMedia()
@@ -202,19 +202,21 @@ class Recorder: NSObject, ObservableObject {
         }
     }
 
-    private func startAudioMeterTimer() {
+    private func startAudioMeterTimer(for recorder: CoreAudioRecorder) {
         let timer = DispatchSource.makeTimerSource(queue: audioMeterQueue)
-        timer.schedule(deadline: .now(), repeating: .milliseconds(17)) 
-        timer.setEventHandler { [weak self] in
-            self?.updateAudioMeter()
+        timer.schedule(deadline: .now(), repeating: .milliseconds(17))
+        // Capture the recorder directly instead of reading the MainActor-isolated
+        // `self.recorder` on this background queue — that load races startRecording/
+        // stopRecording nil-ing it on the main thread (torn ARC / use-after-free).
+        timer.setEventHandler { [weak self, weak recorder] in
+            guard let self, let recorder else { return }
+            self.updateAudioMeter(recorder: recorder)
         }
         timer.resume()
         audioMeterUpdateTimer = timer
     }
 
-    private func updateAudioMeter() {
-        guard let recorder = recorder else { return }
-
+    private func updateAudioMeter(recorder: CoreAudioRecorder) {
         // Sample audio levels (thread-safe read)
         let averagePower = recorder.averagePower
         let peakPower = recorder.peakPower

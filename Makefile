@@ -17,7 +17,7 @@ SIGN_IDENTITY ?= VoiceInk Local
 # placeholder files which break the code signature seal.
 LOCAL_INSTALL_DIR ?= /Applications
 
-.PHONY: all clean whisper setup build local local-signed check healthcheck help dev run run-direct
+.PHONY: all clean whisper setup build local local-signed check healthcheck help dev run run-direct reopen
 
 # Default target
 all: check build
@@ -73,13 +73,13 @@ local: check setup
 		build
 	@APP_PATH="$(LOCAL_DERIVED_DATA)/Build/Products/Debug/VoiceInk.app" && \
 	if [ -d "$$APP_PATH" ]; then \
-		echo "Copying VoiceInk.app to ~/Downloads..."; \
-		rm -rf "$$HOME/Downloads/VoiceInk.app"; \
-		ditto "$$APP_PATH" "$$HOME/Downloads/VoiceInk.app"; \
-		xattr -cr "$$HOME/Downloads/VoiceInk.app"; \
+		echo "Installing VoiceInk.app to $(LOCAL_INSTALL_DIR)..."; \
+		rm -rf "$(LOCAL_INSTALL_DIR)/VoiceInk.app"; \
+		ditto "$$APP_PATH" "$(LOCAL_INSTALL_DIR)/VoiceInk.app"; \
+		xattr -cr "$(LOCAL_INSTALL_DIR)/VoiceInk.app"; \
 		echo ""; \
-		echo "Build complete! App saved to: ~/Downloads/VoiceInk.app"; \
-		echo "Run with: open ~/Downloads/VoiceInk.app"; \
+		echo "Build complete! App saved to: $(LOCAL_INSTALL_DIR)/VoiceInk.app"; \
+		echo "Run with: open $(LOCAL_INSTALL_DIR)/VoiceInk.app"; \
 		echo ""; \
 		echo "Limitations of local builds:"; \
 		echo "  - No iCloud dictionary sync"; \
@@ -136,9 +136,9 @@ local-signed:
 
 # Run application
 run:
-	@if [ -d "$$HOME/Downloads/VoiceInk.app" ]; then \
-		echo "Opening ~/Downloads/VoiceInk.app..."; \
-		open "$$HOME/Downloads/VoiceInk.app"; \
+	@if [ -d "$(LOCAL_INSTALL_DIR)/VoiceInk.app" ]; then \
+		echo "Opening $(LOCAL_INSTALL_DIR)/VoiceInk.app..."; \
+		open "$(LOCAL_INSTALL_DIR)/VoiceInk.app"; \
 	else \
 		echo "Looking for VoiceInk.app in DerivedData..."; \
 		APP_PATH=$$(find "$$HOME/Library/Developer/Xcode/DerivedData" -name "VoiceInk.app" -type d | head -1) && \
@@ -172,6 +172,11 @@ run-direct:
 	nohup "$$BIN" >> "$$HOME/Library/Logs/VoiceInk-direct.log" 2>&1 & \
 	echo "Launched. Logs: ~/Library/Logs/VoiceInk-direct.log"
 
+# Quit running app and reopen the installed copy
+reopen:
+	@killall VoiceInk 2>/dev/null || true
+	@open "$(LOCAL_INSTALL_DIR)/VoiceInk.app"
+
 # Cleanup
 clean:
 	@echo "Cleaning build artifacts..."
@@ -187,6 +192,7 @@ help:
 	@echo "  build              Build the VoiceInk Xcode project"
 	@echo "  local              Build for local use (no Apple Developer certificate needed)"
 	@echo "  run                Launch the built VoiceInk app"
+	@echo "  reopen             Quit running app and reopen the installed copy"
 	@echo "  dev                Build and run the app (for development)"
 	@echo "  all                Run full build process (default)"
 	@echo "  clean              Remove build artifacts"

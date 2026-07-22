@@ -46,11 +46,13 @@ class VoiceInkCSVExportService {
     }
 
     private func escapeCSVString(_ string: String) -> String {
+        // Per RFC 4180 a field must be quoted if it contains a comma, newline,
+        // carriage return, or a double-quote — not just comma/newline. Doubling
+        // the quotes without enclosing the field produces invalid CSV.
+        let needsQuoting = string.contains(",") || string.contains("\n")
+            || string.contains("\r") || string.contains("\"")
         let escapedString = string.replacingOccurrences(of: "\"", with: "\"\"")
-        if escapedString.contains(",") || escapedString.contains("\n") {
-            return "\"\(escapedString)\""
-        }
-        return escapedString
+        return needsQuoting ? "\"\(escapedString)\"" : escapedString
     }
 
     private func powerModeDisplay(name: String?, emoji: String?) -> String {

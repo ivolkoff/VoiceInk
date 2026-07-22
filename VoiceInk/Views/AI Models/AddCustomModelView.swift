@@ -15,6 +15,7 @@ struct AddCustomModelCardView: View {
     @State private var validationErrors: [String] = []
     @State private var showingAlert = false
     @State private var isSaving = false
+    @State private var pendingSave: DispatchWorkItem?
     
     var body: some View {
         VStack(spacing: 0) {
@@ -192,6 +193,11 @@ struct AddCustomModelCardView: View {
     }
     
     private func clearForm() {
+        // Cancel a still-pending save so dismissing the form (Cancel/X) actually aborts it, and
+        // clear isSaving so the submit button re-enables next time the form is opened.
+        pendingSave?.cancel()
+        pendingSave = nil
+        isSaving = false
         displayName = ""
         apiEndpoint = ""
         apiKey = ""
@@ -207,9 +213,12 @@ struct AddCustomModelCardView: View {
         
         // Generate a name from display name (lowercase, no spaces)
         let generatedName = trimmedDisplayName.lowercased().replacingOccurrences(of: " ", with: "-")
-        
+        // On edit keep the existing identity slug: `name` is what currentTranscriptionModel
+        // and UserDefaults reference, so regenerating it on rename orphans a selected model.
+        let resolvedName = editingModel?.name ?? generatedName
+
         validationErrors = customModelManager.validateModel(
-            name: generatedName,
+            name: resolvedName,
             displayName: trimmedDisplayName,
             apiEndpoint: trimmedApiEndpoint,
             apiKey: trimmedApiKey,
@@ -217,18 +226,27 @@ struct AddCustomModelCardView: View {
             excludingId: editingModel?.id
         )
         
+        // A custom model's identity is its `name` slug; colliding with a built-in/cloud model name
+        // puts two entries with the same name in allAvailableModels, and name-based resolution
+        // silently picks the predefined one — hijacking the user's selection. Reject the collision.
+        // (New models only — an edit preserves the already-accepted existing name.)
+        if editingModel == nil,
+           TranscriptionModelRegistry.models.contains(where: { $0.provider != .custom && $0.name == resolvedName }) {
+            validationErrors.append("This name conflicts with a built-in model. Choose a different display name.")
+        }
+
         if !validationErrors.isEmpty {
             showingAlert = true
             return
         }
-        
+
         isSaving = true
 
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+        let work = DispatchWorkItem {
             if let editing = editingModel {
                 let updatedModel = CustomCloudModel(
                     id: editing.id,
-                    name: generatedName,
+                    name: resolvedName,
                     displayName: trimmedDisplayName,
                     description: "Custom transcription model",
                     apiEndpoint: trimmedApiEndpoint,
@@ -246,7 +264,7 @@ struct AddCustomModelCardView: View {
                 }
             } else {
                 let customModel = CustomCloudModel(
-                    name: generatedName,
+                    name: resolvedName,
                     displayName: trimmedDisplayName,
                     description: "Custom transcription model",
                     apiEndpoint: trimmedApiEndpoint,
@@ -272,6 +290,8 @@ struct AddCustomModelCardView: View {
                 isSaving = false
             }
         }
+        pendingSave = work
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5, execute: work)
     }
 }
 

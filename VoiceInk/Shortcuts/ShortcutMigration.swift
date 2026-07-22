@@ -164,19 +164,23 @@ enum ShortcutMigration {
     }
 
     static func migrateLegacyKeyboardShortcut(for action: ShortcutAction) {
-        defer {
-            removeLegacyKeyboardShortcut(for: action)
-        }
-
         guard
             ShortcutStore.rawShortcut(for: action) == nil,
             !ShortcutStore.isShortcutCleared(for: action),
             let shortcut = legacyKeyboardShortcut(for: action)
         else {
+            removeLegacyKeyboardShortcut(for: action)
             return
         }
 
         ShortcutStore.setShortcut(shortcut, for: action)
+
+        // setShortcut removes the legacy key itself on success but silently no-ops when the
+        // (stricter) validator rejects the binding. Only drop the legacy key once it was actually
+        // stored — deleting it on rejection would lose the shortcut permanently with no fallback.
+        if ShortcutStore.rawShortcut(for: action) != nil {
+            removeLegacyKeyboardShortcut(for: action)
+        }
     }
 
     private static func migrateLegacyCustomRecordingShortcutsIfNeeded() {
@@ -193,20 +197,23 @@ enum ShortcutMigration {
     }
 
     private static func migrateLegacyCustomRecordingShortcut(for action: ShortcutAction) {
-        defer {
-            removeLegacyCustomRecordingShortcut(for: action)
-        }
-
         guard
             ShortcutStore.rawShortcut(for: action) == nil,
             !ShortcutStore.isShortcutCleared(for: action),
             let data = UserDefaults.standard.data(forKey: legacyCustomRecordingShortcutKey(for: action)),
             let shortcut = try? JSONDecoder().decode(Shortcut.self, from: data)
         else {
+            removeLegacyCustomRecordingShortcut(for: action)
             return
         }
 
         ShortcutStore.setShortcut(shortcut, for: action)
+
+        // Only drop the legacy key once the binding was actually stored — setShortcut silently
+        // no-ops on validator rejection, and deleting it anyway would lose the shortcut for good.
+        if ShortcutStore.rawShortcut(for: action) != nil {
+            removeLegacyCustomRecordingShortcut(for: action)
+        }
     }
 
     private static func migrateDefaultPrimaryShortcutIfNeeded(for action: ShortcutAction) {

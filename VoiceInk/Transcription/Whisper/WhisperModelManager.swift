@@ -132,9 +132,11 @@ class WhisperModelManager: ObservableObject {
 
         return try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Data, Error>) in
             let finished = ManagedAtomic(false)
+            var observation: NSKeyValueObservation?
 
             func finishOnce(_ result: Result<Data, Error>) {
                 if finished.exchange(true, ordering: .acquiring) == false {
+                    observation?.invalidate()
                     continuation.resume(with: result)
                 }
             }
@@ -167,12 +169,17 @@ class WhisperModelManager: ObservableObject {
             }
 
             self.activeDownloadTasks[progressKey] = task
-            task.resume()
 
             var lastUpdateTime = Date()
             var lastProgressValue: Double = 0
 
-            let observation = task.progress.observe(\.fractionCompleted) { progress, _ in
+            // Create the observation before resuming (so a fast completion can't race
+            // it) and invalidate it in finishOnce so it never leaks. Cancellation is
+            // handled by cancelDownload() cancelling the URLSessionTask directly, which
+            // fires the completion handler above — the previous detached watcher Task
+            // awaited a never-resumed continuation, so it (and this observation) leaked
+            // on every download and its cancellation path was dead code.
+            observation = task.progress.observe(\.fractionCompleted) { progress, _ in
                 let currentTime = Date()
                 let timeSinceLastUpdate = currentTime.timeIntervalSince(lastUpdateTime)
                 let currentProgress = round(progress.fractionCompleted * 100) / 100
@@ -187,16 +194,7 @@ class WhisperModelManager: ObservableObject {
                 }
             }
 
-            Task {
-                await withTaskCancellationHandler {
-                    observation.invalidate()
-                    if finished.exchange(true, ordering: .acquiring) == false {
-                        continuation.resume(throwing: CancellationError())
-                    }
-                } operation: {
-                    await withCheckedContinuation { (_: CheckedContinuation<Void, Never>) in }
-                }
-            }
+            task.resume()
         }
     }
 
@@ -232,9 +230,24 @@ class WhisperModelManager: ObservableObject {
         let data = try await downloadFileWithProgress(from: url, progressKey: progressKeyMain)
 
         let destinationURL = modelsDirectory.appendingPathComponent(model.filename)
-        try data.write(to: destinationURL)
+        try await Self.writeDataInBackground(data, to: destinationURL)
 
         return WhisperModelFile(name: model.name, url: destinationURL)
+    }
+
+    /// Writes model data off the main actor. Model files reach several GB, so a
+    /// synchronous write on the @MainActor class would freeze the UI for seconds.
+    private nonisolated static func writeDataInBackground(_ data: Data, to url: URL) async throws {
+        try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
+            DispatchQueue.global(qos: .userInitiated).async {
+                do {
+                    try data.write(to: url)
+                    continuation.resume()
+                } catch {
+                    continuation.resume(throwing: error)
+                }
+            }
+        }
     }
 
     private func downloadAndSetupCoreMLModel(for model: WhisperModelFile, from url: URL) async throws -> WhisperModelFile {
@@ -242,7 +255,7 @@ class WhisperModelManager: ObservableObject {
         let coreMLData = try await downloadFileWithProgress(from: url, progressKey: progressKeyCoreML)
 
         let coreMLZipPath = modelsDirectory.appendingPathComponent("\(model.name)-encoder.mlmodelc.zip")
-        try coreMLData.write(to: coreMLZipPath)
+        try await Self.writeDataInBackground(coreMLData, to: coreMLZipPath)
 
         return try await unzipAndSetupCoreMLModel(for: model, zipPath: coreMLZipPath, progressKey: progressKeyCoreML)
     }
@@ -265,12 +278,17 @@ class WhisperModelManager: ObservableObject {
                 }
             }
 
-            do {
-                try FileManager.default.createDirectory(at: destination, withIntermediateDirectories: true)
-                try Zip.unzipFile(zipPath, destination: destination, overwrite: true, password: nil)
-                finishOnce(.success(()))
-            } catch {
-                finishOnce(.failure(error))
+            // Offload the unzip: the Core ML encoder archive is hundreds of MB and
+            // Zip.unzipFile is synchronous, so running it inline would block the
+            // @MainActor for seconds (the continuation wrapper alone did not offload).
+            DispatchQueue.global(qos: .userInitiated).async {
+                do {
+                    try FileManager.default.createDirectory(at: destination, withIntermediateDirectories: true)
+                    try Zip.unzipFile(zipPath, destination: destination, overwrite: true, password: nil)
+                    finishOnce(.success(()))
+                } catch {
+                    finishOnce(.failure(error))
+                }
             }
         }
     }

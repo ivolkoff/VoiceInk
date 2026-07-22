@@ -458,7 +458,7 @@ private struct CustomHeadersEditor: View {
 
             if !headers.isEmpty {
                 ForEach(Array(headers.keys.sorted()), id: \.self) { key in
-                    headerRow(key: key, value: headers[key] ?? "")
+                    CustomHeaderRow(headerKey: key, headers: $headers, onKeyCommitted: checkReservedHeader)
                 }
             }
 
@@ -496,38 +496,6 @@ private struct CustomHeadersEditor: View {
         .padding(.vertical, 4)
     }
 
-    private func headerRow(key: String, value: String) -> some View {
-        HStack(spacing: 6) {
-            TextField("Key", text: Binding(
-                get: { key },
-                set: { newKey in
-                    if !newKey.isEmpty {
-                        headers[newKey] = headers.removeValue(forKey: key)
-                        checkReservedHeader(newKey)
-                    }
-                }
-            ))
-            .textFieldStyle(.roundedBorder)
-            .font(.system(size: 12))
-
-            TextField("Value", text: Binding(
-                get: { headers[key] ?? "" },
-                set: { headers[key] = $0 }
-            ))
-            .textFieldStyle(.roundedBorder)
-            .font(.system(size: 12))
-
-            Button {
-                headers.removeValue(forKey: key)
-            } label: {
-                Image(systemName: "xmark.circle.fill")
-                    .foregroundColor(.secondary)
-            }
-            .buttonStyle(.plain)
-            .help("Remove Header")
-        }
-    }
-
     private func addHeader() {
         let trimmedKey = newKey.trimmingCharacters(in: .whitespaces)
         let trimmedValue = newValue.trimmingCharacters(in: .whitespaces)
@@ -546,5 +514,69 @@ private struct CustomHeadersEditor: View {
         } else {
             reservedKeyWarning = nil
         }
+    }
+}
+
+private struct CustomHeaderRow: View {
+    let headerKey: String
+    @Binding var headers: [String: String]
+    let onKeyCommitted: (String) -> Void
+    @State private var draftKey: String
+    @FocusState private var keyFieldFocused: Bool
+
+    init(headerKey: String, headers: Binding<[String: String]>, onKeyCommitted: @escaping (String) -> Void) {
+        self.headerKey = headerKey
+        self._headers = headers
+        self.onKeyCommitted = onKeyCommitted
+        self._draftKey = State(initialValue: headerKey)
+    }
+
+    var body: some View {
+        HStack(spacing: 6) {
+            // Edit into a local draft and commit the rename on submit. Binding the
+            // TextField straight to the dictionary key renamed it on every keystroke,
+            // which — because the ForEach identity is the key — tore down and
+            // recreated the field (losing focus) and could clobber another header.
+            TextField("Key", text: $draftKey)
+                .textFieldStyle(.roundedBorder)
+                .font(.system(size: 12))
+                .focused($keyFieldFocused)
+                .onSubmit(commitKey)
+                .onChange(of: keyFieldFocused) { _, focused in
+                    if !focused { commitKey() }
+                }
+
+            TextField("Value", text: Binding(
+                get: { headers[headerKey] ?? "" },
+                set: { headers[headerKey] = $0 }
+            ))
+            .textFieldStyle(.roundedBorder)
+            .font(.system(size: 12))
+
+            Button {
+                headers.removeValue(forKey: headerKey)
+            } label: {
+                Image(systemName: "xmark.circle.fill")
+                    .foregroundColor(.secondary)
+            }
+            .buttonStyle(.plain)
+            .help("Remove Header")
+        }
+    }
+
+    private func commitKey() {
+        let newKey = draftKey.trimmingCharacters(in: .whitespaces)
+        // Nothing to do if unchanged, or if the original key is already gone (e.g.
+        // the row was removed while editing) — otherwise removeValue would return nil
+        // and headers[newKey] = nil would delete newKey.
+        guard newKey != headerKey, headers[headerKey] != nil else { return }
+        // Reject empty or a name that already exists, so a rename never silently
+        // overwrites another header; revert the draft to the current key.
+        guard !newKey.isEmpty, headers[newKey] == nil else {
+            draftKey = headerKey
+            return
+        }
+        headers[newKey] = headers.removeValue(forKey: headerKey)
+        onKeyCommitted(newKey)
     }
 }

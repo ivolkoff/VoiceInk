@@ -11,7 +11,18 @@ class FluidAudioTranscriptionService: TranscriptionService {
     private var cachedModels: AsrModels?
     private var loadingTask: (version: AsrModelVersion, task: Task<AsrModels, Error>)?
     private let loadingTaskLock = NSLock()
+    // These methods are nonisolated async (they run off the main actor on the cooperative pool),
+    // so cleanup() nil-ing the managers can race a concurrent transcribe()/ensureModelsLoaded()
+    // reading/writing the same class-reference storage — a data race that corrupts the refcount.
+    // Guard every access with this lock (never held across an await).
+    private let stateLock = NSLock()
     private let logger = Logger(subsystem: "com.prakashjoshipax.voiceink", category: "FluidAudioTranscriptionService")
+
+    private func withState<T>(_ body: () -> T) -> T {
+        stateLock.lock()
+        defer { stateLock.unlock() }
+        return body()
+    }
 
     private func version(for model: any TranscriptionModel) -> AsrModelVersion {
         FluidAudioModelManager.asrVersion(for: model.name)
@@ -25,27 +36,32 @@ class FluidAudioTranscriptionService: TranscriptionService {
     }
 
     private func ensureModelsLoaded(for version: AsrModelVersion) async throws {
-        if asrManager != nil, activeVersion == version {
+        if withState({ asrManager != nil && activeVersion == version }) {
             return
         }
 
         // Clean up existing manager but preserve cachedModels for reuse
-        await asrManager?.cleanup()
-        asrManager = nil
-        vadManager = nil
-        activeVersion = nil
+        let existing = withState { asrManager }
+        await existing?.cleanup()
+        withState {
+            asrManager = nil
+            vadManager = nil
+            activeVersion = nil
+        }
 
         let models = try await getOrLoadModels(for: version)
 
         let manager = AsrManager(config: .default)
         try await manager.loadModels(models)
-        self.asrManager = manager
-        self.activeVersion = version
+        withState {
+            self.asrManager = manager
+            self.activeVersion = version
+        }
     }
 
     // Returns cached models or loads from disk; deduplicates concurrent loads
     func getOrLoadModels(for version: AsrModelVersion) async throws -> AsrModels {
-        if let cached = cachedModels, cached.version == version {
+        if let cached = withState({ cachedModels }), cached.version == version {
             return cached
         }
 
@@ -69,7 +85,7 @@ class FluidAudioTranscriptionService: TranscriptionService {
 
         do {
             let models = try await task.value
-            self.cachedModels = models
+            withState { self.cachedModels = models }
             // Only clear if we're still the current loading task
             loadingTaskLock.lock()
             if loadingTask?.version == version {
@@ -96,7 +112,7 @@ class FluidAudioTranscriptionService: TranscriptionService {
         let targetVersion = version(for: model)
         try await ensureModelsLoaded(for: targetVersion)
 
-        guard let asrManager = asrManager else {
+        guard let asrManager = withState({ self.asrManager }) else {
             throw ASRError.notInitialized
         }
 
@@ -114,16 +130,17 @@ class FluidAudioTranscriptionService: TranscriptionService {
         var speechAudio = audioSamples
         if durationSeconds >= 20.0, isVADEnabled {
             let vadConfig = VadConfig(defaultThreshold: 0.7)
-            if vadManager == nil {
+            if withState({ vadManager }) == nil {
                 do {
-                    vadManager = try await VadManager(config: vadConfig)
+                    let created = try await VadManager(config: vadConfig)
+                    withState { vadManager = created }
                 } catch {
                     logger.notice("VAD init failed; falling back to full audio: \(error.localizedDescription, privacy: .public)")
-                    vadManager = nil
+                    withState { vadManager = nil }
                 }
             }
 
-            if let vadManager {
+            if let vadManager = withState({ self.vadManager }) {
                 do {
                     let segments = try await vadManager.segmentSpeechAudio(audioSamples)
                     speechAudio = segments.isEmpty ? audioSamples : segments.flatMap { $0 }
@@ -158,7 +175,11 @@ class FluidAudioTranscriptionService: TranscriptionService {
                 throw ASRError.invalidAudioData
             }
 
-            let floats = stride(from: 44, to: data.count, by: 2).map {
+            // Stop one short of the end so the final 2-byte slice never runs past
+            // the buffer: an odd byte count (truncated/corrupt WAV) would otherwise
+            // make data[$0..<$0+2] read out of bounds and crash (same guard as
+            // WhisperTranscriptionService.readAudioSamples).
+            let floats = stride(from: 44, to: data.count - 1, by: 2).map {
                 return data[$0..<$0 + 2].withUnsafeBytes {
                     let short = Int16(littleEndian: $0.load(as: Int16.self))
                     return max(-1.0, min(Float(short) / 32767.0, 1.0))
@@ -173,12 +194,15 @@ class FluidAudioTranscriptionService: TranscriptionService {
 
     // Releases ASR/VAD resources but preserves cached models for reuse
     func cleanup() async {
-        if let manager = asrManager {
+        let manager = withState { asrManager }
+        if let manager {
             await manager.cleanup()
         }
-        asrManager = nil
-        vadManager = nil
-        activeVersion = nil
+        withState {
+            asrManager = nil
+            vadManager = nil
+            activeVersion = nil
+        }
     }
 
 }

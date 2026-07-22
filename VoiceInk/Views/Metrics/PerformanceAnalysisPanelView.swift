@@ -169,7 +169,7 @@ struct PerformanceAnalysisPanelView: View {
                 Text(String(format: "%.1fx", modelStat.speedFactor))
                     .font(.system(size: 24, weight: .bold, design: .rounded))
                     .foregroundColor(.mint)
-                Text("Faster than Real-time")
+                Text(modelStat.speedFactor >= 1.0 ? "Faster than Real-time" : "Slower than Real-time")
                     .font(.system(size: 10))
                     .foregroundColor(.secondary)
             }

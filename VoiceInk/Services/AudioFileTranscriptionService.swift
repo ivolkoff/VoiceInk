@@ -259,6 +259,14 @@ class AudioTranscriptionService: ObservableObject {
                         logger.error("❌ Failed to save transcription: \(error.localizedDescription, privacy: .public)")
                     }
 
+                    // Restore original prompt settings if AI was temporarily enabled
+                    // by trigger-word detection — the enhance() failure path must not
+                    // leave the user's global enhancement toggle/prompt flipped.
+                    if let result = promptDetectionResult,
+                       result.shouldEnableAI {
+                        await promptDetectionService.restoreOriginalSettings(result, to: enhancementService)
+                    }
+
                     await MainActor.run {
                         isTranscribing = false
                     }

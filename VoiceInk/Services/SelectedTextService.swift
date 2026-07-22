@@ -57,7 +57,8 @@ class SelectedTextService {
         let systemWide = AXUIElementCreateSystemWide()
         var focusedValue: CFTypeRef?
         guard AXUIElementCopyAttributeValue(systemWide, kAXFocusedUIElementAttribute as CFString, &focusedValue) == .success,
-              let focused = focusedValue else {
+              let focused = focusedValue,
+              CFGetTypeID(focused) == AXUIElementGetTypeID() else {
             return nil
         }
 

@@ -64,7 +64,7 @@ enum BrowserType {
     }
     
     static var allCases: [BrowserType] {
-        [.safari, .arc, .chrome, .edge, .brave, .opera, .vivaldi, .orion, .yandex]
+        [.safari, .arc, .chrome, .edge, .firefox, .brave, .opera, .vivaldi, .orion, .zen, .yandex]
     }
     
     static var installedBrowsers: [BrowserType] {
@@ -122,17 +122,21 @@ class BrowserURLService {
             
             let data = pipe.fileHandleForReading.readDataToEndOfFile()
             if let output = String(data: data, encoding: .utf8)?.trimmingCharacters(in: .whitespacesAndNewlines) {
+                // Two failure conventions: Chrome/Safari let errors propagate so
+                // osascript exits non-zero, while the Firefox/Zen scripts catch
+                // internally and return an "ERROR: ..." sentinel with exit 0. Check
+                // both. A real URL never starts with "ERROR:", so this avoids the old
+                // contains("error") false-positive on legitimate URLs.
+                if task.terminationStatus != 0 || output.hasPrefix("ERROR:") {
+                    logger.error("❌ AppleScript error for \(browser.displayName, privacy: .public): \(output, privacy: .public)")
+                    throw BrowserURLError.executionFailed
+                }
+
                 if output.isEmpty {
                     logger.error("❌ Empty output from AppleScript for \(browser.displayName, privacy: .public)")
                     throw BrowserURLError.noActiveTab
                 }
-                
-                // Check if output contains error messages
-                if output.lowercased().contains("error") {
-                    logger.error("❌ AppleScript error for \(browser.displayName, privacy: .public): \(output, privacy: .public)")
-                    throw BrowserURLError.executionFailed
-                }
-                
+
                 logger.debug("✅ Successfully retrieved URL from \(browser.displayName, privacy: .public): \(output, privacy: .public)")
                 return output
             } else {

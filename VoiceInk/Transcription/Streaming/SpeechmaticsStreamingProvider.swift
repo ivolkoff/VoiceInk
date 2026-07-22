@@ -90,8 +90,11 @@ final class SpeechmaticsStreamingProvider: StreamingTranscriptionProvider {
     }
 
     private func getCustomVocabularyTerms() -> [String] {
+        // `connect` is nonisolated async and runs off the main thread; read
+        // vocabulary through a fresh context (main context is not thread-safe).
+        let context = ModelContext(modelContext.container)
         let descriptor = FetchDescriptor<VocabularyWord>(sortBy: [SortDescriptor(\.word)])
-        guard let vocabularyWords = try? modelContext.fetch(descriptor) else {
+        guard let vocabularyWords = try? context.fetch(descriptor) else {
             return []
         }
         var seen = Set<String>()

@@ -106,8 +106,12 @@ class CloudTranscriptionService: TranscriptionService {
     }
 
     private func getCustomDictionaryTerms() -> [String] {
+        // `transcribe` is a nonisolated async method, so this runs off the main
+        // thread. `modelContext` is the main context (not thread-safe); read
+        // vocabulary through a fresh context bound to the same container.
+        let context = ModelContext(modelContext.container)
         let descriptor = FetchDescriptor<VocabularyWord>(sortBy: [SortDescriptor(\.word)])
-        guard let vocabularyWords = try? modelContext.fetch(descriptor) else {
+        guard let vocabularyWords = try? context.fetch(descriptor) else {
             return []
         }
         var seen = Set<String>()

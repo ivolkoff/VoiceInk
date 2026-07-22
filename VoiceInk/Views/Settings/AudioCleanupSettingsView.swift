@@ -199,8 +199,15 @@ struct AudioCleanupSettingsView: View {
                         withAnimation(.easeInOut(duration: 0.2)) {
                             isAudioExpanded = true
                         }
+                        // Actually start the cleanup timer. Transcript cleanup, when
+                        // enabled, supersedes audio cleanup and owns the timer, so
+                        // only start here when it is off (mirrors launch logic).
+                        if !isTranscriptionCleanupEnabled {
+                            AudioCleanupManager.shared.startAutomaticCleanup(modelContext: modelContext)
+                        }
                     } else {
                         isAudioExpanded = false
+                        AudioCleanupManager.shared.stopAutomaticCleanup()
                     }
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
                         isHandlingAudioToggle = false

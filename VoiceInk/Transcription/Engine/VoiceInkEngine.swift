@@ -42,7 +42,7 @@ class VoiceInkEngine: NSObject, ObservableObject {
         self.transcriptionModelManager = transcriptionModelManager
         self.enhancementService = enhancementService
 
-        let appSupportDirectory = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first ?? URL(fileURLWithPath: NSTemporaryDirectory())
+        let appSupportDirectory = (FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first ?? URL(fileURLWithPath: NSTemporaryDirectory()))
             .appendingPathComponent("com.prakashjoshipax.VoiceInk")
         self.recordingsDirectory = appSupportDirectory.appendingPathComponent("Recordings")
 
@@ -114,7 +114,11 @@ class VoiceInkEngine: NSObject, ObservableObject {
 
                     await runPipeline(on: transcription, audioURL: recordedFile)
                 } else {
+                    // Cancel landed while stopRecording() was suspended. Mirror the cancelRecording
+                    // .recording path: finishActiveRecorderCancellation() alone doesn't restore the
+                    // power-mode session or clear captured contexts, so pair it with finishRecorderSession().
                     await finishActiveRecorderCancellation()
+                    await finishRecorderSession()
                 }
             } else {
                 cancelCurrentSession()
@@ -148,9 +152,9 @@ class VoiceInkEngine: NSObject, ObservableObject {
                             let permanentURL = self.recordingsDirectory.appendingPathComponent(fileName)
                             self.recordedFile = permanentURL
 
-                            let pendingChunks = OSAllocatedUnfairLock(initialState: [Data]())
+                            let chunkRouter = AudioChunkRouter()
                             self.recorder.onAudioChunk = { data in
-                                pendingChunks.withLock { $0.append(data) }
+                                chunkRouter.handle(data)
                             }
 
                             self.recordingState = .starting
@@ -193,16 +197,13 @@ class VoiceInkEngine: NSObject, ObservableObject {
                                 let realCallback = try await session.prepare(model: model)
 
                                 if let realCallback {
-                                    self.recorder.onAudioChunk = realCallback
-                                    let buffered = pendingChunks.withLock { chunks -> [Data] in
-                                        let result = chunks
-                                        chunks.removeAll()
-                                        return result
-                                    }
-                                    for chunk in buffered { realCallback(chunk) }
+                                    // Drain the backlog into realCallback and switch to
+                                    // forwarding atomically, so a chunk delivered by the audio
+                                    // thread during the hand-off can't jump ahead of the backlog.
+                                    chunkRouter.activate(realCallback)
                                 } else {
                                     self.recorder.onAudioChunk = nil
-                                    pendingChunks.withLock { $0.removeAll() }
+                                    chunkRouter.discard()
                                 }
                             }
 
@@ -257,6 +258,13 @@ class VoiceInkEngine: NSObject, ObservableObject {
             transcription.text = "Transcription Failed: No model selected"
             transcription.transcriptionStatus = TranscriptionStatus.failed.rawValue
             try? modelContext.save()
+            // Tear down like every other terminal path: without this the already-
+            // created session (a live streaming session for cloud/fluid models) is
+            // never cancelled and the loaded model is left resident.
+            cancelCurrentSession()
+            await finishRecorderSession()
+            await cleanupResources()
+            recordedFile = nil
             recordingState = .idle
             return
         }
@@ -318,8 +326,14 @@ class VoiceInkEngine: NSObject, ObservableObject {
             await finishActiveRecorderCancellation()
             shouldFinishSessionImmediately = true
         case .transcribing, .enhancing:
+            // Keep shouldCancelRecording set by requestRecordingCancellation():
+            // if cancel lands before the pipeline registers its transcription ID
+            // (the toggleRecord stop branch is suspended at recorder.stopRecording),
+            // this flag is the only cancellation signal its resume can observe —
+            // clearing it here would let the pipeline run and paste text anyway.
+            // A running pipeline is cancelled via canceledPipelineTranscriptionIDs,
+            // and the flag is reset when that pipeline finishes.
             requestRecordingCancellation()
-            shouldCancelRecording = false
             partialTranscript = ""
             recordingState = .idle
             shouldFinishSessionImmediately = false
@@ -493,6 +507,45 @@ class VoiceInkEngine: NSObject, ObservableObject {
                 await context.setPrompt(currentPrompt)
             }
         }
+    }
+}
+
+/// Routes real-time audio chunks during the hand-off from buffering to the live
+/// streaming callback. `handle` runs on the audio thread, `activate` on the main
+/// actor; the lock keeps the backlog drain and the switch to forwarding atomic, so
+/// a chunk delivered mid-hand-off is never reordered ahead of the buffered backlog
+/// (and the closure reference is never torn between threads).
+private final class AudioChunkRouter {
+    private let lock = NSLock()
+    private var forward: ((Data) -> Void)?
+    private var backlog: [Data] = []
+
+    /// Called on the real-time audio thread for every chunk.
+    func handle(_ data: Data) {
+        lock.lock()
+        defer { lock.unlock() }
+        if let forward {
+            forward(data)
+        } else {
+            backlog.append(data)
+        }
+    }
+
+    /// Called once from the main actor when the streaming callback is ready. Drains
+    /// the backlog and starts forwarding under the same lock, so ordering is total.
+    func activate(_ callback: @escaping (Data) -> Void) {
+        lock.lock()
+        defer { lock.unlock() }
+        for chunk in backlog { callback(chunk) }
+        backlog = []
+        forward = callback
+    }
+
+    func discard() {
+        lock.lock()
+        defer { lock.unlock() }
+        backlog = []
+        forward = nil
     }
 }
 

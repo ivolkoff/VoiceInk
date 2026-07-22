@@ -53,7 +53,10 @@ enum ShortcutValidator {
                 return nil
             }
 
-            guard !shortcut.modifierFlags.isEmpty else {
+            // Navigation keys (arrows, Home/End, Page Up/Down, Fwd-Delete) carry an intrinsic
+            // .function bit, which would otherwise pass this guard and let a bare arrow be bound
+            // as a global shortcut — hijacking that key process-wide. Require a real modifier.
+            guard !shortcut.modifierFlags.subtracting(.function).isEmpty else {
                 return .plainKeyRequiresModifier
             }
 

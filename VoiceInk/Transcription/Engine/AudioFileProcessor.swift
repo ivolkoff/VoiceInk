@@ -123,7 +123,15 @@ class AudioProcessor {
             
             currentFrame += AVAudioFramePosition(framesToRead)
         }
-        
+
+        // Normalize once across the whole file (mirrors the AVAssetReader path).
+        // Doing it here rather than per chunk keeps gain consistent for files
+        // longer than one 50M-frame chunk (~52 min at 16 kHz).
+        let maxSample = allSamples.map(abs).max() ?? 1
+        if maxSample > 0 {
+            allSamples = allSamples.map { $0 / maxSample }
+        }
+
         return allSamples
     }
     
@@ -253,12 +261,10 @@ class AudioProcessor {
                 samples[frame] = sum / Float(channelCount)
             }
         }
-        
-        let maxSample = samples.map(abs).max() ?? 1
-        if maxSample > 0 {
-            samples = samples.map { $0 / maxSample }
-        }
-        
+
+        // Downmix only. Normalization is applied once over the whole file by the
+        // caller — peak-normalizing per chunk would scale each 50M-frame segment of
+        // a long file to its own peak, producing inconsistent gain across the file.
         return samples
     }
     func saveSamplesAsWav(samples: [Float], to url: URL) throws {

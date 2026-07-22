@@ -179,8 +179,8 @@ struct ConfigurationView: View {
                             Text("Applications")
                             Spacer()
                             AddIconButton(helpText: "Add application") {
-                                loadInstalledApps()
                                 isShowingAppPicker = true
+                                Task { await loadInstalledApps() }
                             }
                             .popover(isPresented: $isShowingAppPicker, arrowEdge: .bottom) {
                                 AppPickerPopover(
@@ -664,59 +664,78 @@ struct ConfigurationView: View {
         }
     }
 
-    private func loadInstalledApps() {
-        let userAppURLs = FileManager.default.urls(for: .applicationDirectory, in: .userDomainMask)
-        let localAppURLs = FileManager.default.urls(for: .applicationDirectory, in: .localDomainMask)
-        let systemAppURLs = FileManager.default.urls(for: .applicationDirectory, in: .systemDomainMask)
-        let allAppURLs = userAppURLs + localAppURLs + systemAppURLs
+    private func loadInstalledApps() async {
+        let scanned = await Self.scanAppMetadata()
 
-        var allApps: [URL] = []
+        // Icons load on the main actor (kept off the background scan so nothing non-Sendable
+        // crosses the boundary). Dedup by bundleId: the scan can surface the same app via
+        // multiple domain roots / symlinks, and duplicate ForEach(id: \.bundleId) keys in the
+        // picker are undefined behavior.
+        var seen = Set<String>()
+        installedApps = scanned.compactMap { app in
+            guard seen.insert(app.bundleId).inserted else { return nil }
+            let icon = NSWorkspace.shared.icon(forFile: app.url.path)
+            return (url: app.url, name: app.name, bundleId: app.bundleId, icon: icon)
+        }
+    }
 
-        func scanDirectory(_ baseURL: URL, depth: Int = 0) {
-            // Prevent infinite recursion from circular symlinks
-            guard depth < 5 else { return }
-            guard let enumerator = FileManager.default.enumerator(
-                at: baseURL,
-                includingPropertiesForKeys: [.isApplicationKey, .isDirectoryKey, .isSymbolicLinkKey],
-                options: [.skipsHiddenFiles]
-            ) else { return }
+    // Recursive filesystem walk + Info.plist reads run off the main thread — synchronously they
+    // block the run loop (a visible hang on machines with many apps or a cold cache) since the
+    // caller is a SwiftUI button action.
+    private static func scanAppMetadata() async -> [(url: URL, name: String, bundleId: String)] {
+        await Task.detached(priority: .userInitiated) {
+            let userAppURLs = FileManager.default.urls(for: .applicationDirectory, in: .userDomainMask)
+            let localAppURLs = FileManager.default.urls(for: .applicationDirectory, in: .localDomainMask)
+            let systemAppURLs = FileManager.default.urls(for: .applicationDirectory, in: .systemDomainMask)
+            let allAppURLs = userAppURLs + localAppURLs + systemAppURLs
 
-            for item in enumerator {
-                guard let url = item as? URL else { continue }
-                let resolvedURL = url.resolvingSymlinksInPath()
+            var allApps: [URL] = []
 
-                if resolvedURL.pathExtension == "app" {
-                    allApps.append(resolvedURL)
-                    enumerator.skipDescendants()
-                    continue
-                }
+            func scanDirectory(_ baseURL: URL, depth: Int = 0) {
+                // Prevent infinite recursion from circular symlinks
+                guard depth < 5 else { return }
+                guard let enumerator = FileManager.default.enumerator(
+                    at: baseURL,
+                    includingPropertiesForKeys: [.isApplicationKey, .isDirectoryKey, .isSymbolicLinkKey],
+                    options: [.skipsHiddenFiles]
+                ) else { return }
 
-                // Traverse symlinked directories manually
-                var isDirectory: ObjCBool = false
-                if url != resolvedURL &&
-                   FileManager.default.fileExists(atPath: resolvedURL.path, isDirectory: &isDirectory) &&
-                   isDirectory.boolValue {
-                    enumerator.skipDescendants()
-                    scanDirectory(resolvedURL, depth: depth + 1)
+                for item in enumerator {
+                    guard let url = item as? URL else { continue }
+                    let resolvedURL = url.resolvingSymlinksInPath()
+
+                    if resolvedURL.pathExtension == "app" {
+                        allApps.append(resolvedURL)
+                        enumerator.skipDescendants()
+                        continue
+                    }
+
+                    // Traverse symlinked directories manually
+                    var isDirectory: ObjCBool = false
+                    if url != resolvedURL &&
+                       FileManager.default.fileExists(atPath: resolvedURL.path, isDirectory: &isDirectory) &&
+                       isDirectory.boolValue {
+                        enumerator.skipDescendants()
+                        scanDirectory(resolvedURL, depth: depth + 1)
+                    }
                 }
             }
-        }
 
-        for baseURL in allAppURLs {
-            scanDirectory(baseURL)
-        }
-
-        installedApps = allApps.compactMap { url in
-            guard let bundle = Bundle(url: url),
-                  let bundleId = bundle.bundleIdentifier,
-                  let name = (bundle.infoDictionary?["CFBundleName"] as? String) ??
-                            (bundle.infoDictionary?["CFBundleDisplayName"] as? String) else {
-                return nil
+            for baseURL in allAppURLs {
+                scanDirectory(baseURL)
             }
-            let icon = NSWorkspace.shared.icon(forFile: url.path)
-            return (url: url, name: name, bundleId: bundleId, icon: icon)
-        }
-        .sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
+
+            return allApps.compactMap { url -> (url: URL, name: String, bundleId: String)? in
+                guard let bundle = Bundle(url: url),
+                      let bundleId = bundle.bundleIdentifier,
+                      let name = (bundle.infoDictionary?["CFBundleName"] as? String) ??
+                                (bundle.infoDictionary?["CFBundleDisplayName"] as? String) else {
+                    return nil
+                }
+                return (url: url, name: name, bundleId: bundleId)
+            }
+            .sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
+        }.value
     }
 
     private func saveConfiguration() {

@@ -185,6 +185,12 @@ struct ModelManagementView: View {
                                     alertTitle = "Delete Custom Model"
                                     alertMessage = "Are you sure you want to delete the custom model '\(customModel.displayName)'?"
                                     deleteActionClosure = {
+                                        // Deleting the active custom model would otherwise leave a
+                                        // dangling currentTranscriptionModel (refreshAllAvailableModels
+                                        // only re-resolves names that still exist).
+                                        if transcriptionModelManager.currentTranscriptionModel?.name == customModel.name {
+                                            transcriptionModelManager.clearCurrentTranscriptionModel()
+                                        }
                                         customModelManager.removeCustomModel(withId: customModel.id)
                                         transcriptionModelManager.refreshAllAvailableModels()
                                     }

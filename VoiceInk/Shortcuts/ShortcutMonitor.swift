@@ -50,10 +50,23 @@ final class ShortcutMonitor {
         onShortcutPressed: ((ShortcutAction, TimeInterval) -> Void)? = nil,
         onShortcutInterrupted: ((ShortcutAction, TimeInterval) -> Void)? = nil
     ) -> Bool {
+        // Capture held state before stop() clears it. A refresh can restart the
+        // monitor while the user is still physically holding a shortcut (e.g. the
+        // recorder becoming visible re-registers this monitor mid-press). Carrying
+        // over isDown preserves the pending key-up so push-to-talk / hold-to-record
+        // release still fires instead of being dropped.
+        let previousStates = self.shortcuts
+
         stop()
 
         for (action, shortcut) in shortcuts {
-            self.shortcuts[action] = ShortcutState(shortcut: shortcut)
+            var state = ShortcutState(shortcut: shortcut)
+            if let previous = previousStates[action], previous.shortcut == shortcut, previous.isDown {
+                state.isDown = true
+                state.pressedAt = previous.pressedAt
+                state.isInterrupted = previous.isInterrupted
+            }
+            self.shortcuts[action] = state
             logger.notice("start: action=\(action.storageName, privacy: .public), shortcut=\(shortcut.displayString, privacy: .public), kind=\(shortcut.kind.rawValue, privacy: .public)")
         }
 
@@ -188,10 +201,13 @@ final class ShortcutMonitor {
             return false
         }
 
-        var nextID: UInt32 = 1
-
         for (action, state) in shortcuts {
-            let hotKeyID = EventHotKeyID(signature: Self.carbonHotKeySignature, id: nextID)
+            // IDs must be unique across ALL ShortcutMonitor instances: every monitor
+            // installs its own handler on the shared application event target and
+            // claims any event whose id is in its own map. Per-instance IDs starting
+            // at 1 collide, so one monitor's hot key gets routed to another's action.
+            let id = Self.nextCarbonHotKeyID()
+            let hotKeyID = EventHotKeyID(signature: Self.carbonHotKeySignature, id: id)
             var hotKeyRef: EventHotKeyRef?
             let registerStatus = RegisterEventHotKey(
                 UInt32(state.shortcut.keyCode),
@@ -203,15 +219,13 @@ final class ShortcutMonitor {
             )
 
             guard registerStatus == noErr, let hotKeyRef else {
-                logger.error("carbon register failed: id=\(nextID, privacy: .public), action=\(action.storageName, privacy: .public), shortcut=\(state.shortcut.displayString, privacy: .public), status=\(registerStatus, privacy: .public)")
-                nextID += 1
+                logger.error("carbon register failed: id=\(id, privacy: .public), action=\(action.storageName, privacy: .public), shortcut=\(state.shortcut.displayString, privacy: .public), status=\(registerStatus, privacy: .public)")
                 continue
             }
 
             carbonHotKeys.append(hotKeyRef)
-            carbonHotKeyActions[nextID] = action
-            logger.notice("carbon registered: id=\(nextID, privacy: .public), action=\(action.storageName, privacy: .public), shortcut=\(state.shortcut.displayString, privacy: .public), interruptible=\(self.interruptibleActions.contains(action), privacy: .public)")
-            nextID += 1
+            carbonHotKeyActions[id] = action
+            logger.notice("carbon registered: id=\(id, privacy: .public), action=\(action.storageName, privacy: .public), shortcut=\(state.shortcut.displayString, privacy: .public), interruptible=\(self.interruptibleActions.contains(action), privacy: .public)")
         }
 
         if carbonHotKeys.isEmpty {
@@ -321,6 +335,19 @@ final class ShortcutMonitor {
     private static let carbonHotKeySignature: OSType = 0x56494B48 // VIKH
     private static let carbonEventNotHandled = OSStatus(eventNotHandledErr)
 
+    // App-wide monotonic hot key ID source so IDs never collide across the
+    // several ShortcutMonitor instances that share the application event target.
+    private static let carbonHotKeyIDLock = NSLock()
+    private static var carbonHotKeyIDCounter: UInt32 = 1
+
+    private static func nextCarbonHotKeyID() -> UInt32 {
+        carbonHotKeyIDLock.lock()
+        defer { carbonHotKeyIDLock.unlock() }
+        let id = carbonHotKeyIDCounter
+        carbonHotKeyIDCounter += 1
+        return id
+    }
+
     private static let carbonHotKeyHandler: EventHandlerUPP = { _, event, userData in
         guard let userData else {
             return noErr
@@ -370,8 +397,13 @@ final class ShortcutMonitor {
 
     private func resetPressedShortcutsAfterTapInterruption() {
         let eventTime = ProcessInfo.processInfo.systemUptime
+        // Only reset shortcuts driven by the CGEvent tap. Carbon hot keys are
+        // unaffected by a tap disable, and non-interruptible Carbon actions keep
+        // isDown set after their discrete press — resetting them here would
+        // dispatch a spurious key-up, re-firing the action with no keypress.
+        let tapActions = eventTapActions ?? Set(shortcuts.keys)
         let pressedActions = shortcuts.compactMap { action, state in
-            state.isDown ? action : nil
+            (state.isDown && tapActions.contains(action)) ? action : nil
         }
 
         guard !pressedActions.isEmpty else {

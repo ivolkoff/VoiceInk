@@ -201,12 +201,23 @@ struct ConfigurationRow: View {
                 
                 Spacer()
                 
-                Toggle("", isOn: $config.isEnabled)
+                // Route through enable/disableConfiguration so the shortcut-
+                // availability notification fires. Binding directly to
+                // $config.isEnabled mutates the published array before any
+                // handler runs, which makes updateConfiguration's before/after
+                // snapshot identical and suppresses the notification.
+                Toggle("", isOn: Binding(
+                    get: { config.isEnabled },
+                    set: { newValue in
+                        if newValue {
+                            powerModeManager.enableConfiguration(with: config.id)
+                        } else {
+                            powerModeManager.disableConfiguration(with: config.id)
+                        }
+                    }
+                ))
                     .toggleStyle(SwitchToggleStyle(tint: .accentColor))
                     .labelsHidden()
-                    .onChange(of: config.isEnabled) { _, _ in
-                        powerModeManager.updateConfiguration(config)
-                    }
             }
             .padding(.vertical, 12)
             .padding(.horizontal, 14)

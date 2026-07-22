@@ -121,7 +121,7 @@ struct CustomPrompt: Identifiable, Codable, Equatable {
         icon = try container.decode(PromptIcon.self, forKey: .icon)
         description = try container.decodeIfPresent(String.self, forKey: .description)
         isPredefined = try container.decode(Bool.self, forKey: .isPredefined)
-        triggerWords = try container.decode([String].self, forKey: .triggerWords)
+        triggerWords = try container.decodeIfPresent([String].self, forKey: .triggerWords) ?? []
         useSystemInstructions = try container.decodeIfPresent(Bool.self, forKey: .useSystemInstructions) ?? true
     }
     

@@ -185,6 +185,7 @@ struct WaveformView: View {
                     HStack(spacing: 0.5) {
                         ForEach(0..<samples.count, id: \.self) { index in
                             WaveformBar(
+                                index: index,
                                 sample: samples[index],
                                 isPlayed: CGFloat(index) / CGFloat(samples.count) <= CGFloat(currentTime / duration),
                                 totalBars: samples.count,
@@ -247,15 +248,19 @@ struct WaveformView: View {
 }
 
 struct WaveformBar: View {
+    let index: Int
     let sample: Float
     let isPlayed: Bool
     let totalBars: Int
     let geometryWidth: CGFloat
     let isHovering: Bool
     let hoverProgress: CGFloat
-    
+
     private var isNearHover: Bool {
-        let barPosition = geometryWidth / CGFloat(totalBars)
+        // Use this bar's own centre x, not the (constant) width of one bar slot,
+        // so the hover-scale effect tracks the cursor across the waveform.
+        let barWidth = geometryWidth / CGFloat(totalBars)
+        let barPosition = (CGFloat(index) + 0.5) * barWidth
         let hoverPosition = hoverProgress * geometryWidth
         return abs(barPosition - hoverPosition) < 20
     }
@@ -607,7 +612,11 @@ struct AudioPlayerView: View {
     private func showTemporaryBanner(_ state: BannerState) {
         bannerState = state
         DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
-            withAnimation { bannerState = nil }
+            // Only clear if this is still the banner we showed; otherwise a banner
+            // shown within the 3s window would be cleared early by this older timer.
+            if bannerState == state {
+                withAnimation { bannerState = nil }
+            }
         }
     }
 

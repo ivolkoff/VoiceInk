@@ -54,24 +54,28 @@ class WhisperTranscriptionService: TranscriptionService {
         // Read audio data
         let data = try readAudioSamples(audioURL)
 
-        // Set prompt. The stored "TranscriptionPrompt" is a sample sentence derived from the
-        // user's SelectedLanguage; feeding it into a decode forced to a different language
-        // corrupts the output, so skip it when an explicit language override is given.
-        let currentPrompt = language == nil ? (UserDefaults.standard.string(forKey: "TranscriptionPrompt") ?? "") : ""
-        await whisperContext.setPrompt(currentPrompt)
-
-        // Transcribe
+        // Resolve the decode language first: explicit override, else keyboard-layout override, else
+        // the user's SelectedLanguage.
+        let selectedLanguage = UserDefaults.standard.string(forKey: "SelectedLanguage") ?? "auto"
         let resolvedLanguage = language
             ?? TranscriptionLanguagePreference.layoutOverride(for: model)
-            ?? (UserDefaults.standard.string(forKey: "SelectedLanguage") ?? "auto")
-        let success = await whisperContext.fullTranscribe(samples: data, language: resolvedLanguage)
+            ?? selectedLanguage
 
-        guard success else {
+        // The stored "TranscriptionPrompt" is a sample sentence derived from SelectedLanguage; feeding
+        // it into a decode forced to a different language (explicit override OR keyboard-layout override)
+        // corrupts the output, so only use it when the resolved decode language matches SelectedLanguage.
+        let currentPrompt = resolvedLanguage == selectedLanguage
+            ? (UserDefaults.standard.string(forKey: "TranscriptionPrompt") ?? "")
+            : ""
+
+        // Run prompt + transcribe + read as one atomic actor step: this context can
+        // be shared (a history re-transcribe while a live dictation is in flight), and
+        // three separate awaited calls would let the two sequences interleave and
+        // return each other's text.
+        guard let text = await whisperContext.transcribe(samples: data, language: resolvedLanguage, prompt: currentPrompt) else {
             logger.error("❌ Core transcription engine failed (whisper_full).")
             throw VoiceInkEngineError.whisperCoreFailed
         }
-
-        let text = await whisperContext.getTranscription()
 
         logger.notice("Whisper transcription completed successfully.")
 
@@ -86,7 +90,10 @@ class WhisperTranscriptionService: TranscriptionService {
 
     private func readAudioSamples(_ url: URL) throws -> [Float] {
         let data = try Data(contentsOf: url)
-        let floats = stride(from: 44, to: data.count, by: 2).map {
+        // Stop one short of the end so the final 2-byte slice never runs past the
+        // buffer: a WAV with an odd byte count (e.g. a truncated/corrupt recording)
+        // would otherwise make data[$0..<$0+2] read out of bounds and crash.
+        let floats = stride(from: 44, to: data.count - 1, by: 2).map {
             return data[$0..<$0 + 2].withUnsafeBytes {
                 let short = Int16(littleEndian: $0.load(as: Int16.self))
                 return max(-1.0, min(Float(short) / 32767.0, 1.0))

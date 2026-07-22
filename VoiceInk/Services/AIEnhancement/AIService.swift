@@ -226,8 +226,12 @@ class AIService: ObservableObject {
     
     @Published private var selectedModels: [AIProvider: String] = [:]
     private let userDefaults = UserDefaults.standard
-    private lazy var ollamaService = OllamaService()
-    private lazy var localCLIService = LocalCLIService()
+    // Eagerly initialized (not lazy): these are touched from a background Task in
+    // selectedProvider.didSet, and a lazy first-init off the main thread races a
+    // concurrent init on main. Both constructors only read UserDefaults, so eager
+    // init is cheap.
+    private let ollamaService = OllamaService()
+    private let localCLIService = LocalCLIService()
     
     @Published private var openRouterModels: [String] = []
     
@@ -343,18 +347,33 @@ class AIService: ObservableObject {
             return
         }
 
+        // Capture the provider selected when Save was tapped: the picker stays interactive during
+        // the (network) verification, and re-reading selectedProvider at completion time would store
+        // the key under — and overwrite — whichever provider the user switched to meanwhile.
+        let provider = selectedProvider
+
         verifyAPIKey(key) { [weak self] isValid, errorMessage in
             guard let self = self else { return }
             DispatchQueue.main.async {
-                if isValid {
+                guard isValid else {
+                    if self.selectedProvider == provider { self.isAPIKeyValid = false }
+                    completion(false, errorMessage)
+                    return
+                }
+                // Don't report success if persistence fails — otherwise the UI shows
+                // the key as configured but nothing was written to the keychain.
+                guard APIKeyManager.shared.saveAPIKey(key, forProvider: provider.rawValue) else {
+                    if self.selectedProvider == provider { self.isAPIKeyValid = false }
+                    completion(false, String(localized: "The API key was verified but could not be saved to the keychain."))
+                    return
+                }
+                // Only touch the provider-bound UI state if the picker still shows this provider.
+                if self.selectedProvider == provider {
                     self.apiKey = key
                     self.isAPIKeyValid = true
-                    APIKeyManager.shared.saveAPIKey(key, forProvider: self.selectedProvider.rawValue)
-                    NotificationCenter.default.post(name: .aiProviderKeyChanged, object: nil)
-                } else {
-                    self.isAPIKeyValid = false
                 }
-                completion(isValid, errorMessage)
+                NotificationCenter.default.post(name: .aiProviderKeyChanged, object: nil)
+                completion(true, errorMessage)
             }
         }
     }

@@ -155,16 +155,28 @@ class TranscriptionAutoCleanupService {
             guard FileManager.default.fileExists(atPath: recordingsDirectory.path) else { return }
             let filesInDirectory = try FileManager.default.contentsOfDirectory(
                 at: recordingsDirectory,
-                includingPropertiesForKeys: nil
+                includingPropertiesForKeys: [.contentModificationDateKey]
             )
+
+            // A recording in progress (or one just stopped, before its Transcription
+            // record is saved) has a WAV on disk with no reference yet. Skip files
+            // touched within this window so cleanup never deletes live audio; genuine
+            // orphans from crashes/cancels are still collected on a later run.
+            let recentGrace: TimeInterval = 5 * 60
+            let now = Date()
 
             var deletedCount = 0
             for fileURL in filesInDirectory {
                 let fileName = fileURL.lastPathComponent
-                if !referencedFiles.contains(fileName) {
-                    try? FileManager.default.removeItem(at: fileURL)
-                    deletedCount += 1
+                guard !referencedFiles.contains(fileName) else { continue }
+
+                if let modified = try? fileURL.resourceValues(forKeys: [.contentModificationDateKey]).contentModificationDate,
+                   now.timeIntervalSince(modified) < recentGrace {
+                    continue
                 }
+
+                try? FileManager.default.removeItem(at: fileURL)
+                deletedCount += 1
             }
 
             if deletedCount > 0 {

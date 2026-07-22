@@ -357,11 +357,21 @@ class PowerModeManager: ObservableObject {
     }
 
     func cleanURL(_ url: String) -> String {
-        return url.lowercased()
+        var cleaned = url.lowercased()
             .replacingOccurrences(of: "https://", with: "")
             .replacingOccurrences(of: "http://", with: "")
-            .replacingOccurrences(of: "www.", with: "")
             .trimmingCharacters(in: .whitespacesAndNewlines)
+        // Anchor the www strip to the host prefix so a "www." inside a path/query
+        // isn't mangled.
+        if cleaned.hasPrefix("www.") {
+            cleaned.removeFirst(4)
+        }
+        // Normalize trailing slashes. A stored "host/" would otherwise never
+        // prefix-match "host/path" (getConfigurationForURL builds "host//path").
+        while cleaned.hasSuffix("/") {
+            cleaned.removeLast()
+        }
+        return cleaned
     }
 
     func setActiveConfiguration(_ config: PowerModeConfig?) {

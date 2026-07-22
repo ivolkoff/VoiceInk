@@ -454,6 +454,7 @@ struct InlineHistoryView: View {
         }
     }
 
+    @MainActor
     private func selectAllTranscriptions() async {
         do {
             var allDescriptor = FetchDescriptor<Transcription>()

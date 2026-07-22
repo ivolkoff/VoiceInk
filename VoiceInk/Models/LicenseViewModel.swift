@@ -22,13 +22,32 @@ class LicenseViewModel: ObservableObject {
     private let logger = Logger(subsystem: "com.prakashjoshipax.voiceink", category: "LicenseViewModel")
     private let userDefaults = UserDefaults.standard
     private let licenseManager = LicenseManager.shared
+    private var licenseStatusObserver: NSObjectProtocol?
 
     init() {
         #if LOCAL_BUILD
         licenseState = .licensed
         #else
         loadLicenseState()
+        // Multiple LicenseViewModel instances exist (sidebar badge, license view);
+        // reload from storage when any of them changes license status so they stay
+        // in sync instead of showing a stale PRO badge until relaunch.
+        licenseStatusObserver = NotificationCenter.default.addObserver(
+            forName: .licenseStatusChanged,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            Task { @MainActor in
+                self?.loadLicenseState()
+            }
+        }
         #endif
+    }
+
+    deinit {
+        if let licenseStatusObserver {
+            NotificationCenter.default.removeObserver(licenseStatusObserver)
+        }
     }
 
     func startTrial() {
@@ -119,6 +138,12 @@ class LicenseViewModel: ObservableObject {
 
             // Handle based on whether activation is required
             if licenseCheck.requiresActivation {
+                // Record that this license needs activation *before* attempting it.
+                // If activation then fails (e.g. device limit reached, network
+                // error), loadLicenseState() must not trust the stored key as
+                // licensed on next launch — that check keys off this flag.
+                userDefaults.set(true, forKey: "VoiceInkLicenseRequiresActivation")
+
                 // If we already have an activation ID, try to validate with it first
                 if let existingActivationId = licenseManager.activationId {
                     let isValid = (try? await polarService.validateLicenseKeyWithActivation(licenseKey, activationId: existingActivationId)) ?? false
@@ -137,9 +162,8 @@ class LicenseViewModel: ObservableObject {
                 // Need to create a new activation
                 let (newActivationId, limit) = try await polarService.activateLicenseKey(licenseKey)
 
-                // Store activation details
+                // Store activation details (RequiresActivation flag already set above)
                 licenseManager.activationId = newActivationId
-                userDefaults.set(true, forKey: "VoiceInkLicenseRequiresActivation")
                 self.activationsLimit = limit
                 userDefaults.activationsLimit = limit
 

@@ -387,6 +387,12 @@ class AIEnhancementService: ObservableObject {
         do {
             (data, response) = try await URLSession.shared.data(for: request)
         } catch {
+            // Distinguish a request timeout (request.timeoutInterval elapsed) from a
+            // generic connectivity failure so the caller can surface / retry it as a
+            // timeout instead of a misleading "network error".
+            if let urlError = error as? URLError, urlError.code == .timedOut {
+                throw EnhancementError.timeout
+            }
             throw EnhancementError.networkError
         }
         guard let httpResponse = response as? HTTPURLResponse else {
@@ -508,6 +514,13 @@ class AIEnhancementService: ObservableObject {
 
         do {
             let result = try await makeRequestWithRetry(text: text, mode: enhancementPrompt)
+            // A reasoning-only or empty 200 response filters down to "". Treat that as a failure so
+            // callers fall back to the raw transcript instead of pasting an empty string at the cursor.
+            // Only when there was real input, though — an empty input (silent clip) legitimately
+            // yields "" and must not surface a spurious "Enhancement failed" notification.
+            if result.isEmpty, !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                throw EnhancementError.enhancementFailed
+            }
             let endTime = Date()
             let duration = endTime.timeIntervalSince(startTime)
             return (result, duration, promptName)

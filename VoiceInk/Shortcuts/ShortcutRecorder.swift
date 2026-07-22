@@ -91,6 +91,12 @@ struct ShortcutRecorder: View {
             guard let activeRecorderID = notification.object as? UUID, activeRecorderID != recorderID else { return }
             recorder.cancel()
         }
+        .onAppear {
+            // Self-heal a binding left paused by a crash during a previous recording.
+            // Guard on !isRecording so a re-appear mid-capture can't un-pause the live one.
+            guard !recorder.isRecording else { return }
+            ShortcutStore.recoverInterruptedRecording(for: action)
+        }
         .onDisappear {
             recorder.cancel()
         }
@@ -114,7 +120,9 @@ struct ShortcutRecorder: View {
 
     private func clearShortcutBeforeRecording() {
         previousShortcut = ShortcutStore.shortcut(for: action)
-        ShortcutStore.setShortcut(nil, for: action)
+        // Pause (not erase) so a crash mid-recording doesn't lose the binding permanently;
+        // recoverInterruptedRecording restores it when a recorder is next shown.
+        ShortcutStore.pauseShortcut(for: action)
         shortcut = nil
         onShortcutChanged()
     }

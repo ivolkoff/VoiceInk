@@ -40,7 +40,11 @@ enum BackupImporter {
             )
         }
 
-        if categories.contains(.prompts) {
+        // An absent prompts/powerMode section decodes to an empty array (BackupTypes),
+        // so guard on non-empty: replacing with [] on a partial or foreign import (e.g.
+        // a dictionary-only export, or any JSON missing these keys) would silently wipe
+        // the user's custom prompts / power-mode configs with no undo.
+        if categories.contains(.prompts), !backup.customPrompts.isEmpty {
             let predefinedPrompts = enhancementService.customPrompts.filter { $0.isPredefined }
             enhancementService.customPrompts = predefinedPrompts + backup.customPrompts
             print("Successfully imported \(backup.customPrompts.count) custom prompts.")
@@ -48,27 +52,30 @@ enum BackupImporter {
 
         if categories.contains(.powerMode) {
             let powerModeManager = PowerModeManager.shared
-            for config in powerModeManager.configurations {
-                ShortcutStore.removeShortcutStorage(for: .powerMode(config.id))
-            }
 
-            powerModeManager.configurations = backup.powerModeConfigs
-            let importedPowerModeIds = Set(backup.powerModeConfigs.map(\.id))
-
-            if let shortcuts = backup.powerModeShortcuts {
-                for (idString, shortcutBackup) in shortcuts {
-                    guard
-                        let id = UUID(uuidString: idString),
-                        importedPowerModeIds.contains(id)
-                    else {
-                        continue
-                    }
-
-                    ShortcutStore.setShortcut(shortcutBackup.shortcut, for: .powerMode(id))
+            if !backup.powerModeConfigs.isEmpty {
+                for config in powerModeManager.configurations {
+                    ShortcutStore.removeShortcutStorage(for: .powerMode(config.id))
                 }
-            }
 
-            powerModeManager.saveConfigurations()
+                powerModeManager.configurations = backup.powerModeConfigs
+                let importedPowerModeIds = Set(backup.powerModeConfigs.map(\.id))
+
+                if let shortcuts = backup.powerModeShortcuts {
+                    for (idString, shortcutBackup) in shortcuts {
+                        guard
+                            let id = UUID(uuidString: idString),
+                            importedPowerModeIds.contains(id)
+                        else {
+                            continue
+                        }
+
+                        ShortcutStore.setShortcut(shortcutBackup.shortcut, for: .powerMode(id))
+                    }
+                }
+
+                powerModeManager.saveConfigurations()
+            }
 
             if let customEmojis = backup.customEmojis {
                 let emojiManager = EmojiManager.shared
@@ -291,7 +298,11 @@ enum BackupImporter {
 
     @MainActor
     private static func importCustomModels(_ models: [CustomModelBackup]?, transcriptionModelManager: TranscriptionModelManager) {
-        guard let models else {
+        // An absent OR empty custom-models section must not wipe existing definitions: exports
+        // always write the key (present, possibly []), so replacing unconditionally would delete a
+        // user's custom models — and orphan their keychain keys — when importing a backup that had
+        // none. Same guard as the prompts / power-mode import paths.
+        guard let models, !models.isEmpty else {
             print("No custom models found in the imported file.")
             return
         }

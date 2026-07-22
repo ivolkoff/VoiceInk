@@ -94,12 +94,10 @@ class AudioTranscriptionManager: ObservableObject {
         processingTask = nil
         isProcessingQueue = false
 
-        // Reset any in-progress items back to pending
-        for item in queue {
-            if case .processing = item.status {
-                item.status = .pending
-            }
-        }
+        // Don't reset .processing items to .pending here: the in-flight processItem
+        // still owns the item and resets it itself when its cancellation lands.
+        // Flipping it now would let a restarted queue pick up the same item
+        // concurrently and produce duplicate transcriptions/files.
     }
 
     var hasPendingItems: Bool {
@@ -223,6 +221,11 @@ class AudioTranscriptionManager: ObservableObject {
                 )
             }
 
+            // A cancellation that lands during/after enhance() is swallowed by the
+            // enhancement catch above, so re-check here: a cancelled item must not be
+            // committed to the database.
+            try Task.checkCancellation()
+
             modelContext.insert(transcription)
             try modelContext.save()
             NotificationCenter.default.post(name: .transcriptionCreated, object: transcription)
@@ -235,6 +238,10 @@ class AudioTranscriptionManager: ObservableObject {
         } catch {
             if Task.isCancelled || error is CancellationError {
                 item.status = .pending
+                // The queue item is a separate ObservableObject, so flipping it back
+                // to .pending here doesn't republish the manager. Poke it so views
+                // gating the Start button on hasPendingItems refresh after a cancel.
+                objectWillChange.send()
             } else {
                 logger.error("Transcription error: \(error.localizedDescription, privacy: .public)")
                 item.status = .failed(message: error.localizedDescription)

@@ -158,6 +158,18 @@ actor WhisperContext {
     func setPrompt(_ prompt: String?) {
         self.prompt = prompt
     }
+
+    /// Runs prompt-set, transcription, and result read as one actor-atomic unit.
+    /// Split across three separate awaited calls, a second transcription (e.g. a
+    /// history re-transcribe during live dictation) could interleave on this shared
+    /// context — whisper C++ forbids concurrent access and the result segments live
+    /// in the context — so one caller could read another's text. This method has no
+    /// suspension points, so the actor runs it to completion without reentrancy.
+    func transcribe(samples: [Float], language: String, prompt: String?) -> String? {
+        self.prompt = prompt
+        guard fullTranscribe(samples: samples, language: language) else { return nil }
+        return getTranscription()
+    }
 }
 
 fileprivate func cpuCount() -> Int {

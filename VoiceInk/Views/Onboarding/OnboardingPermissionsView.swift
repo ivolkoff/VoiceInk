@@ -335,12 +335,18 @@ struct OnboardingPermissionsView: View {
             let options: NSDictionary = [kAXTrustedCheckOptionPrompt.takeUnretainedValue() as String: true]
             AXIsProcessTrustedWithOptions(options)
             
-            // Start checking for permission status
+            // Start checking for permission status. Capture the step index now:
+            // currentPermissionIndex is @State and the user may advance (Skip)
+            // before the grant lands, which would mark the wrong step complete.
+            let stepIndex = currentPermissionIndex
+            // Invalidate any timer from a prior tap on this step, else the old one leaks and keeps
+            // polling for the rest of the session (onDisappear only invalidates the stored ref).
+            accessibilityTimer?.invalidate()
             let timer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { timer in
                 if AXIsProcessTrusted() {
                     timer.invalidate()
                     accessibilityTimer = nil
-                    permissionStates[currentPermissionIndex] = true
+                    permissionStates[stepIndex] = true
                     withAnimation {
                         showAnimation = true
                     }
@@ -357,12 +363,16 @@ struct OnboardingPermissionsView: View {
                 NSWorkspace.shared.open(prefpaneURL)
             }
             
-            // Start checking for permission status
+            // Start checking for permission status. Capture the step index now
+            // (see accessibility case) so a later grant can't mark a skipped step.
+            let stepIndex = currentPermissionIndex
+            // Invalidate any timer from a prior tap on this step (see accessibility case).
+            screenRecordingTimer?.invalidate()
             let timer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { timer in
                 if CGPreflightScreenCaptureAccess() {
                     timer.invalidate()
                     screenRecordingTimer = nil
-                    permissionStates[currentPermissionIndex] = true
+                    permissionStates[stepIndex] = true
                     withAnimation {
                         showAnimation = true
                     }

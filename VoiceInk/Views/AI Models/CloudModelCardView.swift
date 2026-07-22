@@ -321,7 +321,11 @@ struct CloudModelCardView: View {
         verificationStatus = .none
         verificationError = nil
 
-        if isCurrent {
+        // Clear the current model whenever it depends on the deleted provider key — not only when
+        // THIS card is current. Sibling models share one provider key, so removing the key from a
+        // non-current card would otherwise leave the current model selected but unusable.
+        if let current = transcriptionModelManager.currentTranscriptionModel,
+           CloudProviderRegistry.provider(for: current.provider)?.providerKey == providerKey {
             transcriptionModelManager.clearCurrentTranscriptionModel()
         }
 

@@ -37,16 +37,23 @@ class WordReplacementService {
                 let usesBoundaries = usesWordBoundaries(for: original)
 
                 if usesBoundaries {
-                    // Lookarounds instead of \b so punctuation acts as a word boundary
+                    // Lookarounds instead of \b so punctuation acts as a word boundary.
+                    // Unicode-aware classes (\p{L}\p{N}) — an ASCII-only [a-zA-Z0-9] treats every
+                    // Cyrillic/Greek/Arabic/etc. letter as a boundary, so a short rule matches
+                    // inside longer words and corrupts non-Latin transcripts.
                     let escaped = NSRegularExpression.escapedPattern(for: original)
-                    let pattern = "(?<![a-zA-Z0-9])\(escaped)(?![a-zA-Z0-9])"
+                    let pattern = "(?<![\\p{L}\\p{N}])\(escaped)(?![\\p{L}\\p{N}])"
                     if let regex = try? NSRegularExpression(pattern: pattern, options: .caseInsensitive) {
                         let range = NSRange(modifiedText.startIndex..., in: modifiedText)
+                        // Escape the template: `$n` and `\` are ICU substitution
+                        // syntax, so an unescaped replacement containing "$" or "\"
+                        // (prices, paths, env vars) would be silently corrupted.
+                        let template = NSRegularExpression.escapedTemplate(for: replacementText)
                         modifiedText = regex.stringByReplacingMatches(
                             in: modifiedText,
                             options: [],
                             range: range,
-                            withTemplate: replacementText
+                            withTemplate: template
                         )
                     }
                 } else {

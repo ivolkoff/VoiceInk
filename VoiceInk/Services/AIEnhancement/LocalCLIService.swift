@@ -142,10 +142,35 @@ final class LocalCLIService {
                     return
                 }
 
-                if let inputData = fullPrompt.data(using: .utf8) {
-                    inputPipe.fileHandleForWriting.write(inputData)
+                // Drain stdout/stderr concurrently while the child runs. Reading
+                // only after termination deadlocks any child that emits more than
+                // the ~64KB pipe buffer before exiting (it blocks on a full pipe,
+                // never terminates, and gets misreported as a timeout).
+                var stdoutData = Data()
+                var stderrData = Data()
+                let readGroup = DispatchGroup()
+                readGroup.enter()
+                DispatchQueue.global(qos: .userInitiated).async {
+                    stdoutData = outputPipe.fileHandleForReading.readDataToEndOfFile()
+                    readGroup.leave()
                 }
-                try? inputPipe.fileHandleForWriting.close()
+                readGroup.enter()
+                DispatchQueue.global(qos: .userInitiated).async {
+                    stderrData = errorPipe.fileHandleForReading.readDataToEndOfFile()
+                    readGroup.leave()
+                }
+
+                // Write stdin off the wait path. None of the built-in templates
+                // read stdin, so a prompt larger than the pipe buffer would block
+                // the synchronous write for the whole child lifetime, and a closed
+                // read end raises EPIPE — surfaced here as a Swift error via the
+                // throwing write API instead of an uncatchable ObjC exception.
+                DispatchQueue.global(qos: .userInitiated).async {
+                    if let inputData = fullPrompt.data(using: .utf8), !inputData.isEmpty {
+                        try? inputPipe.fileHandleForWriting.write(contentsOf: inputData)
+                    }
+                    try? inputPipe.fileHandleForWriting.close()
+                }
 
                 let semaphore = DispatchSemaphore(value: 0)
                 process.terminationHandler = { _ in
@@ -155,15 +180,23 @@ final class LocalCLIService {
                 let waitResult = semaphore.wait(timeout: .now() + timeout)
                 if waitResult == .timedOut {
                     if process.isRunning {
-                        process.terminate()
-                        _ = semaphore.wait(timeout: .now() + 2)
+                        process.terminate() // SIGTERM
+                        if semaphore.wait(timeout: .now() + 2) == .timedOut, process.isRunning {
+                            // Child ignored SIGTERM. Force-kill so its pipe write-ends close and the
+                            // blocked stdout/stderr reader threads (and the stdin writer) unblock
+                            // instead of leaking for the rest of the app session.
+                            // ponytail: kills the direct child only; a grandchild orphaned by a
+                            // non-exec zsh template can still hold the pipes — rare, and bounded when
+                            // it eventually exits.
+                            kill(process.processIdentifier, SIGKILL)
+                        }
                     }
                     continuation.resume(throwing: LocalCLIError.timeout(seconds: timeout))
                     return
                 }
 
-                let stdoutData = outputPipe.fileHandleForReading.readDataToEndOfFile()
-                let stderrData = errorPipe.fileHandleForReading.readDataToEndOfFile()
+                // Child exited; let the concurrent reads flush the pipes to EOF.
+                readGroup.wait()
 
                 let stdout = Self.cleanOutput(String(data: stdoutData, encoding: .utf8) ?? "")
                 let stderr = Self.cleanOutput(String(data: stderrData, encoding: .utf8) ?? "")

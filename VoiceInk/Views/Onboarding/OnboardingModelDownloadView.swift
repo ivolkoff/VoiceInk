@@ -189,12 +189,21 @@ struct OnboardingModelDownloadView: View {
             }
             Task {
                 await whisperModelManager.downloadModel(turboModel)
-                if let modelToSet = transcriptionModelManager.allAvailableModels.first(where: { $0.name == turboModel.name }) {
-                    transcriptionModelManager.setDefaultTranscriptionModel(modelToSet)
+                // downloadModel swallows errors/cancellation; the model only lands
+                // in availableModels (on disk) on success. Verify that before
+                // marking the step complete, otherwise a failed or canceled
+                // download would be set as default with no .bin file present.
+                guard whisperModelManager.availableModels.contains(where: { $0.name == turboModel.name }),
+                      let modelToSet = transcriptionModelManager.allAvailableModels.first(where: { $0.name == turboModel.name }) else {
                     withAnimation {
-                        isModelSet = true
                         isDownloading = false
                     }
+                    return
+                }
+                transcriptionModelManager.setDefaultTranscriptionModel(modelToSet)
+                withAnimation {
+                    isModelSet = true
+                    isDownloading = false
                 }
             }
         }

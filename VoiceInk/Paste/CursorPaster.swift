@@ -21,6 +21,12 @@ class CursorPaster {
     private static let pasteShortcutEventDelay: TimeInterval = 0.01
     private static let minimumClipboardRestoreDelay: TimeInterval = 0.25
 
+    // The real user clipboard captured by the paste session currently in flight. Paste sessions
+    // overlap (each suspends at `await wait`), so a second session must inherit this instead of
+    // snapshotting the first session's transient transcription text as "the user's clipboard".
+    // MainActor-isolated: all reads/writes happen on the main actor.
+    private static var inFlightUserClipboard: ClipboardSnapshot?
+
     // Delay between consecutive chunk pastes so the target app processes each
     // paste before the clipboard is replaced with the next chunk.
     private static let interChunkPasteDelay: TimeInterval = 0.12
@@ -51,7 +57,21 @@ class CursorPaster {
     private static func performPasteSession(_ text: String) async -> PasteResult {
         let pasteboard = NSPasteboard.general
         let shouldRestoreClipboard = UserDefaults.standard.bool(forKey: "restoreClipboardAfterPaste")
-        let savedContents = shouldRestoreClipboard ? snapshotClipboard(from: pasteboard) : []
+        let savedContents: ClipboardSnapshot
+        if shouldRestoreClipboard {
+            if pasteboard.string(forType: ClipboardManager.pasteSessionType) != nil,
+               let pending = inFlightUserClipboard {
+                // A previous VoiceInk paste session is still in flight; its transient text is on the
+                // clipboard. Inherit the real user snapshot it captured — snapshotting now would grab
+                // the transcription text and later "restore" that as the user's clipboard, losing it.
+                savedContents = pending
+            } else {
+                savedContents = snapshotClipboard(from: pasteboard)
+            }
+            inFlightUserClipboard = savedContents
+        } else {
+            savedContents = []
+        }
         let sessionID = UUID().uuidString
 
         let chunks = chunksForPaste(text)
@@ -72,7 +92,11 @@ class CursorPaster {
 
             await wait(prePasteDelay)
             if await postPasteCommand() == .commandNotPosted {
+                // Stop rather than paste the remaining chunks: continuing after a
+                // failed paste command would drop this chunk and paste later ones
+                // out of order, garbling the result.
                 allChunksPosted = false
+                break
             }
 
             // Pause before replacing the clipboard with the next chunk so the
@@ -172,12 +196,16 @@ class CursorPaster {
         Task { @MainActor in
             await wait(delay)
             guard pasteboardStillOwnedByPasteSession(pasteboard, expectedText: expectedText, sessionID: sessionID) else {
+                // A later paste session owns the clipboard now; it will restore and clear.
                 return
             }
             pasteboard.clearContents()
             if !savedContents.isEmpty {
                 pasteboard.writeObjects(pasteboardItems(from: savedContents))
             }
+            // This session was the last in flight — release the shared snapshot so the next
+            // unrelated paste captures a fresh one.
+            inFlightUserClipboard = nil
         }
     }
 
