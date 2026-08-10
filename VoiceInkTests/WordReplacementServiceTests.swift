@@ -44,6 +44,15 @@ struct WordReplacementServiceTests {
         #expect(try apply("我用voiceink录音", rules: [("voiceink", "VoiceInk")]) == "我用VoiceInk录音")
     }
 
+    @Test func matchesALatinTriggerFlushAgainstEveryNonSpacedScript() throws {
+        let rule = [("voiceink", "VoiceInk")]
+        #expect(try apply("저는voiceink을 씁니다", rules: rule) == "저는VoiceInk을 씁니다")
+        #expect(try apply("ผมใช้voiceinkครับ", rules: rule) == "ผมใช้VoiceInkครับ")
+        #expect(try apply("私はvoiceinkを使う", rules: rule) == "私はVoiceInkを使う")
+        // U+30FC is Script=Common: only scx (not sc) exempts it.
+        #expect(try apply("voiceink\u{30FC}", rules: rule) == "VoiceInk\u{30FC}")
+    }
+
     // MARK: - Existing behavior that must not regress
 
     @Test func replacesAWholeWordButNotASubstring() throws {
