@@ -38,11 +38,15 @@ class WordReplacementService {
 
                 if usesBoundaries {
                     // Lookarounds instead of \b so punctuation acts as a word boundary.
-                    // Unicode-aware classes (\p{L}\p{N}) — an ASCII-only [a-zA-Z0-9] treats every
-                    // Cyrillic/Greek/Arabic/etc. letter as a boundary, so a short rule matches
-                    // inside longer words and corrupts non-Latin transcripts.
+                    // A word char is any Unicode letter, mark or digit — an ASCII-only
+                    // [a-zA-Z0-9] treats every Cyrillic/Greek/Arabic letter as a boundary, and
+                    // omitting \p{M} lets a rule fire inside a decomposed (NFD) word. The
+                    // non-spaced scripts are subtracted so a Latin trigger flush against CJK or
+                    // Thai still matches, mirroring usesWordBoundaries(for:). scx (Script
+                    // Extensions) keeps shared marks such as U+30FC (Script=Common) exempt too.
+                    let wordChar = "[[\\p{L}\\p{M}\\p{N}]-[\\p{scx=Han}\\p{scx=Hiragana}\\p{scx=Katakana}\\p{scx=Hangul}\\p{scx=Thai}]]"
                     let escaped = NSRegularExpression.escapedPattern(for: original)
-                    let pattern = "(?<![\\p{L}\\p{N}])\(escaped)(?![\\p{L}\\p{N}])"
+                    let pattern = "(?<!\(wordChar))\(escaped)(?!\(wordChar))"
                     if let regex = try? NSRegularExpression(pattern: pattern, options: .caseInsensitive) {
                         let range = NSRange(modifiedText.startIndex..., in: modifiedText)
                         // Escape the template: `$n` and `\` are ICU substitution
