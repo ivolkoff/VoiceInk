@@ -20,6 +20,35 @@
 - Do not touch `NSRegularExpression.escapedTemplate(for:)` usage in `WordReplacementService` — it is a fork-only protection that upstream lacks.
 - Match surrounding code style: 4-space indent, no trailing whitespace, comments only where they state a constraint the code cannot show.
 
+### Build and test commands (verified on this machine)
+
+This project cannot be built with a bare `xcodebuild ... build`: the target carries entitlements, no "Mac Development" certificate for team `V6J6A3VWY2` is installed, and an empty `CODE_SIGN_IDENTITY` is rejected outright by the UI-testing bundle. Use ad-hoc signing with the repo's `LocalBuild.xcconfig`, exactly as `make local` does.
+
+**Build:**
+
+```bash
+xcodebuild -project VoiceInk.xcodeproj -scheme VoiceInk -configuration Debug \
+  -xcconfig LocalBuild.xcconfig \
+  CODE_SIGN_IDENTITY="-" CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=YES \
+  DEVELOPMENT_TEAM="" \
+  CODE_SIGN_ENTITLEMENTS="$PWD/VoiceInk/VoiceInk.local.entitlements" \
+  build
+```
+
+**Test one suite** (substitute the suite name):
+
+```bash
+xcodebuild test -project VoiceInk.xcodeproj -scheme VoiceInk -configuration Debug \
+  -destination 'platform=macOS' -xcconfig LocalBuild.xcconfig \
+  -parallel-testing-enabled NO \
+  CODE_SIGN_IDENTITY="-" CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=YES \
+  DEVELOPMENT_TEAM="" \
+  CODE_SIGN_ENTITLEMENTS="$PWD/VoiceInk/VoiceInk.local.entitlements" \
+  -only-testing:VoiceInkTests/<SuiteName>
+```
+
+Always scope with `-only-testing`. **Known-red baseline, present before any change in this plan:** running the whole `VoiceInkTests` target fails, because `RetranscribeInPlaceTests` (`overwritesRecordAndPassesChosenLanguage`, `missingAudioFileThrowsAndLeavesRecordUntouched`, `skipsOverwriteWhenRecordNotInAContext`) crashes the test host — the suite boots the full app. Do not try to fix those; they are outside this plan. Every other suite passes.
+
 ---
 
 ## Task 0: Restore the build prerequisite
@@ -49,20 +78,13 @@ Expected: the command finishes without error and `~/VoiceInk-Dependencies/whispe
 
 If `make whisper` fails on a missing tool, run `make check` to see which prerequisite is absent and install it (`brew install cmake`), then re-run.
 
-- [ ] **Step 3: Verify the test suite runs green before any code change**
+- [ ] **Step 3: Verify the baseline with the commands from Global Constraints**
 
-```bash
-xcodebuild test -project VoiceInk.xcodeproj -scheme VoiceInk \
-  -configuration Debug -destination 'platform=macOS' \
-  CODE_SIGN_IDENTITY="" \
-  -only-testing:VoiceInkTests/KeyboardLayoutLanguageServiceTests
-```
+Run the "Test one suite" command with `-only-testing:VoiceInkTests/ChunkSplittingTests`.
 
-Expected: `** TEST SUCCEEDED **`.
+Expected: `** TEST SUCCEEDED **`, `9 tests in 1 suite passed`.
 
-`-configuration Debug` and `CODE_SIGN_IDENTITY=""` matter: the default configuration is Release, which requires a "Mac Development" signing certificate for team `V6J6A3VWY2` that is not installed here.
-
-This establishes the baseline — a red suite here means the problem predates this plan. Nothing to commit in this task.
+This establishes that the toolchain works. Do not run the whole `VoiceInkTests` target as a baseline — `RetranscribeInPlaceTests` is known-red (see Global Constraints). Nothing to commit in this task.
 
 ---
 
@@ -155,12 +177,8 @@ Xcode adds files under `VoiceInkTests/` to the test target automatically when th
 
 - [ ] **Step 2: Run the new tests and confirm exactly three fail**
 
-```bash
-xcodebuild test -project VoiceInk.xcodeproj -scheme VoiceInk \
-  -configuration Debug -destination 'platform=macOS' \
-  CODE_SIGN_IDENTITY="" \
-  -only-testing:VoiceInkTests/WordReplacementServiceTests
-```
+Run the "Test one suite" command from Global Constraints with
+`-only-testing:VoiceInkTests/WordReplacementServiceTests`.
 
 Expected: `** TEST FAILED **` with these three failing:
 - `doesNotMatchWhenACombiningMarkFollowsTheTrigger` — currently yields `"uống КОФЀ phê"`
@@ -203,14 +221,9 @@ Leave the rest of the method — the `escapedTemplate` call, the `stringByReplac
 
 - [ ] **Step 4: Run the tests and confirm all seven pass**
 
-```bash
-xcodebuild test -project VoiceInk.xcodeproj -scheme VoiceInk \
-  -configuration Debug -destination 'platform=macOS' \
-  CODE_SIGN_IDENTITY="" \
-  -only-testing:VoiceInkTests/WordReplacementServiceTests
-```
+Run the same "Test one suite" command as in Step 2.
 
-Expected: `** TEST SUCCEEDED **`.
+Expected: `** TEST SUCCEEDED **`, `7 tests in 1 suite passed`.
 
 - [ ] **Step 5: Commit**
 
@@ -356,10 +369,7 @@ with:
 
 - [ ] **Step 3: Build**
 
-```bash
-xcodebuild -project VoiceInk.xcodeproj -scheme VoiceInk \
-  -configuration Debug CODE_SIGN_IDENTITY="" build
-```
+Run the "Build" command from Global Constraints.
 
 Expected: `** BUILD SUCCEEDED **`. There is no automated test for these lists — they are static string arrays with no logic.
 
@@ -630,10 +640,7 @@ with:
 
 - [ ] **Step 5: Build and confirm no stale references remain**
 
-```bash
-xcodebuild -project VoiceInk.xcodeproj -scheme VoiceInk \
-  -configuration Debug CODE_SIGN_IDENTITY="" build
-```
+Run the "Build" command from Global Constraints.
 
 Expected: `** BUILD SUCCEEDED **`.
 
@@ -645,9 +652,11 @@ grep -rn "audioMeterUpdateTimer\|audioMeterQueue\|recorder\.audioMeter\b\|startA
 
 Expected: no output.
 
-- [ ] **Step 6: Manual verification**
+- [ ] **Step 6: Manual verification — controller/human step, not the implementer's**
 
-Launch the built app (`make run`, or open `.test-build/Build/Products/Debug/VoiceInk.app`) and check both recorder styles:
+An implementer subagent cannot see the screen: it should skip this step, note in its report that Step 6 is outstanding, and proceed to Step 7. The controller runs the app afterwards.
+
+Launch the built app (`open ~/Library/Developer/Xcode/DerivedData/VoiceInk-*/Build/Products/Debug/VoiceInk.app`) and check both recorder styles:
 
 1. Mini recorder — start a recording, speak: bars react to voice as before.
 2. Notch recorder — same check, and the bars scale correctly to the notch height.
