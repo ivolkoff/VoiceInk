@@ -198,8 +198,9 @@ Anthropic call path can send `thinking: {"type": "disabled"}`.
 
 - `.openAI`: prepend `gpt-5.6-luna`, `gpt-5.6-terra`, `gpt-5.6-sol`.
 - `.gemini`: add `gemini-3.6-flash` and `gemini-3.5-flash-lite`.
-- `.anthropic`: add `claude-opus-4-8` at the top; remove `claude-opus-4-1`
-  (retired 2026-08-05, so requests to it now fail).
+- `.anthropic`: add `claude-opus-4-8` at the top. (The list currently holds
+  4.7 / 4.6 / sonnet-4.6 / 4.5 / sonnet-4.5 / haiku-4.5 — no retired ID is
+  present, so nothing needs removing.)
 - `.mistral`: add `mistral-medium-3-5` and `mistral-small-2603`.
 
 Nothing else is removed. `defaultModel` is left as-is for every provider: the
