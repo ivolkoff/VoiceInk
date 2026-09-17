@@ -40,6 +40,16 @@ struct SmartConvertTests {
         #expect(out == "как дела тестирую")
     }
 
+    @Test func mixedTokenIsFixedPerScriptRun() {
+        guard let out = run("привет как делаghbdtn rfr ltkf") else { return }
+        #expect(out == "привет как делапривет как дела")
+    }
+
+    @Test func deliberateBilingualTokensStay() {
+        guard let out = run("APIключ helloмир C++код ghbdtn") else { return }
+        #expect(out == "APIключ helloмир C++код привет")
+    }
+
     @Test func languageClassification() {
         #expect(SmartConvert.isCyrillicLang("ru-RU"))
         #expect(SmartConvert.isLatinLang("en"))

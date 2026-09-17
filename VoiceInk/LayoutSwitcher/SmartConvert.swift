@@ -21,6 +21,20 @@ enum SmartConvert {
 
         for (i, tok) in toks.enumerated() {
             guard tok.isWord else { results[i] = tok.str; continue }
+            if dominantScript(letterCore(tok.str)) == .mixed {
+                // Mixed-script token: each run is judged on its own, dictionary-confirmed flips only.
+                var out = ""
+                for run in scriptRuns(tok.str) {
+                    if case let .flip(s, toScript) = decideWord(run, latLang: latLang, cyrLang: cyrLang, map: map) {
+                        out += s
+                        if toScript == .cyr { flippedCyr += 1 } else if toScript == .lat { flippedLat += 1 }
+                    } else {
+                        out += run
+                    }
+                }
+                results[i] = out
+                continue
+            }
             switch decideWord(tok.str, latLang: latLang, cyrLang: cyrLang, map: map) {
             case .keep:
                 results[i] = tok.str
@@ -37,6 +51,24 @@ enum SmartConvert {
             : (flippedLat > 0 && flippedCyr == 0) ? .lat : nil
         for i in pending { results[i] = signalFlip(toks[i].str, target: target, map: map) }
         return results.map { $0 ?? "" }.joined()
+    }
+
+    /// «делаghbdtn,» → ["дела", "ghbdtn,"]: new run where the letter script changes; non-letters stay with the current run.
+    private static func scriptRuns(_ s: String) -> [String] {
+        var runs: [String] = []
+        var current = ""
+        var currentScript: Script = .other
+        for ch in s {
+            let script = dominantScript(String(ch))
+            if script != .other, currentScript != .other, script != currentScript {
+                runs.append(current)
+                current = ""
+            }
+            if script != .other { currentScript = script }
+            current.append(ch)
+        }
+        if !current.isEmpty { runs.append(current) }
+        return runs
     }
 
     @MainActor
