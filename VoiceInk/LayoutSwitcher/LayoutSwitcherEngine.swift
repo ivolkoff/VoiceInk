@@ -177,22 +177,26 @@ final class LayoutSwitcherEngine {
         guard settings.enabled, !inFlight else { return }
         guard !LayoutPolicy.secureInputActive,
               !secureFieldFocused else {
+            logger.notice("manual trigger: secure input")
             NotificationManager.shared.showNotification(title: String(localized: "Secure input is active"), type: .warning)
             return
         }
         let front = NSWorkspace.shared.frontmostApplication?.bundleIdentifier
         guard let pair = LayoutPair.resolve(layout1ID: settings.layout1ID, layout2ID: settings.layout2ID) else {
+            logger.notice("manual trigger: pair unresolved")
             NotificationManager.shared.showNotification(title: String(localized: "Current keyboard layout is not in the configured pair"), type: .warning)
             return
         }
 
         let selection = await SelectedTextService.fetchSelectedText()?.trimmingCharacters(in: .whitespacesAndNewlines)
         if let selection, !selection.isEmpty {
+            logger.notice("manual trigger: selection")
             convertSelection(selection, pair: pair, bundleID: front)
             return
         }
 
         if let last = lastConversion, last.bundleID == front {
+            logger.notice("manual trigger: undo")
             // Tap again = undo. An undone auto-conversion teaches the never list.
             perform(deleteCount: last.produced.count, text: last.original, original: last.produced,
                     wasAuto: false, bundleID: front, switchTo: pair.other)
@@ -202,9 +206,11 @@ final class LayoutSwitcherEngine {
 
         guard let target = buffer.manualTarget,
               let pairs = LayoutMapper.convert(target.keys, from: pair.currentData, to: pair.otherData) else {
+            logger.notice("manual trigger: nothing")
             NotificationManager.shared.showNotification(title: String(localized: "Nothing to convert"), type: .info)
             return
         }
+        logger.notice("manual trigger: last word")
         let spaces = String(repeating: " ", count: target.trailingSpaces)
         let original = String(pairs.map(\.original)) + spaces
         let produced = String(pairs.map(\.converted)) + spaces
