@@ -198,8 +198,23 @@ final class LayoutSwitcherEngine {
         }
         let front = NSWorkspace.shared.frontmostApplication?.bundleIdentifier
 
-        let selection = await SelectedTextService.fetchSelectedText()
-        if let selection, !selection.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+        // A real highlight, not a Cmd-C fallback: some editors (Sublime) copy the whole line when
+        // nothing is selected, which would make us type over an empty selection and append instead
+        // of replace. AXSelectedText is authoritative — non-empty only on a real highlight, "" when
+        // there is none. Only when AX can't report it at all (nil: Electron/Telegram) and the user
+        // is not mid-word do we fall back to the copy-based read.
+        let axSelection = FocusedTextAccessibility.selectedText()
+        let selection: String?
+        if let axSelection {
+            selection = axSelection.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? nil : axSelection
+        } else if buffer.manualTarget == nil {
+            let copied = await SelectedTextService.fetchSelectedText()
+            let trimmed = copied?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+            selection = trimmed.isEmpty ? nil : copied
+        } else {
+            selection = nil
+        }
+        if let selection {
             guard let pair = LayoutPair.resolve(layout1ID: settings.layout1ID, layout2ID: settings.layout2ID) else {
                 logger.notice("manual trigger: pair unresolved")
                 NotificationManager.shared.showNotification(title: String(localized: "Current keyboard layout is not in the configured pair"), type: .warning)
