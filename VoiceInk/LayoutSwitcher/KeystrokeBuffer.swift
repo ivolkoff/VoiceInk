@@ -6,6 +6,12 @@ struct TypedKey: Equatable {
     let keyCode: UInt16
     let shift: Bool
     let caps: Bool
+    /// Character produced under the layout active at the moment this key was pressed.
+    /// Stored at type time so a mid-word layout switch can't corrupt the reconstruction.
+    var char: Character?
+    init(keyCode: UInt16, shift: Bool, caps: Bool, char: Character? = nil) {
+        self.keyCode = keyCode; self.shift = shift; self.caps = caps; self.char = char
+    }
 }
 
 /// What the user typed since the last context reset. The engine feeds it from the event tap
