@@ -16,10 +16,8 @@ struct SmartConvertTests {
     }
 
     @Test func flipsBothDirectionsInMixedGarbage() {
-        guard let out = run("ghbdtn ьшк") else { return }
-        // «ьшк» is ru-layout garbage, its fix is Latin "mir" — the plan's expected "мир"
-        // (Cyrillic) is unreachable through a US↔RU character map.
-        #expect(out == "привет mir")
+        guard let out = run("ghbdtn руддщ") else { return }
+        #expect(out == "привет hello")
     }
 
     @Test func pullsShortWordsInTheDirectionOfTheirNeighbours() {
