@@ -128,21 +128,33 @@ final class LayoutSwitcherEngine {
     // MARK: - Auto conversion
 
     private func scheduleAutoConversion(of word: [TypedKey], capsLock: Bool) {
-        guard settings.autoConvert, !resonance.isFrozen else { return }
+        guard settings.autoConvert else { logger.notice("auto gate: autoConvert off"); return }
+        guard !resonance.isFrozen else { logger.notice("auto gate: frozen"); return }
         let front = NSWorkspace.shared.frontmostApplication?.bundleIdentifier
-        guard !LayoutPolicy.secureInputActive,
-              !secureFieldFocused,
-              !LayoutPolicy.isDeniedApp(front, deniedApps: settings.deniedApps),
-              let pair = LayoutPair.resolve(layout1ID: settings.layout1ID, layout2ID: settings.layout2ID),
-              let pairs = LayoutMapper.convert(word, from: pair.currentData, to: pair.otherData) else { return }
+        guard !LayoutPolicy.secureInputActive else { logger.notice("auto gate: secure input"); return }
+        guard !secureFieldFocused else { logger.notice("auto gate: secure field"); return }
+        guard !LayoutPolicy.isDeniedApp(front, deniedApps: settings.deniedApps) else {
+            logger.notice("auto gate: denied app \(front ?? "nil", privacy: .public)"); return
+        }
+        guard let pair = LayoutPair.resolve(layout1ID: settings.layout1ID, layout2ID: settings.layout2ID) else {
+            logger.notice("auto gate: pair unresolved (layout not in configured pair)"); return
+        }
+        guard let pairs = LayoutMapper.convert(word, from: pair.currentData, to: pair.otherData) else {
+            logger.notice("auto gate: mapping failed (dead key or unmapped)"); return
+        }
 
         let typed = String(pairs.map(\.original))
         let converted = String(pairs.map(\.converted))
-        guard !LayoutPolicy.isNeverWord(typed, converted, never: settings.neverWordsSet) else { return }
+        guard !LayoutPolicy.isNeverWord(typed, converted, never: settings.neverWordsSet) else {
+            logger.notice("auto gate: never-word"); return
+        }
 
         let decision = LayoutDetector.decideWord(pairs: pairs, currentLang: pair.currentLang, otherLang: pair.otherLang,
                                                  capsLock: capsLock, alwaysConvert: settings.alwaysWordsSet)
-        guard decision.verdict == .switchToConverted else { return }
+        guard decision.verdict == .switchToConverted else {
+            logger.notice("auto gate: verdict \(String(describing: decision.verdict), privacy: .public) typed=\(typed, privacy: .public) conv=\(converted, privacy: .public) langs=\(pair.currentLang, privacy: .public)/\(pair.otherLang, privacy: .public)")
+            return
+        }
 
         let original = typed + " "
         let produced = String(pairs.prefix(decision.convertedLength).map(\.converted))
