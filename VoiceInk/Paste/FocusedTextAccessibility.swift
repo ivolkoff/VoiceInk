@@ -47,6 +47,16 @@ enum FocusedTextAccessibility {
         return role as? String
     }
 
+    /// Subrole of the focused element. Secure text fields carry role `AXTextField` and this
+    /// subrole `AXSecureTextField`, so the password-field gate must check both.
+    @MainActor
+    static func focusedSubrole() -> String? {
+        guard let element = focusedElement() else { return nil }
+        var subrole: CFTypeRef?
+        guard AXUIElementCopyAttributeValue(element, kAXSubroleAttribute as CFString, &subrole) == .success else { return nil }
+        return subrole as? String
+    }
+
     @MainActor
     private static func focusedElement() -> AXUIElement? {
         guard AXIsProcessTrusted() else { return nil }

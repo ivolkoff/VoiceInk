@@ -8,6 +8,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
         menuBarManager?.applyActivationPolicy()
         KeyboardLayoutLanguageService.captureCurrentLayout()
+        _ = LayoutSwitcherEngine.shared   // subscribes to the enabled toggle and starts when on
     }
 
     func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
