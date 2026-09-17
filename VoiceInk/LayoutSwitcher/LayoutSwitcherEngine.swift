@@ -154,7 +154,7 @@ final class LayoutSwitcherEngine {
             logger.notice("auto gate: never-word"); return
         }
         guard plan.verdict == .switchToConverted else {
-            logger.notice("auto gate: verdict \(String(describing: plan.verdict), privacy: .public) typed=\(plan.typed, privacy: .public) conv=\(plan.converted, privacy: .public)")
+            logger.notice("auto gate: verdict \(String(describing: plan.verdict), privacy: .public) typed=\(plan.typed, privacy: .private) conv=\(plan.converted, privacy: .private)")
             return
         }
         let original = plan.typed + " "
@@ -175,8 +175,7 @@ final class LayoutSwitcherEngine {
                 return
             }
             if let onScreen = FocusedTextAccessibility.textBeforeCaret(), !onScreen.lowercased().hasSuffix(original.lowercased()) {
-                let tail = String(onScreen.suffix(max(original.count + 4, 12)))
-                self.logger.notice("auto skip: expected suffix \(original, privacy: .public) but screen tail is \(tail, privacy: .public)")
+                self.logger.notice("auto skip: screen does not end with the buffered word")
                 self.inFlight = false
                 self.buffer.reset()
                 return
