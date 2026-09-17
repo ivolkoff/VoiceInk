@@ -13,6 +13,7 @@ enum ViewType: String, CaseIterable, Identifiable {
     case permissions = "Permissions"
     case audioInput = "Audio Input"
     case dictionary = "Dictionary"
+    case layoutSwitcher = "Layout Switcher"
     case settings = "Settings"
     case license = "VoiceInk Pro"
 
@@ -29,6 +30,7 @@ enum ViewType: String, CaseIterable, Identifiable {
         case .permissions: return "shield.fill"
         case .audioInput: return "mic.fill"
         case .dictionary: return "character.book.closed.fill"
+        case .layoutSwitcher: return "keyboard.badge.ellipsis"
         case .settings: return "gearshape.fill"
         case .license: return "checkmark.seal.fill"
         }
@@ -183,6 +185,8 @@ struct ContentView: View {
             AudioInputSettingsView()
         case .dictionary:
             DictionarySettingsView(whisperPrompt: whisperModelManager.whisperPrompt)
+        case .layoutSwitcher:
+            LayoutSwitcherView()
         case .powerMode:
             PowerModeView()
         case .settings:

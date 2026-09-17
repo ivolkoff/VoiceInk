@@ -118,6 +118,9 @@ enum BackupImporter {
         if let retranscribeLayoutShortcut = general.retranscribeLastInLayoutLanguageShortcut {
             ShortcutStore.setShortcut(retranscribeLayoutShortcut.shortcut, for: .retranscribeLastInLayoutLanguage)
         }
+        if let convertLayoutShortcut = general.convertLayoutShortcut {
+            ShortcutStore.setShortcut(convertLayoutShortcut.shortcut, for: .convertLayout)
+        }
         if let cancelShortcut = general.cancelRecorderShortcut {
             ShortcutStore.setShortcut(cancelShortcut.shortcut, for: .cancelRecorder)
         }

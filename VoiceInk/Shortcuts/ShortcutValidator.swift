@@ -95,7 +95,7 @@ enum ShortcutValidator {
 
     private static var allStoredActions: [ShortcutAction] {
         ShortcutAction.legacyKeyboardShortcutActions +
-            [.retranscribeLastInLayoutLanguage, .enhanceSelectedText] +
+            [.retranscribeLastInLayoutLanguage, .enhanceSelectedText, .convertLayout] +
             PowerModeManager.shared.configurations.map { ShortcutAction.powerMode($0.id) }
     }
 

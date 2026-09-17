@@ -322,6 +322,8 @@ class RecordingShortcutManager: ObservableObject {
                 transcriptionModelManager: engine.transcriptionModelManager,
                 engine: engine
             )
+        case .convertLayout:
+            await LayoutSwitcherEngine.shared.handleManualTrigger()
         case .openHistoryWindow:
             HistoryWindowController.shared.showHistoryWindow(
                 modelContainer: engine.modelContext.container,
