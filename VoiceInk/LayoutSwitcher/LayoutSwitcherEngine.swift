@@ -173,7 +173,7 @@ final class LayoutSwitcherEngine {
 
     // MARK: - Manual trigger
 
-    func handleManualTrigger() {
+    func handleManualTrigger() async {
         guard settings.enabled, !inFlight else { return }
         guard !LayoutPolicy.secureInputActive,
               !secureFieldFocused else {
@@ -186,7 +186,8 @@ final class LayoutSwitcherEngine {
             return
         }
 
-        if let selection = FocusedTextAccessibility.selectedText(), !selection.isEmpty {
+        let selection = await SelectedTextService.fetchSelectedText()?.trimmingCharacters(in: .whitespacesAndNewlines)
+        if let selection, !selection.isEmpty {
             convertSelection(selection, pair: pair, bundleID: front)
             return
         }
