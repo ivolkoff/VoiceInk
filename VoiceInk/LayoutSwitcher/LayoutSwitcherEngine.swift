@@ -188,8 +188,8 @@ final class LayoutSwitcherEngine {
             return
         }
 
-        let selection = await SelectedTextService.fetchSelectedText()?.trimmingCharacters(in: .whitespacesAndNewlines)
-        if let selection, !selection.isEmpty {
+        let selection = await SelectedTextService.fetchSelectedText()
+        if let selection, !selection.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
             logger.notice("manual trigger: selection")
             convertSelection(selection, pair: pair, bundleID: front)
             return
