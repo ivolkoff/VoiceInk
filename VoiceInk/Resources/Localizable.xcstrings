@@ -8016,6 +8016,236 @@
           }
         }
       }
+    },
+    "Layout Switcher": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Переключатель раскладки"
+          }
+        }
+      }
+    },
+    "Enable Layout Switcher": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Включить переключатель раскладки"
+          }
+        }
+      }
+    },
+    "Convert automatically at word boundaries": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Исправлять автоматически на границе слова"
+          }
+        }
+      }
+    },
+    "Convert Last Word Layout": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Исправить раскладку последнего слова"
+          }
+        }
+      }
+    },
+    "Converts the last typed word (or the selection) to the other layout. Press again to undo. A single modifier tap such as Right Option works well.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Переводит последнее набранное слово (или выделение) в другую раскладку. Повторное нажатие — отмена. Удобно назначить одиночный модификатор, например правый Option."
+          }
+        }
+      }
+    },
+    "Fixes words typed in the wrong keyboard layout: ghbdtn → привет. Needs Accessibility and Input Monitoring.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Исправляет слова, набранные не в той раскладке: ghbdtn → привет. Нужны разрешения «Универсальный доступ» и «Мониторинг ввода»."
+          }
+        }
+      }
+    },
+    "Layout Pair": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Пара раскладок"
+          }
+        }
+      }
+    },
+    "First layout": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Первая раскладка"
+          }
+        }
+      }
+    },
+    "Second layout": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Вторая раскладка"
+          }
+        }
+      }
+    },
+    "Automatic": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Автоматически"
+          }
+        }
+      }
+    },
+    "Never convert": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Никогда не исправлять"
+          }
+        }
+      }
+    },
+    "Nicknames, logins, brands. Undoing an automatic conversion adds the word here.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ники, логины, бренды. Отмена автоматического исправления добавляет слово сюда."
+          }
+        }
+      }
+    },
+    "Always convert": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Всегда исправлять"
+          }
+        }
+      }
+    },
+    "Add the word you want to get, e.g. привет — not the garbage that produced it.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Добавляйте слово, которое должно получиться, например «привет», а не набор букв, из которого оно вышло."
+          }
+        }
+      }
+    },
+    "Apps without automatic conversion": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Приложения без автоматического исправления"
+          }
+        }
+      }
+    },
+    "The manual shortcut still works in these apps. Password managers can't be removed.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ручной хоткей в этих приложениях работает. Менеджеры паролей удалить нельзя."
+          }
+        }
+      }
+    },
+    "word": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "слово"
+          }
+        }
+      }
+    },
+    "target word": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "целевое слово"
+          }
+        }
+      }
+    },
+    "bundle id or prefix*": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "bundle id или префикс*"
+          }
+        }
+      }
+    },
+    "Secure input is active": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Включён защищённый ввод"
+          }
+        }
+      }
+    },
+    "Current keyboard layout is not in the configured pair": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Текущая раскладка не входит в настроенную пару"
+          }
+        }
+      }
+    },
+    "Nothing to convert": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Нечего исправлять"
+          }
+        }
+      }
+    },
+    "“%@” added to Never convert": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "«%@» добавлено в «Никогда не исправлять»"
+          }
+        }
+      }
     }
   },
   "version": "1.0"
