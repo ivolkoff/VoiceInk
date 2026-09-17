@@ -116,4 +116,38 @@ enum LayoutPair {
         return Resolved(current: current, other: other, currentLang: currentLang, otherLang: otherLang,
                         currentData: currentData, otherData: otherData)
     }
+
+    struct Both {
+        let aSource: TISInputSource
+        let aLang: String
+        let aData: Data
+        let bSource: TISInputSource
+        let bLang: String
+        let bData: Data
+    }
+
+    /// Both layouts of the pair with no reference to which one is active — so conversion does
+    /// not depend on the layout that happens to be current when the word boundary arrives.
+    @MainActor
+    static func resolveBoth(layout1ID: String, layout2ID: String) -> Both? {
+        let layouts = enabledLayouts()
+        var id1 = layout1ID, id2 = layout2ID
+        if id1.isEmpty || id2.isEmpty {
+            guard let auto = autoDetectIDs(from: layouts) else { return nil }
+            if id1.isEmpty { id1 = auto.0 == id2 ? auto.1 : auto.0 }
+            if id2.isEmpty { id2 = auto.1 == id1 ? auto.0 : auto.1 }
+        }
+        guard let a = layouts.first(where: { sourceID($0) == id1 }),
+              let b = layouts.first(where: { sourceID($0) == id2 }),
+              let aLang = languageCode(a), let bLang = languageCode(b),
+              let aData = layoutData(a), let bData = layoutData(b) else { return nil }
+        return Both(aSource: a, aLang: aLang, aData: aData, bSource: b, bLang: bLang, bData: bData)
+    }
+
+    /// Data of the layout active right now (for resolving a key's character at type time).
+    @MainActor
+    static func currentLayoutData() -> Data? {
+        guard let src = current() else { return nil }
+        return layoutData(src)
+    }
 }
