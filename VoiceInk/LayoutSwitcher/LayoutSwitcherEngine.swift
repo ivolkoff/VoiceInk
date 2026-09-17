@@ -114,7 +114,11 @@ final class LayoutSwitcherEngine {
                     return
                 }
                 lastConversion = nil
-                buffer.append(TypedKey(keyCode: keyCode, shift: flags.contains(.maskShift), caps: flags.contains(.maskAlphaShift)))
+                let shift = flags.contains(.maskShift), caps = flags.contains(.maskAlphaShift)
+                let ch = LayoutPair.currentLayoutData().flatMap {
+                    LayoutMapper.character(keyCode: keyCode, layout: $0, shift: shift, caps: caps)
+                }
+                buffer.append(TypedKey(keyCode: keyCode, shift: shift, caps: caps, char: ch))
             }
         }
     }
@@ -136,29 +140,27 @@ final class LayoutSwitcherEngine {
         guard !LayoutPolicy.isDeniedApp(front, deniedApps: settings.deniedApps) else {
             logger.notice("auto gate: denied app \(front ?? "nil", privacy: .public)"); return
         }
-        guard let pair = LayoutPair.resolve(layout1ID: settings.layout1ID, layout2ID: settings.layout2ID) else {
+        guard let both = LayoutPair.resolveBoth(layout1ID: settings.layout1ID, layout2ID: settings.layout2ID) else {
             logger.notice("auto gate: pair unresolved (layout not in configured pair)"); return
         }
-        guard let pairs = LayoutMapper.convert(word, from: pair.currentData, to: pair.otherData) else {
-            logger.notice("auto gate: mapping failed (dead key or unmapped)"); return
+        let typed = String(word.compactMap(\.char))
+        guard typed.count == word.count else {
+            logger.notice("auto gate: unresolved characters in buffer"); return
         }
-
-        let typed = String(pairs.map(\.original))
-        let converted = String(pairs.map(\.converted))
-        guard !LayoutPolicy.isNeverWord(typed, converted, never: settings.neverWordsSet) else {
+        let map = LayoutMapper.bidirectionalMap(both.aData, both.bData)
+        let plan = LayoutConversion.plan(typed: typed, aLang: both.aLang, bLang: both.bLang,
+                                         map: map, capsLock: capsLock, alwaysConvert: settings.alwaysWordsSet)
+        guard !LayoutPolicy.isNeverWord(plan.typed, plan.converted, never: settings.neverWordsSet) else {
             logger.notice("auto gate: never-word"); return
         }
-
-        let decision = LayoutDetector.decideWord(pairs: pairs, currentLang: pair.currentLang, otherLang: pair.otherLang,
-                                                 capsLock: capsLock, alwaysConvert: settings.alwaysWordsSet)
-        guard decision.verdict == .switchToConverted else {
-            logger.notice("auto gate: verdict \(String(describing: decision.verdict), privacy: .public) typed=\(typed, privacy: .public) conv=\(converted, privacy: .public) langs=\(pair.currentLang, privacy: .public)/\(pair.otherLang, privacy: .public)")
+        guard plan.verdict == .switchToConverted else {
+            logger.notice("auto gate: verdict \(String(describing: plan.verdict), privacy: .public) typed=\(plan.typed, privacy: .public) conv=\(plan.converted, privacy: .public)")
             return
         }
-
-        let original = typed + " "
-        let produced = String(pairs.prefix(decision.convertedLength).map(\.converted))
-            + String(pairs.dropFirst(decision.convertedLength).map(\.original)) + " "
+        let original = plan.typed + " "
+        let produced = String(plan.converted.prefix(plan.convertedLength))
+            + String(plan.typed.dropFirst(plan.convertedLength)) + " "
+        let switchTarget = plan.switchToB ? both.bSource : both.aSource
         guard resonance.allow(word: original, produced: produced) else {
             buffer.reset()
             return
@@ -172,7 +174,7 @@ final class LayoutSwitcherEngine {
                 self.inFlight = false
                 return
             }
-            if let onScreen = FocusedTextAccessibility.textBeforeCaret(), !onScreen.hasSuffix(original) {
+            if let onScreen = FocusedTextAccessibility.textBeforeCaret(), !onScreen.lowercased().hasSuffix(original.lowercased()) {
                 let tail = String(onScreen.suffix(max(original.count + 4, 12)))
                 self.logger.notice("auto skip: expected suffix \(original, privacy: .public) but screen tail is \(tail, privacy: .public)")
                 self.inFlight = false
@@ -180,7 +182,7 @@ final class LayoutSwitcherEngine {
                 return
             }
             self.perform(deleteCount: original.count, text: produced, original: original,
-                         wasAuto: true, bundleID: front, switchTo: pair.other)
+                         wasAuto: true, bundleID: front, switchTo: switchTarget)
         }
     }
 
@@ -195,20 +197,25 @@ final class LayoutSwitcherEngine {
             return
         }
         let front = NSWorkspace.shared.frontmostApplication?.bundleIdentifier
-        guard let pair = LayoutPair.resolve(layout1ID: settings.layout1ID, layout2ID: settings.layout2ID) else {
-            logger.notice("manual trigger: pair unresolved")
-            NotificationManager.shared.showNotification(title: String(localized: "Current keyboard layout is not in the configured pair"), type: .warning)
-            return
-        }
 
         let selection = await SelectedTextService.fetchSelectedText()
         if let selection, !selection.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            guard let pair = LayoutPair.resolve(layout1ID: settings.layout1ID, layout2ID: settings.layout2ID) else {
+                logger.notice("manual trigger: pair unresolved")
+                NotificationManager.shared.showNotification(title: String(localized: "Current keyboard layout is not in the configured pair"), type: .warning)
+                return
+            }
             logger.notice("manual trigger: selection")
             convertSelection(selection, pair: pair, bundleID: front)
             return
         }
 
         if let last = lastConversion, last.bundleID == front {
+            guard let pair = LayoutPair.resolve(layout1ID: settings.layout1ID, layout2ID: settings.layout2ID) else {
+                logger.notice("manual trigger: pair unresolved")
+                NotificationManager.shared.showNotification(title: String(localized: "Current keyboard layout is not in the configured pair"), type: .warning)
+                return
+            }
             logger.notice("manual trigger: undo")
             // Tap again = undo. An undone auto-conversion teaches the never list.
             perform(deleteCount: last.produced.count, text: last.original, original: last.produced,
@@ -217,18 +224,30 @@ final class LayoutSwitcherEngine {
             return
         }
 
-        guard let target = buffer.manualTarget,
-              let pairs = LayoutMapper.convert(target.keys, from: pair.currentData, to: pair.otherData) else {
+        guard let both = LayoutPair.resolveBoth(layout1ID: settings.layout1ID, layout2ID: settings.layout2ID) else {
+            logger.notice("manual trigger: pair unresolved")
+            NotificationManager.shared.showNotification(title: String(localized: "Current keyboard layout is not in the configured pair"), type: .warning)
+            return
+        }
+        guard let target = buffer.manualTarget else {
+            logger.notice("manual trigger: nothing")
+            NotificationManager.shared.showNotification(title: String(localized: "Nothing to convert"), type: .info)
+            return
+        }
+        let typed = String(target.keys.compactMap(\.char))
+        guard typed.count == target.keys.count else {
             logger.notice("manual trigger: nothing")
             NotificationManager.shared.showNotification(title: String(localized: "Nothing to convert"), type: .info)
             return
         }
         logger.notice("manual trigger: last word")
+        let map = LayoutMapper.bidirectionalMap(both.aData, both.bData)
+        let converted = LayoutMapper.convertText(typed, map: map)
+        let switchToB = LayoutConversion.scriptMatchesLang(typed, lang: both.aLang)
         let spaces = String(repeating: " ", count: target.trailingSpaces)
-        let original = String(pairs.map(\.original)) + spaces
-        let produced = String(pairs.map(\.converted)) + spaces
-        perform(deleteCount: original.count, text: produced, original: original,
-                wasAuto: false, bundleID: front, switchTo: pair.other)
+        perform(deleteCount: typed.count + target.trailingSpaces, text: converted + spaces,
+                original: typed + spaces, wasAuto: false, bundleID: front,
+                switchTo: switchToB ? both.bSource : both.aSource)
     }
 
     private func convertSelection(_ selection: String, pair: LayoutPair.Resolved, bundleID: String?) {
