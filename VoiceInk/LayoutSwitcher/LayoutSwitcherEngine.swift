@@ -161,7 +161,8 @@ final class LayoutSwitcherEngine {
                 return
             }
             if let onScreen = FocusedTextAccessibility.textBeforeCaret(), !onScreen.hasSuffix(original) {
-                self.logger.notice("auto: screen does not end with the buffered word, skipping")
+                let tail = String(onScreen.suffix(max(original.count + 4, 12)))
+                self.logger.notice("auto skip: expected suffix \(original, privacy: .public) but screen tail is \(tail, privacy: .public)")
                 self.inFlight = false
                 self.buffer.reset()
                 return
