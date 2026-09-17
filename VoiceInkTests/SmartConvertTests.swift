@@ -35,6 +35,11 @@ struct SmartConvertTests {
         #expect(out == "привет,")
     }
 
+    @Test func normalizesMixedSelectionPhrase() {
+        guard let out = run("rfr ltkf тестирую") else { return }
+        #expect(out == "как дела тестирую")
+    }
+
     @Test func languageClassification() {
         #expect(SmartConvert.isCyrillicLang("ru-RU"))
         #expect(SmartConvert.isLatinLang("en"))
