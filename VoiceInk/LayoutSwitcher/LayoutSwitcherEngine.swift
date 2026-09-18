@@ -174,10 +174,15 @@ final class LayoutSwitcherEngine {
                 self.inFlight = false
                 return
             }
-            if let onScreen = FocusedTextAccessibility.textBeforeCaret(), !onScreen.lowercased().hasSuffix(original.lowercased()) {
+            // Verify against the screen only when the app actually exposes text before the caret.
+            // An empty result means the app gives us nothing to check (some editors / web fields),
+            // not that the buffer is wrong — treat it like nil and proceed. And on a real mismatch
+            // do NOT reset the buffer: the manual trigger stays available as a fallback.
+            if let onScreen = FocusedTextAccessibility.textBeforeCaret(),
+               !onScreen.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
+               !onScreen.lowercased().hasSuffix(original.lowercased()) {
                 self.logger.notice("auto skip: screen does not end with the buffered word")
                 self.inFlight = false
-                self.buffer.reset()
                 return
             }
             self.perform(deleteCount: original.count, text: produced, original: original,
