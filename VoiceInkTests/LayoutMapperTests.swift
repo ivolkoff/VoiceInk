@@ -24,6 +24,30 @@ struct LayoutMapperTests {
         #expect(pairs.map { String($0.map(\.converted)) } == "привет")
     }
 
+    @Test func reconstructFillsMissingCharsFromLayout() {
+        guard let l = TestLayouts.usAndRussian() else { return }
+        // Every key lost its type-time character (TIS returned nil), as in the intermittent bug.
+        let keysNoChar = [5, 4, 11, 2, 17, 45].map { TypedKey(keyCode: $0, shift: false, caps: false, char: nil) }
+        #expect(LayoutMapper.reconstruct(keysNoChar, currentData: l.us, pairA: l.us, pairB: l.ru) == "ghbdtn")
+    }
+
+    @Test func reconstructPrefersTheStoredCharacter() {
+        guard let l = TestLayouts.usAndRussian() else { return }
+        // Stored char wins over what the current layout would render for the same key code.
+        let keys = [TypedKey(keyCode: 5, shift: false, caps: false, char: "п")]
+        #expect(LayoutMapper.reconstruct(keys, currentData: l.us, pairA: l.us, pairB: l.ru) == "п")
+    }
+
+    @Test func reconstructMixesStoredAndRefilledChars() {
+        guard let l = TestLayouts.usAndRussian() else { return }
+        let keys = [
+            TypedKey(keyCode: 5, shift: false, caps: false, char: "g"),
+            TypedKey(keyCode: 4, shift: false, caps: false, char: nil),   // refilled from US → 'h'
+            TypedKey(keyCode: 11, shift: false, caps: false, char: "b"),
+        ]
+        #expect(LayoutMapper.reconstruct(keys, currentData: l.us, pairA: l.us, pairB: l.ru) == "ghb")
+    }
+
     @Test func shiftAndCapsProduceUppercase() {
         guard let l = TestLayouts.usAndRussian() else { return }
         #expect(LayoutMapper.character(keyCode: 5, layout: l.us, shift: true, caps: false) == "G")

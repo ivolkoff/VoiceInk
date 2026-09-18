@@ -248,12 +248,8 @@ final class LayoutSwitcherEngine {
             NotificationManager.shared.showNotification(title: String(localized: "Nothing to convert"), type: .info)
             return
         }
-        let typed = String(target.keys.compactMap(\.char))
-        guard typed.count == target.keys.count else {
-            logger.notice("manual trigger: nothing")
-            NotificationManager.shared.showNotification(title: String(localized: "Nothing to convert"), type: .info)
-            return
-        }
+        let typed = LayoutMapper.reconstruct(target.keys, currentData: LayoutPair.currentLayoutData(),
+                                             pairA: both.aData, pairB: both.bData)
         logger.notice("manual trigger: last word")
         let map = LayoutMapper.bidirectionalMap(both.aData, both.bData)
         let converted = LayoutMapper.convertText(typed, map: map)

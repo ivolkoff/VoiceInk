@@ -44,6 +44,21 @@ enum LayoutMapper {
         return status == noErr && length == 0 && deadKeyState != 0
     }
 
+    /// The on-screen word from a run of keys. Each key's character was captured at type time,
+    /// but TIS occasionally returns no layout data then, leaving `char` nil; here we refill those
+    /// from the current layout (the same one the just-typed word came from), then the pair's two
+    /// layouts. The manual trigger must never bail just because one key failed to resolve at type
+    /// time — that was the intermittent "nothing to convert".
+    static func reconstruct(_ keys: [TypedKey], currentData: Data?, pairA: Data, pairB: Data) -> String {
+        String(keys.map { key -> Character in
+            if let c = key.char { return c }
+            for data in [currentData, pairA, pairB].compactMap({ $0 }) {
+                if let c = character(keyCode: key.keyCode, layout: data, shift: key.shift, caps: key.caps) { return c }
+            }
+            return " "   // unreachable for a typeable key: at least one layout renders it
+        })
+    }
+
     /// Per-key characters in both layouts; nil when a key has no character in either layout or
     /// is a dead key in the source layout.
     static func convert(_ keys: [TypedKey], from source: Data, to target: Data) -> [KeyChars]? {
