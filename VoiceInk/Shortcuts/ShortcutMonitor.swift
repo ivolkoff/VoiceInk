@@ -303,6 +303,11 @@ final class ShortcutMonitor {
             return Self.carbonEventNotHandled
         }
 
+        guard UserSessionInputPolicy.allowsShortcutHandling else {
+            clearPressedShortcutState()
+            return Self.carbonEventNotHandled
+        }
+
         let eventTime = ProcessInfo.processInfo.systemUptime
         logger.notice("carbon event handled: id=\(hotKeyID.id, privacy: .public), action=\(action.storageName, privacy: .public), kind=\(Int(GetEventKind(event)), privacy: .public), isDown=\(state.isDown, privacy: .public), hasDiscrete=\(self.onShortcutPressed != nil, privacy: .public), interruptible=\(self.interruptibleActions.contains(action), privacy: .public)")
 
@@ -397,6 +402,11 @@ final class ShortcutMonitor {
     }
 
     private func handleCGEvent(type: CGEventType, event: CGEvent) -> Bool {
+        guard UserSessionInputPolicy.allowsShortcutHandling else {
+            clearPressedShortcutState()
+            return false
+        }
+
         guard let eventKind = EventKind(type) else {
             return false
         }
@@ -416,6 +426,17 @@ final class ShortcutMonitor {
             modifierFlags: modifierFlags,
             eventTime: ProcessInfo.processInfo.systemUptime
         )
+    }
+
+    /// Locked screen: forget held shortcuts without dispatching anything.
+    private func clearPressedShortcutState() {
+        for action in Array(shortcuts.keys) {
+            guard var state = shortcuts[action], state.isDown else { continue }
+            state.isDown = false
+            state.pressedAt = nil
+            state.isInterrupted = false
+            shortcuts[action] = state
+        }
     }
 
     private func resetPressedShortcutsAfterTapInterruption() {
