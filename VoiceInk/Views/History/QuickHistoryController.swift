@@ -200,7 +200,9 @@ final class QuickHistoryPanel: NSPanel {
 
     // Arrows and Return must reach the controller before the focused search field consumes them.
     override func sendEvent(_ event: NSEvent) {
-        guard event.type == .keyDown else {
+        // While an input method is composing, Return/arrows/Escape belong to its candidate window.
+        guard event.type == .keyDown,
+              (firstResponder as? NSTextInputClient)?.hasMarkedText() != true else {
             super.sendEvent(event)
             return
         }
