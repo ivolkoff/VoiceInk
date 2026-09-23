@@ -23,6 +23,11 @@ enum WordReplacementVariants {
             let sourceKey = WordReplacementVariants.key(for: source)
             let destinationKey = WordReplacementVariants.key(for: destination)
             guard !sourceKey.isEmpty, !destinationKey.isEmpty else { return false }
+            // A case-only rule (github → GitHub) maps a key onto itself; replacements run once, so it can't loop.
+            guard sourceKey != destinationKey else {
+                graph[sourceKey] = nil
+                return true
+            }
 
             let previousDestinations = graph[sourceKey]
             graph[sourceKey] = [destinationKey]

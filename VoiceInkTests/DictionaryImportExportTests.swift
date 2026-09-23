@@ -124,6 +124,13 @@ struct DictionaryImportExportTests {
         #expect(try rules(in: context) == ["js": "JavaScript", "foo": "bar"])
     }
 
+    @Test func caseOnlyReplacementIsNotACycle() async throws {
+        let summary = try await apply(replacements: [(["github"], "GitHub")])
+
+        #expect(summary.cyclicReplacementCount == 0)
+        #expect(try rules(in: context) == ["github": "GitHub"])
+    }
+
     @Test func replaceModeRemovesExistingEntries() async throws {
         context.insert(VocabularyWord(word: "Old"))
         context.insert(WordReplacement(originalText: "x", replacementText: "y"))
