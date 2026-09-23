@@ -93,7 +93,11 @@ class FluidAudioModelManager: ObservableObject {
                     progressHandler: progressHandler
                 )
             } catch {
-                if error is CancellationError {
+                if error is CancellationError || Task.isCancelled {
+                    // Keep a complete download (cancelled while loading); drop a partial one.
+                    if !self.isFluidAudioModelDownloaded(model) {
+                        try? FileManager.default.removeItem(at: self.cacheDirectory(for: model))
+                    }
                     logger.notice("FluidAudio download cancelled for \(modelName, privacy: .public)")
                 } else {
                     logger.error("❌ FluidAudio download failed for \(modelName, privacy: .public): \(error.localizedDescription, privacy: .public)")

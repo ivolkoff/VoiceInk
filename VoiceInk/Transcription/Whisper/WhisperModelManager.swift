@@ -67,6 +67,9 @@ class WhisperModelManager: ObservableObject {
 
     /// Tracks active download tasks keyed by progress key (e.g. "modelName_main").
     private var activeDownloadTasks: [String: URLSessionDownloadTask] = [:]
+    /// The whole download of a model (both files, writes, unzip), so a cancel also stops the
+    /// steps between network transfers.
+    private var downloadJobs: [String: Task<Void, Never>] = [:]
 
     /// Called when a model is deleted, passing the model name.
     /// TranscriptionModelManager listens to clear currentTranscriptionModel if needed.
@@ -128,6 +131,7 @@ class WhisperModelManager: ObservableObject {
     // MARK: - Model Download & Management
 
     private func downloadFileWithProgress(from url: URL, progressKey: String) async throws -> Data {
+        try Task.checkCancellation()
         let destinationURL = modelsDirectory.appendingPathComponent(UUID().uuidString)
 
         return try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Data, Error>) in
@@ -199,17 +203,22 @@ class WhisperModelManager: ObservableObject {
     }
 
     func downloadModel(_ model: WhisperModel) async {
-        guard let url = URL(string: model.downloadURL) else { return }
-        await performModelDownload(model, url)
+        guard let url = URL(string: model.downloadURL), downloadJobs[model.name] == nil else { return }
+        let job = Task { await performModelDownload(model, url) }
+        downloadJobs[model.name] = job
+        await job.value
+        downloadJobs[model.name] = nil
     }
 
     private func performModelDownload(_ model: WhisperModel, _ url: URL) async {
         do {
             var whisperModel = try await downloadMainModel(model, from: url)
+            try Task.checkCancellation()
 
             if let coreMLZipURL = whisperModel.coreMLZipDownloadURL,
                let coreMLURL = URL(string: coreMLZipURL) {
                 whisperModel = try await downloadAndSetupCoreMLModel(for: whisperModel, from: coreMLURL)
+                try Task.checkCancellation()
             }
 
             availableModels.append(whisperModel)
@@ -221,7 +230,17 @@ class WhisperModelManager: ObservableObject {
                 WhisperModelWarmupCoordinator.shared.scheduleWarmup(for: model, whisperModelManager: self)
             }
         } catch {
+            // A main file left without its Core ML encoder would list as downloaded on next launch.
+            if Task.isCancelled || error is CancellationError || (error as? URLError)?.code == .cancelled {
+                removePartialDownload(for: model)
+            }
             handleModelDownloadError(model, error)
+        }
+    }
+
+    private func removePartialDownload(for model: WhisperModel) {
+        for name in [model.filename, "\(model.name)-encoder.mlmodelc.zip", "\(model.name)-encoder.mlmodelc"] {
+            try? FileManager.default.removeItem(at: modelsDirectory.appendingPathComponent(name))
         }
     }
 
@@ -324,6 +343,8 @@ class WhisperModelManager: ObservableObject {
     func cancelDownload(_ modelName: String) {
         let mainKey = modelName + "_main"
         let coreMLKey = modelName + "_coreml"
+
+        downloadJobs[modelName]?.cancel()
 
         for key in [mainKey, coreMLKey] {
             if let task = activeDownloadTasks.removeValue(forKey: key) {
