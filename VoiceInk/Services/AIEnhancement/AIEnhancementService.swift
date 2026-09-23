@@ -326,6 +326,62 @@ class AIEnhancementService: ObservableObject {
         }
     }
 
+    /// Auto Learn picks its own provider and model, so it cannot reuse
+    /// `makeRequest`, which is bound to the enhancement selection and prompt.
+    func reviewAutoLearnCandidates(
+        payload: String,
+        systemPrompt: String,
+        provider: AIProvider,
+        modelName: String
+    ) async throws -> String {
+        guard AutoLearnProviderPolicy.isSupported(provider) else {
+            throw EnhancementError.notConfigured
+        }
+        let apiKey = APIKeyManager.shared.getAPIKey(forProvider: provider.rawValue) ?? ""
+
+        do {
+            let result: String
+            switch provider {
+            case .ollama:
+                result = try await aiService.enhanceWithOllama(
+                    text: payload,
+                    systemPrompt: systemPrompt,
+                    model: modelName,
+                    timeout: baseTimeout
+                )
+            case .localCLI:
+                result = try await aiService.enhanceWithLocalCLI(systemPrompt: systemPrompt, userPrompt: payload)
+            case .anthropic:
+                result = try await AnthropicLLMClient.chatCompletion(
+                    apiKey: apiKey,
+                    model: modelName,
+                    messages: [.user(payload)],
+                    systemPrompt: systemPrompt,
+                    timeout: baseTimeout
+                )
+            default:
+                guard let baseURL = URL(string: provider.baseURL) else {
+                    throw EnhancementError.notConfigured
+                }
+                result = try await openAICompatibleChatCompletion(
+                    baseURL: baseURL,
+                    apiKey: apiKey,
+                    model: modelName,
+                    systemPrompt: systemPrompt,
+                    userContent: payload,
+                    temperature: modelName.lowercased().hasPrefix("gpt-5") ? 1.0 : 0.3,
+                    reasoningEffort: ReasoningConfig.getReasoningParameter(for: provider, modelName: modelName),
+                    extraBody: ReasoningConfig.getExtraBodyParameters(for: provider, modelName: modelName),
+                    extraHeaders: provider == .custom && !aiService.customHeaders.isEmpty ? aiService.customHeaders : nil,
+                    timeout: baseTimeout
+                )
+            }
+            return AIEnhancementOutputFilter.filter(result)
+        } catch let error as LLMKitError {
+            throw mapLLMKitError(error)
+        }
+    }
+
     /// OpenAI-compatible chat completion built in-repo so that custom HTTP
     /// headers can be injected for the Custom provider. LLMkit's
     /// `OpenAILLMClient.chatCompletion` does not expose an `extraHeaders`

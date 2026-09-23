@@ -33,6 +33,8 @@ enum AppDefaults {
             "AppendTrailingSpace": true,
             "showLiveTextPreview": false,
             "RecorderType": "mini",
+            AutoLearnSettings.isEnabledKey: true,
+            AutoLearnSettings.reviewScheduleKey: AutoLearnReviewSchedule.immediately.rawValue,
 
             // Cleanup
             "IsTranscriptionCleanupEnabled": false,

@@ -66,7 +66,7 @@ class OllamaService: ObservableObject {
         }
     }
 
-    func enhance(_ text: String, withSystemPrompt systemPrompt: String? = nil, timeout: TimeInterval = 30) async throws -> String {
+    func enhance(_ text: String, withSystemPrompt systemPrompt: String? = nil, model: String? = nil, timeout: TimeInterval = 30) async throws -> String {
         guard let systemPrompt = systemPrompt else {
             throw LocalAIError.invalidRequest
         }
@@ -78,7 +78,7 @@ class OllamaService: ObservableObject {
         do {
             return try await OllamaClient.generate(
                 baseURL: url,
-                model: selectedModel,
+                model: model ?? selectedModel,
                 prompt: text,
                 systemPrompt: systemPrompt,
                 temperature: defaultTemperature,

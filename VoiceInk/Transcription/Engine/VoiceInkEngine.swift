@@ -181,6 +181,12 @@ class VoiceInkEngine: NSObject, ObservableObject {
                             self.recordingState = .recording
                             self.logger.notice("toggleRecord: recording started successfully, state=recording")
 
+                            // Retire the previous paste's observation only once recording really started;
+                            // not awaited so the Accessibility read does not delay the streaming session.
+                            if AutoLearnSettings.isEnabled {
+                                Task { await AutoLearnService.shared.recordingDidStart() }
+                            }
+
                             await ActiveWindowService.shared.applyConfiguration(powerModeId: powerModeId)
 
                             if self.recordingState == .recording,

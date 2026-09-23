@@ -5,6 +5,8 @@ struct DictionarySettingsView: View {
     @Environment(\.modelContext) private var modelContext
     @State private var selectedSection: DictionarySection = .replacements
     @State private var isShowingSettings = false
+    @State private var isShowingAutoLearnReview = false
+    @AppStorage(AutoLearnSettings.hasFailureKey) private var hasAutoLearnFailure = false
     let whisperPrompt: WhisperPrompt
     
     enum DictionarySection: String, CaseIterable {
@@ -44,6 +46,18 @@ struct DictionarySettingsView: View {
                 withAnimation(.smooth(duration: 0.3)) {
                     isShowingSettings = false
                 }
+            } onReviewNow: {
+                withAnimation(.smooth(duration: 0.3)) {
+                    isShowingSettings = false
+                    isShowingAutoLearnReview = true
+                }
+            }
+        }
+        .slidingPanel(isPresented: $isShowingAutoLearnReview, width: 520) {
+            AutoLearnReviewPanel {
+                withAnimation(.smooth(duration: 0.3)) {
+                    isShowingAutoLearnReview = false
+                }
             }
         }
     }
@@ -74,6 +88,20 @@ struct DictionarySettingsView: View {
                     .fontWeight(.semibold)
 
                 Spacer()
+
+                if hasAutoLearnFailure {
+                    Button {
+                        withAnimation(.smooth(duration: 0.3)) {
+                            isShowingSettings = true
+                        }
+                    } label: {
+                        Image(systemName: "exclamationmark.triangle.fill")
+                            .font(.system(size: 16, weight: .medium))
+                            .foregroundColor(.orange)
+                    }
+                    .buttonStyle(.plain)
+                    .help("Dictionary Auto Learn failed")
+                }
 
                 Button {
                     withAnimation(.smooth(duration: 0.3)) {

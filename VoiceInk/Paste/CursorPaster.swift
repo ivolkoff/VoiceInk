@@ -17,6 +17,11 @@ class CursorPaster {
         }
     }
 
+    struct PasteOutcome {
+        let result: PasteResult
+        let autoLearnGeneration: UInt64?
+    }
+
     private static let prePasteDelay: TimeInterval = 0.10
     private static let pasteShortcutEventDelay: TimeInterval = 0.01
     private static let minimumClipboardRestoreDelay: TimeInterval = 0.25
@@ -42,7 +47,7 @@ class CursorPaster {
 
     @MainActor
     @discardableResult
-    static func startPasteAtCursor(_ text: String) -> Task<PasteResult, Never> {
+    static func startPasteAtCursor(_ text: String) -> Task<PasteOutcome, Never> {
         Task { @MainActor in
             await performPasteSession(text)
         }
@@ -50,11 +55,11 @@ class CursorPaster {
 
     @MainActor
     static func pasteAtCursorAndWaitUntilPosted(_ text: String) async -> PasteResult {
-        await startPasteAtCursor(text).value
+        await startPasteAtCursor(text).value.result
     }
 
     @MainActor
-    private static func performPasteSession(_ text: String) async -> PasteResult {
+    private static func performPasteSession(_ text: String) async -> PasteOutcome {
         let pasteboard = NSPasteboard.general
         let shouldRestoreClipboard = UserDefaults.standard.bool(forKey: "restoreClipboardAfterPaste")
         let savedContents: ClipboardSnapshot
@@ -74,6 +79,10 @@ class CursorPaster {
         }
         let sessionID = UUID().uuidString
 
+        // Captured before pasting: focus may move while the chunks are posted.
+        let autoLearnProcessID = AutoLearnSettings.isEnabled
+            ? NSWorkspace.shared.frontmostApplication?.processIdentifier
+            : nil
         let chunks = chunksForPaste(text)
         var allChunksPosted = true
         var lastPreparedChunk: String?
@@ -117,7 +126,19 @@ class CursorPaster {
             )
         }
 
-        return allChunksPosted ? .commandPosted : .commandNotPosted
+        // Once for the full text: the field is compared against everything pasted, not the last chunk.
+        let autoLearnGeneration = AutoLearnSettings.isEnabled
+            ? await AutoLearnService.shared.pasteDidFinish(
+                text: text,
+                processID: autoLearnProcessID,
+                commandPosted: allChunksPosted
+            )
+            : nil
+
+        return PasteOutcome(
+            result: allChunksPosted ? .commandPosted : .commandNotPosted,
+            autoLearnGeneration: autoLearnGeneration
+        )
     }
 
     // MARK: - Chunking

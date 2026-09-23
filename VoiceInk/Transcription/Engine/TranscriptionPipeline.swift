@@ -226,7 +226,7 @@ class TranscriptionPipeline {
 
             let appendSpace = UserDefaults.standard.bool(forKey: "AppendTrailingSpace")
             let pastedText = textToPaste + (appendSpace ? " " : "")
-            let pasteResult = await CursorPaster.startPasteAtCursor(pastedText).value
+            let pasteOutcome = await CursorPaster.startPasteAtCursor(pastedText).value
             let autoSendKey = PowerModeManager.shared.currentActiveConfiguration?.autoSendKey
 
             // Record the exact paste so the re-transcribe-last hotkey can safely replace it.
@@ -238,7 +238,7 @@ class TranscriptionPipeline {
                     transcriptionID: transcription.id,
                     pastedText: pastedText,
                     targetBundleID: NSWorkspace.shared.frontmostApplication?.bundleIdentifier,
-                    posted: pasteResult.didPostPasteCommand
+                    posted: pasteOutcome.result.didPostPasteCommand
                 )
             }
 
@@ -247,6 +247,10 @@ class TranscriptionPipeline {
                 if let autoSendKey, autoSendKey.isEnabled {
                     Task { @MainActor in
                         try? await Task.sleep(nanoseconds: 500_000_000)
+                        // Return submits and clears the field; that is not a correction to learn.
+                        if let generation = pasteOutcome.autoLearnGeneration {
+                            await AutoLearnService.shared.cancelForAutoSend(generation: generation)
+                        }
                         CursorPaster.performAutoSend(autoSendKey)
                     }
                 }

@@ -77,6 +77,26 @@ enum WordReplacementVariants {
             .precomposedStringWithCanonicalMapping
     }
 
+    static func contains(_ variant: String, in variants: [String]) -> Bool {
+        let candidateKey = key(for: variant)
+        return variants.contains { key(for: $0) == candidateKey }
+    }
+
+    /// Existing rules that share a source with `newSources` are treated as
+    /// replaced, so `records` may be passed without pre-filtering.
+    static func wouldCreateCycle(
+        newSources: [(source: String, destination: String)],
+        in records: [(originalText: String, replacementText: String)]
+    ) -> Bool {
+        var detector = CycleDetector(records: records)
+        for newSource in newSources {
+            if !detector.insertIfAcyclic(source: newSource.source, destination: newSource.destination) {
+                return true
+            }
+        }
+        return false
+    }
+
     private static func deduplicated(_ variants: [String]) -> [String] {
         var seen = Set<String>()
         var result: [String] = []

@@ -1,0 +1,163 @@
+import SwiftUI
+
+struct AutoLearnModelSelectionView: View {
+    @EnvironmentObject private var aiService: AIService
+    @AppStorage(AutoLearnSettings.isEnabledKey) private var isAutoLearnEnabled = true
+    @AppStorage(AutoLearnSettings.providerKey) private var autoLearnProvider = ""
+    @AppStorage(AutoLearnSettings.modelKey) private var autoLearnModel = ""
+    @AppStorage(AutoLearnSettings.hasFailureKey) private var hasAutoLearnFailure = false
+    @State private var modelRefreshTask: Task<Void, Never>?
+
+    private var providerOptions: [AIProvider] {
+        var providers = aiService.connectedProviders.filter {
+            AutoLearnProviderPolicy.isSupported($0)
+                && ($0 != .ollama || !aiService.availableModels(for: $0).isEmpty)
+        }
+        if let selectedProvider, !providers.contains(selectedProvider) {
+            providers.insert(selectedProvider, at: 0)
+        }
+        return providers
+    }
+
+    private var selectedProvider: AIProvider? {
+        guard let provider = AIProvider(rawValue: autoLearnProvider),
+              AutoLearnProviderPolicy.isSupported(provider),
+              provider != .ollama || aiService.connectedProviders.contains(provider) else {
+            return nil
+        }
+        return provider
+    }
+
+    var body: some View {
+        Group {
+            if providerOptions.isEmpty {
+                LabeledContent("Provider") {
+                    Text("No supported AI providers connected")
+                        .foregroundColor(.secondary)
+                        .italic()
+                }
+            } else {
+                Picker("Provider", selection: providerBinding) {
+                    ForEach(providerOptions, id: \.self) { provider in
+                        Text(provider.rawValue).tag(provider)
+                    }
+                }
+
+                if let selectedProvider {
+                    if selectedProvider != .localCLI {
+                        modelPicker(for: selectedProvider)
+                    }
+
+                    if !aiService.connectedProviders.contains(selectedProvider) {
+                        Text("The selected provider is currently unavailable.")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                }
+            }
+        }
+        .onAppear(perform: prepareSelectionIfNeeded)
+        .onDisappear {
+            modelRefreshTask?.cancel()
+        }
+        .onChange(of: autoLearnModel) { _, _ in
+            retryAfterConfigurationChange()
+        }
+    }
+
+    private var providerBinding: Binding<AIProvider> {
+        Binding(
+            get: { selectedProvider ?? providerOptions.first ?? aiService.selectedProvider },
+            set: { provider in
+                autoLearnProvider = provider.rawValue
+                autoLearnModel = defaultModel(for: provider)
+                refreshModelsIfNeeded(for: provider)
+                retryAfterConfigurationChange()
+            }
+        )
+    }
+
+    @ViewBuilder
+    private func modelPicker(for provider: AIProvider) -> some View {
+        let models = modelOptions(for: provider)
+        if models.isEmpty {
+            LabeledContent("Model") {
+                Text("No models available")
+                    .foregroundColor(.secondary)
+                    .italic()
+            }
+        } else {
+            Picker("Model", selection: $autoLearnModel) {
+                ForEach(models, id: \.self) { model in
+                    Text(model).tag(model)
+                }
+            }
+        }
+    }
+
+    private func modelOptions(for provider: AIProvider) -> [String] {
+        var models = aiService.availableModels(for: provider)
+        if !autoLearnModel.isEmpty, !models.contains(autoLearnModel) {
+            models.insert(autoLearnModel, at: 0)
+        }
+        return models
+    }
+
+    private func defaultModel(for provider: AIProvider) -> String {
+        let models = aiService.availableModels(for: provider)
+        let selectedModel = aiService.selectedModel(for: provider)
+        return models.isEmpty || models.contains(selectedModel) ? selectedModel : models[0]
+    }
+
+    // Adopts the enhancement provider first, so an existing AI setup works without extra steps.
+    private func prepareSelectionIfNeeded() {
+        guard let provider = selectedProvider else {
+            let fallback = providerOptions.contains(aiService.selectedProvider)
+                ? aiService.selectedProvider
+                : providerOptions.first
+            guard let fallback else { return }
+            autoLearnProvider = fallback.rawValue
+            autoLearnModel = defaultModel(for: fallback)
+            refreshModelsIfNeeded(for: fallback)
+            return
+        }
+
+        if autoLearnModel.isEmpty {
+            autoLearnModel = defaultModel(for: provider)
+        }
+        refreshModelsIfNeeded(for: provider)
+    }
+
+    private func refreshModelsIfNeeded(for provider: AIProvider) {
+        modelRefreshTask?.cancel()
+        // Owned by the view so a panel closed mid-refresh cannot write a stale model.
+        modelRefreshTask = Task {
+            let modelAtStart = autoLearnModel
+            let models: [String]
+            switch provider {
+            case .ollama:
+                models = await aiService.fetchOllamaModels().map(\.name)
+            case .openRouter:
+                await aiService.fetchOpenRouterModels()
+                models = aiService.availableModels(for: provider)
+            default:
+                return
+            }
+            guard !Task.isCancelled,
+                  selectedProvider == provider,
+                  autoLearnModel == modelAtStart,
+                  !models.isEmpty,
+                  !models.contains(autoLearnModel) else { return }
+            autoLearnModel = models[0]
+        }
+    }
+
+    private func retryAfterConfigurationChange() {
+        guard isAutoLearnEnabled,
+              hasAutoLearnFailure,
+              AutoLearnSettings.reviewSchedule != .manually else { return }
+        Task {
+            await AutoLearnService.shared.retryPendingReviews()
+        }
+    }
+}

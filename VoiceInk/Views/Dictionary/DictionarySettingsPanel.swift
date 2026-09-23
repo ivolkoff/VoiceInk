@@ -10,6 +10,13 @@ private struct DictionaryTransferAlert: Identifiable {
 struct DictionarySettingsPanel: View {
     @Environment(\.modelContext) private var modelContext
     let onDismiss: () -> Void
+    let onReviewNow: () -> Void
+    @AppStorage(AutoLearnSettings.isEnabledKey) private var isAutoLearnEnabled = true
+    @AppStorage(AutoLearnSettings.reviewScheduleKey)
+    private var reviewScheduleRawValue = AutoLearnReviewSchedule.immediately.rawValue
+    @AppStorage(AutoLearnSettings.hasFailureKey) private var hasAutoLearnFailure = false
+    @AppStorage(AutoLearnSettings.failureMessageKey) private var autoLearnFailureMessage = ""
+    @State private var pendingCorrectionCount = 0
     @State private var pendingImport: DictionaryImportPayload?
     @State private var transferAlert: DictionaryTransferAlert?
 
@@ -53,6 +60,8 @@ struct DictionarySettingsPanel: View {
                     Text("Shortcuts")
                 }
 
+                autoLearnSection
+
                 Section {
                     LabeledContent("Export Dictionary") {
                         Button("Export…") {
@@ -74,6 +83,15 @@ struct DictionarySettingsPanel: View {
             .formStyle(.grouped)
             .scrollContentBackground(.hidden)
         }
+        .task {
+            await refreshPendingCorrectionCount()
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .autoLearnQueueDidChange)) { _ in
+            Task { await refreshPendingCorrectionCount() }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .autoLearnReviewProposalsDidChange)) { _ in
+            Task { await refreshPendingCorrectionCount() }
+        }
         .sheet(item: $pendingImport) { payload in
             DictionaryImportPreviewSheet(
                 payload: payload,
@@ -92,6 +110,78 @@ struct DictionarySettingsPanel: View {
                 dismissButton: .cancel(Text("OK"))
             )
         }
+    }
+
+    private var autoLearnSection: some View {
+        Section {
+            Toggle("Auto-Learn Dictionary", isOn: $isAutoLearnEnabled)
+                .onChange(of: isAutoLearnEnabled) { _, isEnabled in
+                    Task { await AutoLearnService.shared.settingDidChange(isEnabled: isEnabled) }
+                }
+
+            if isAutoLearnEnabled {
+                AutoLearnModelSelectionView()
+
+                Picker(selection: $reviewScheduleRawValue) {
+                    ForEach(AutoLearnReviewSchedule.allCases) { schedule in
+                        Text(schedule.title).tag(schedule.rawValue)
+                    }
+                } label: {
+                    HStack(spacing: 4) {
+                        Text("Review corrections")
+                        InfoTip("Choose when saved corrections are sent to your AI provider. Manual review keeps them local until you select Review Now.")
+                    }
+                }
+                .onChange(of: reviewScheduleRawValue) { _, _ in
+                    Task { await AutoLearnService.shared.reviewScheduleDidChange() }
+                }
+
+                LabeledContent("Corrections to review") {
+                    HStack(spacing: 10) {
+                        Text("\(pendingCorrectionCount)")
+                            .foregroundColor(.secondary)
+                        Button("Review Now", action: onReviewNow)
+                            .disabled(pendingCorrectionCount == 0)
+                    }
+                }
+
+                if hasAutoLearnFailure {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Label {
+                            Text(autoLearnFailureMessage.isEmpty
+                                 ? String(localized: "The selected provider or model could not review the pending corrections.")
+                                 : autoLearnFailureMessage)
+                        } icon: {
+                            Image(systemName: "exclamationmark.triangle.fill")
+                                .foregroundColor(.orange)
+                        }
+                        Text("Choose another model or provider above, then retry.")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                        Button("Retry") {
+                            Task { await AutoLearnService.shared.retryPendingReviews() }
+                        }
+                    }
+                }
+            }
+        } header: {
+            HStack(spacing: 4) {
+                Text("Auto Learn")
+                InfoTip(
+                    "Automatically learns corrections you make after dictation.",
+                    learnMoreURL: "https://tryvoiceink.com/docs/auto-learn-dictionary"
+                )
+            }
+        } footer: {
+            Text("Each correction and up to three surrounding words on each side are sent to your selected AI provider; recordings and full text fields are never sent.")
+        }
+    }
+
+    @MainActor
+    private func refreshPendingCorrectionCount() async {
+        let pending = (try? await AutoLearnService.shared.outstandingReviewCount()) ?? 0
+        let proposals = (try? await AutoLearnService.shared.reviewProposalCount()) ?? 0
+        pendingCorrectionCount = pending + proposals
     }
 
     @MainActor
