@@ -5,7 +5,7 @@ import Foundation
 import os
 
 final class ShortcutMonitor {
-    fileprivate enum EventKind {
+    enum EventKind {
         case keyDown
         case keyUp
         case flagsChanged
@@ -50,6 +50,31 @@ final class ShortcutMonitor {
         onShortcutPressed: ((ShortcutAction, TimeInterval) -> Void)? = nil,
         onShortcutInterrupted: ((ShortcutAction, TimeInterval) -> Void)? = nil
     ) -> Bool {
+        configure(
+            shortcuts: shortcuts,
+            interruptibleActions: interruptibleActions,
+            onKeyDown: onKeyDown,
+            onKeyUp: onKeyUp,
+            onShortcutPressed: onShortcutPressed,
+            onShortcutInterrupted: onShortcutInterrupted
+        )
+
+        guard !self.shortcuts.isEmpty else {
+            return true
+        }
+
+        return installEventTap()
+    }
+
+    /// Shortcut state and callbacks without the event tap; tests drive `handleEvent` directly.
+    func configure(
+        shortcuts: [ShortcutAction: Shortcut],
+        interruptibleActions: Set<ShortcutAction> = [],
+        onKeyDown: @escaping (ShortcutAction, TimeInterval) -> Void,
+        onKeyUp: @escaping (ShortcutAction, TimeInterval) -> Void,
+        onShortcutPressed: ((ShortcutAction, TimeInterval) -> Void)? = nil,
+        onShortcutInterrupted: ((ShortcutAction, TimeInterval) -> Void)? = nil
+    ) {
         // Capture held state before stop() clears it. A refresh can restart the
         // monitor while the user is still physically holding a shortcut (e.g. the
         // recorder becoming visible re-registers this monitor mid-press). Carrying
@@ -70,17 +95,11 @@ final class ShortcutMonitor {
             logger.notice("start: action=\(action.storageName, privacy: .public), shortcut=\(shortcut.displayString, privacy: .public), kind=\(shortcut.kind.rawValue, privacy: .public)")
         }
 
-        guard !self.shortcuts.isEmpty else {
-            return true
-        }
-
         self.interruptibleActions = interruptibleActions
         self.onKeyDown = onKeyDown
         self.onKeyUp = onKeyUp
         self.onShortcutPressed = onShortcutPressed
         self.onShortcutInterrupted = onShortcutInterrupted
-
-        return installEventTap()
     }
 
     func stop() {
@@ -421,11 +440,14 @@ final class ShortcutMonitor {
                 state.isInterrupted = false
                 shortcuts[action] = state
             }
-            dispatchKeyUp(for: action, eventTime: eventTime)
+            // Only hold-style (interruptible) actions need their release; the rest fire on it.
+            if interruptibleActions.contains(action) {
+                dispatchKeyUp(for: action, eventTime: eventTime)
+            }
         }
     }
 
-    private func handleEvent(
+    func handleEvent(
         kind: EventKind,
         keyCode: UInt16,
         mouseButton: Int,
@@ -578,11 +600,16 @@ final class ShortcutMonitor {
 
         if state.isDown {
             if state.shortcut.shouldReleaseModifierEvent(keyCode: keyCode, modifierFlags: modifierFlags) {
+                let partOfChord = state.isInterrupted && !interruptibleActions.contains(action)
                 state.isDown = false
                 state.pressedAt = nil
                 state.isInterrupted = false
                 shortcuts[action] = state
-                dispatchKeyUp(for: action, eventTime: eventTime)
+                if partOfChord {
+                    logger.notice("release ignored: action=\(action.storageName, privacy: .public) was part of a key chord")
+                } else {
+                    dispatchKeyUp(for: action, eventTime: eventTime)
+                }
             }
 
             return
@@ -600,6 +627,14 @@ final class ShortcutMonitor {
     private func handleShortcutInterruptions(keyCode: UInt16, eventTime: TimeInterval) {
         guard !Shortcut.isModifierKeyCode(keyCode) else {
             return
+        }
+
+        // A modifier-only tap for a discrete action is a standalone press; held for a chord
+        // (⌥⇧- for «—», ⌥←) it is not one, so its release must not fire the action.
+        for (action, var state) in shortcuts
+        where state.isDown && !state.isInterrupted && state.shortcut.isModifierOnly && !interruptibleActions.contains(action) {
+            state.isInterrupted = true
+            shortcuts[action] = state
         }
 
         for action in interruptibleActions {
@@ -658,7 +693,7 @@ final class ShortcutMonitor {
     }
 }
 
-private extension ShortcutMonitor.EventKind {
+extension ShortcutMonitor.EventKind {
     init?(_ type: CGEventType) {
         switch type {
         case .keyDown:
