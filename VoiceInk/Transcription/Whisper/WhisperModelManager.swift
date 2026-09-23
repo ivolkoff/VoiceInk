@@ -203,11 +203,17 @@ class WhisperModelManager: ObservableObject {
     }
 
     func downloadModel(_ model: WhisperModel) async {
-        guard let url = URL(string: model.downloadURL), downloadJobs[model.name] == nil else { return }
+        guard let url = URL(string: model.downloadURL) else { return }
+        // A cancelled job can still be writing or unzipping; start over once it has cleaned up.
+        while let previous = downloadJobs[model.name] {
+            guard previous.isCancelled else { return }
+            await previous.value
+            if downloadJobs[model.name] == previous { downloadJobs[model.name] = nil }
+        }
         let job = Task { await performModelDownload(model, url) }
         downloadJobs[model.name] = job
         await job.value
-        downloadJobs[model.name] = nil
+        if downloadJobs[model.name] == job { downloadJobs[model.name] = nil }
     }
 
     private func performModelDownload(_ model: WhisperModel, _ url: URL) async {
