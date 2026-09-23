@@ -26,6 +26,8 @@ final class ShortcutMonitor {
     private var onKeyUp: ((ShortcutAction, TimeInterval) -> Void)?
     private var onShortcutPressed: ((ShortcutAction, TimeInterval) -> Void)?
     private var onShortcutInterrupted: ((ShortcutAction, TimeInterval) -> Void)?
+    /// A non-modifier key that isn't one of the shortcuts (breaks a pending double tap).
+    private var onOtherKeyDown: (() -> Void)?
     private var eventTap: CFMachPort?
     private var eventTapRunLoopSource: CFRunLoopSource?
     private var carbonEventHandler: EventHandlerRef?
@@ -48,7 +50,8 @@ final class ShortcutMonitor {
         onKeyDown: @escaping (ShortcutAction, TimeInterval) -> Void,
         onKeyUp: @escaping (ShortcutAction, TimeInterval) -> Void,
         onShortcutPressed: ((ShortcutAction, TimeInterval) -> Void)? = nil,
-        onShortcutInterrupted: ((ShortcutAction, TimeInterval) -> Void)? = nil
+        onShortcutInterrupted: ((ShortcutAction, TimeInterval) -> Void)? = nil,
+        onOtherKeyDown: (() -> Void)? = nil
     ) -> Bool {
         configure(
             shortcuts: shortcuts,
@@ -56,7 +59,8 @@ final class ShortcutMonitor {
             onKeyDown: onKeyDown,
             onKeyUp: onKeyUp,
             onShortcutPressed: onShortcutPressed,
-            onShortcutInterrupted: onShortcutInterrupted
+            onShortcutInterrupted: onShortcutInterrupted,
+            onOtherKeyDown: onOtherKeyDown
         )
 
         guard !self.shortcuts.isEmpty else {
@@ -73,7 +77,8 @@ final class ShortcutMonitor {
         onKeyDown: @escaping (ShortcutAction, TimeInterval) -> Void,
         onKeyUp: @escaping (ShortcutAction, TimeInterval) -> Void,
         onShortcutPressed: ((ShortcutAction, TimeInterval) -> Void)? = nil,
-        onShortcutInterrupted: ((ShortcutAction, TimeInterval) -> Void)? = nil
+        onShortcutInterrupted: ((ShortcutAction, TimeInterval) -> Void)? = nil,
+        onOtherKeyDown: (() -> Void)? = nil
     ) {
         // Capture held state before stop() clears it. A refresh can restart the
         // monitor while the user is still physically holding a shortcut (e.g. the
@@ -100,6 +105,7 @@ final class ShortcutMonitor {
         self.onKeyUp = onKeyUp
         self.onShortcutPressed = onShortcutPressed
         self.onShortcutInterrupted = onShortcutInterrupted
+        self.onOtherKeyDown = onOtherKeyDown
     }
 
     func stop() {
@@ -122,6 +128,7 @@ final class ShortcutMonitor {
         onKeyUp = nil
         onShortcutPressed = nil
         onShortcutInterrupted = nil
+        onOtherKeyDown = nil
     }
 
     private func installEventTap() -> Bool {
@@ -479,6 +486,10 @@ final class ShortcutMonitor {
 
         if kind == .keyDown {
             handleShortcutInterruptions(keyCode: keyCode, eventTime: eventTime)
+            if !Shortcut.isModifierKeyCode(keyCode),
+               !shortcuts.values.contains(where: { $0.shortcut.kind == .key && $0.shortcut.keyCode == keyCode }) {
+                DispatchQueue.main.async { [onOtherKeyDown] in onOtherKeyDown?() }
+            }
         }
 
         let actions = eventTapActions ?? Set(shortcuts.keys)
