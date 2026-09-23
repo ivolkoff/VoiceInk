@@ -48,6 +48,16 @@ struct KeystrokeBufferTests {
         #expect(b.manualTarget == nil)
     }
 
+    @Test func skippedWordIsIgnoredUntilTheNextSpace() {
+        var b = KeystrokeBuffer()
+        b.append(key(5)); b.skipWord(); b.append(key(4))
+        b.backspace()
+        #expect(b.manualTarget == nil)
+        #expect(b.space() == nil)
+        b.append(key(3))
+        #expect(b.manualTarget?.keys == [key(3)])
+    }
+
     @Test func leadingSpacesAreNotABoundary() {
         var b = KeystrokeBuffer()
         let leading = b.space()

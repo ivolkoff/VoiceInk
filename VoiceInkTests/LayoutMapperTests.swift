@@ -24,6 +24,15 @@ struct LayoutMapperTests {
         #expect(pairs.map { String($0.map(\.converted)) } == "привет")
     }
 
+    @Test func apostropheIsADeadKeyOnUSInternationalOnly() {
+        guard let l = TestLayouts.usAndRussian(),
+              let intl = LayoutPair.allLayouts()
+                .first(where: { LayoutPair.sourceID($0) == "com.apple.keylayout.USInternational-PC" })
+                .flatMap(LayoutPair.layoutData) else { return }
+        #expect(LayoutMapper.isDeadKey(keyCode: 39, layout: intl, shift: false, caps: false))
+        #expect(!LayoutMapper.isDeadKey(keyCode: 39, layout: l.us, shift: false, caps: false))
+    }
+
     @Test func reconstructFillsMissingCharsFromLayout() {
         guard let l = TestLayouts.usAndRussian() else { return }
         // Every key lost its type-time character (TIS returned nil), as in the intermittent bug.

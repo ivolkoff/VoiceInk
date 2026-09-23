@@ -31,8 +31,11 @@ enum LayoutPolicy {
     /// Session-wide secure input (password field, Secure Keyboard Entry in a terminal).
     static var secureInputActive: Bool { IsSecureEventInputEnabled() }
 
+    /// Also matches without trailing punctuation: «ghbdtn,» is vetoed by a learned «ghbdtn».
     static func isNeverWord(_ typed: String, _ converted: String, never: Set<String>) -> Bool {
         guard !never.isEmpty else { return false }
-        return never.contains(typed.lowercased()) || never.contains(converted.lowercased())
+        let core = LayoutDetector.splitTrailingPunctuation(typed).coreLength
+        return [typed, converted, String(typed.prefix(core)), String(converted.prefix(core))]
+            .contains { never.contains($0.lowercased()) }
     }
 }

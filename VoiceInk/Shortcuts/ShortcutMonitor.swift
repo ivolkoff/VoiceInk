@@ -145,6 +145,10 @@ final class ShortcutMonitor {
                 return Unmanaged.passUnretained(event)
             }
 
+            // The layout switcher's flush marker is a synthetic flagsChanged, not a modifier change.
+            if event.getIntegerValueField(.eventSourceUserData) == KeystrokeTap.flushMarker {
+                return Unmanaged.passUnretained(event)
+            }
             let shouldSuppress = monitor.handleCGEvent(type: type, event: event)
             return shouldSuppress ? nil : Unmanaged.passUnretained(event)
         }

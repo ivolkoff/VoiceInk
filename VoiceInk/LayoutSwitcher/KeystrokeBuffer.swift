@@ -21,8 +21,17 @@ struct KeystrokeBuffer: Equatable {
     private(set) var previousWord: [TypedKey] = []
     /// Spaces typed after `previousWord`; 0 while `currentWord` is being typed.
     private(set) var boundaryCount = 0
+    /// The current word holds something the model can't track (a dead key); ignore it to the next space.
+    private(set) var skipping = false
+
+    /// Drops the current word and ignores the rest of it, so it is never converted.
+    mutating func skipWord() {
+        reset()
+        skipping = true
+    }
 
     mutating func append(_ key: TypedKey) {
+        guard !skipping else { return }
         currentWord.append(key)
         previousWord = []
         boundaryCount = 0
@@ -31,6 +40,10 @@ struct KeystrokeBuffer: Equatable {
     /// The word the space just completed, or nil when the space only widens an existing gap.
     mutating func space() -> [TypedKey]? {
         defer { currentWord = [] }
+        guard !skipping else {
+            reset()
+            return nil
+        }
         guard !currentWord.isEmpty else {
             if !previousWord.isEmpty { boundaryCount += 1 }
             return nil
@@ -44,6 +57,7 @@ struct KeystrokeBuffer: Equatable {
     /// makes the model unreliable, so it resets and returns false.
     @discardableResult
     mutating func backspace() -> Bool {
+        guard !skipping else { return false }
         guard !currentWord.isEmpty else {
             reset()
             return false
@@ -56,6 +70,7 @@ struct KeystrokeBuffer: Equatable {
         currentWord = []
         previousWord = []
         boundaryCount = 0
+        skipping = false
     }
 
     /// What the manual trigger converts: the word being typed, else the last completed word

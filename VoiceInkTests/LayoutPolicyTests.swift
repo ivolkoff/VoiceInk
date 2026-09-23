@@ -22,6 +22,12 @@ struct LayoutPolicyTests {
         #expect(!LayoutPolicy.isNeverWord("vbh", "мир", never: never))
     }
 
+    @Test func neverWordsIgnoreTrailingPunctuation() {
+        #expect(LayoutPolicy.isNeverWord("ghbdtn,", "приветб", never: ["ghbdtn"]))
+        #expect(LayoutPolicy.isNeverWord("ghbdtn.", "приветю", never: ["привет"]))
+        #expect(!LayoutPolicy.isNeverWord("ghbdtn,", "приветб", never: ["vbh"]))
+    }
+
     @Test func settingsRoundTripAndDefaults() {
         let suite = "LayoutPolicyTests-\(UUID().uuidString)"
         let defaults = UserDefaults(suiteName: suite)!

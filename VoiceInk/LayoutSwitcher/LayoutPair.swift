@@ -6,7 +6,6 @@ import Carbon
 enum LayoutPair {
     struct Resolved {
         let current: TISInputSource
-        let other: TISInputSource
         let currentLang: String
         let otherLang: String
         let currentData: Data
@@ -113,7 +112,7 @@ enum LayoutPair {
         guard let other = layouts.first(where: { sourceID($0) == otherID }),
               let currentLang = languageCode(current), let otherLang = languageCode(other),
               let currentData = layoutData(current), let otherData = layoutData(other) else { return nil }
-        return Resolved(current: current, other: other, currentLang: currentLang, otherLang: otherLang,
+        return Resolved(current: current, currentLang: currentLang, otherLang: otherLang,
                         currentData: currentData, otherData: otherData)
     }
 
