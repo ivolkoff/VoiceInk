@@ -9253,6 +9253,414 @@
           }
         }
       }
+    },
+    "The configured AI enhancement provider cannot review Auto Learn candidates.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Выбранный AI-провайдер не может проверять кандидатов автообучения."
+          }
+        }
+      }
+    },
+    "The AI returned an invalid Auto Learn review response.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "AI вернул некорректный ответ проверки автообучения."
+          }
+        }
+      }
+    },
+    "The selected provider is currently unavailable.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Выбранный провайдер сейчас недоступен."
+          }
+        }
+      }
+    },
+    "No supported AI providers connected": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Нет подключённых поддерживаемых AI-провайдеров"
+          }
+        }
+      }
+    },
+    "Some corrections could not be reviewed. Check the selected AI provider and try again.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Часть правок не удалось проверить. Проверьте выбранного AI-провайдера и попробуйте снова."
+          }
+        }
+      }
+    },
+    "Review Corrections": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Проверка правок"
+          }
+        }
+      }
+    },
+    "The arrow icon refers to Word Replacement. The book icon refers to Vocabulary.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Стрелка — замена слова. Книга — словарное слово."
+          }
+        }
+      }
+    },
+    "Reviewing pending corrections…": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Проверка отложенных правок…"
+          }
+        }
+      }
+    },
+    "No Corrections to Review": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Нет правок для проверки"
+          }
+        }
+      }
+    },
+    "New manual-review suggestions will appear here.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Здесь появятся новые предложения для ручной проверки."
+          }
+        }
+      }
+    },
+    "Dismiss All": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Отклонить все"
+          }
+        }
+      }
+    },
+    "Apply All (%lld)": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Применить все (%lld)"
+          }
+        }
+      }
+    },
+    "Apply Selected (%lld)": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Применить выбранные (%lld)"
+          }
+        }
+      }
+    },
+    "Apply the selected corrections": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Применить выбранные правки"
+          }
+        }
+      }
+    },
+    "The corrected value cannot be empty.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Исправленное значение не может быть пустым."
+          }
+        }
+      }
+    },
+    "The original value cannot be empty.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Исходное значение не может быть пустым."
+          }
+        }
+      }
+    },
+    "A reviewed replacement can contain only one original value.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Проверенная замена может содержать только одно исходное значение."
+          }
+        }
+      }
+    },
+    "The original and corrected values must be different.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Исходное и исправленное значения должны различаться."
+          }
+        }
+      }
+    },
+    "Select correction": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Выбрать правку"
+          }
+        }
+      }
+    },
+    "Corrected": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Исправление"
+          }
+        }
+      }
+    },
+    "Press Return to save the edit": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Нажмите Return, чтобы сохранить правку"
+          }
+        }
+      }
+    },
+    "Selected": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Выбрано"
+          }
+        }
+      }
+    },
+    "Not selected": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Не выбрано"
+          }
+        }
+      }
+    },
+    "Added “%@” to Dictionary": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "«%@» добавлено в словарь"
+          }
+        }
+      }
+    },
+    "Learned “%@” → “%@”": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Выучено: «%1$@» → «%2$@»"
+          }
+        }
+      }
+    },
+    "Undo": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Отменить"
+          }
+        }
+      }
+    },
+    "Learned %lld corrections": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Выучено правок: %lld"
+          }
+        },
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Learned %lld correction"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Learned %lld corrections"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Manually": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Вручную"
+          }
+        }
+      }
+    },
+    "Auto-Learn Dictionary": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Автообучение словаря"
+          }
+        }
+      }
+    },
+    "Corrections to review": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Правки на проверку"
+          }
+        }
+      }
+    },
+    "Review corrections": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Проверить правки"
+          }
+        }
+      }
+    },
+    "Choose when saved corrections are sent to your AI provider. Manual review keeps them local until you select Review Now.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Выберите, когда сохранённые правки уходят AI-провайдеру. При ручной проверке они остаются на компьютере, пока вы не нажмёте «Проверить сейчас»."
+          }
+        }
+      }
+    },
+    "Review Now": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Проверить сейчас"
+          }
+        }
+      }
+    },
+    "Choose another model or provider above, then retry.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Выберите выше другую модель или провайдера и повторите."
+          }
+        }
+      }
+    },
+    "The selected provider or model could not review the pending corrections.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Выбранный провайдер или модель не смогли проверить отложенные правки."
+          }
+        }
+      }
+    },
+    "Auto Learn": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Автообучение"
+          }
+        }
+      }
+    },
+    "Automatically learns corrections you make after dictation.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Запоминает правки, которые вы вносите после диктовки."
+          }
+        }
+      }
+    },
+    "Each correction and up to three surrounding words on each side are sent to your selected AI provider; recordings and full text fields are never sent.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Каждая правка и до трёх соседних слов с каждой стороны отправляются выбранному AI-провайдеру; записи и поля целиком не отправляются никогда."
+          }
+        }
+      }
+    },
+    "Dictionary Auto Learn failed": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Автообучение словаря не удалось"
+          }
+        }
+      }
     }
   },
   "version": "1.0"
