@@ -58,7 +58,7 @@ class PowerModeShortcutManager {
     }
 
     private func refreshPowerModeShortcuts() {
-        shortcutModeHandler.clearPendingPowerModeDoubleTaps()
+        shortcutModeHandler.clearPendingDoubleTaps(powerMode: true)
         guard UserDefaults.standard.bool(forKey: "powerModeUIFlag") else {
             shortcutMonitor.stop()
             return
@@ -126,7 +126,7 @@ class PowerModeShortcutManager {
                 }
             },
             onOtherKeyDown: { [weak self] in
-                MainActor.assumeIsolated { self?.shortcutModeHandler.clearPendingDoubleTaps() }
+                MainActor.assumeIsolated { self?.shortcutModeHandler.clearPendingDoubleTaps(powerMode: true) }
             }
         )
     }

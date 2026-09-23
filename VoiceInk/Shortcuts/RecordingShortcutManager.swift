@@ -294,7 +294,7 @@ class RecordingShortcutManager: ObservableObject {
                 }
             },
             onOtherKeyDown: { [weak self] in
-                MainActor.assumeIsolated { self?.shortcutModeHandler.clearPendingDoubleTaps() }
+                MainActor.assumeIsolated { self?.shortcutModeHandler.clearPendingDoubleTaps(powerMode: false) }
             }
         )
     }
@@ -459,10 +459,11 @@ final class RecordingShortcutModeHandler {
         pendingDoubleTapTimes.removeAll()
     }
 
-    func clearPendingPowerModeDoubleTaps() {
+    /// Each monitor sees the other monitor's shortcut as "another key", so it clears only its own taps.
+    func clearPendingDoubleTaps(powerMode: Bool) {
         pendingDoubleTapTimes = pendingDoubleTapTimes.filter { action, _ in
-            if case .powerMode = action { return false }
-            return true
+            if case .powerMode = action { return !powerMode }
+            return powerMode
         }
     }
 

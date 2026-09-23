@@ -1,3 +1,4 @@
+import Foundation
 import os
 import Testing
 @testable import VoiceInk
@@ -48,6 +49,21 @@ struct DoubleTapShortcutTests {
         await tap(handler, down: 4.5, up: 4.6)
 
         #expect(recorder.toggles == 0)
+    }
+
+    @Test func otherMonitorsKeyDoesNotClearAPowerModeTap() async {
+        let recorder = Recorder()
+        let handler = makeHandler(recorder)
+        let id = UUID()
+        let action = ShortcutAction.powerMode(id)
+
+        await handler.handleKeyDown(action: action, eventTime: 0, mode: .doubleTap, powerModeId: id)
+        await handler.handleKeyUp(action: action, eventTime: 0.1, mode: .doubleTap, powerModeId: id)
+        handler.clearPendingDoubleTaps(powerMode: false)   // the recording monitor saw this key as "other"
+        await handler.handleKeyDown(action: action, eventTime: 0.3, mode: .doubleTap, powerModeId: id)
+        await handler.handleKeyUp(action: action, eventTime: 0.4, mode: .doubleTap, powerModeId: id)
+
+        #expect(recorder.toggles == 1)
     }
 
     @Test func twoCarbonPressesToggleOnce() async {
