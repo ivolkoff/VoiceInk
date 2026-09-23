@@ -7607,26 +7607,6 @@
         }
       }
     },
-    "Could not save dictionary to file: %@": {
-      "localizations": {
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Не удалось сохранить словарь в файл: %@"
-          }
-        }
-      }
-    },
-    "Could not encode dictionary to JSON: %@": {
-      "localizations": {
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Не удалось закодировать словарь в JSON: %@"
-          }
-        }
-      }
-    },
     "Import Dictionary": {
       "localizations": {
         "ru": {
@@ -7643,26 +7623,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Выберите файл резервной копии словаря."
-          }
-        }
-      }
-    },
-    "Dictionary imported successfully from %@.": {
-      "localizations": {
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Словарь успешно импортирован из %@."
-          }
-        }
-      }
-    },
-    "Error importing dictionary: %@. The file might be corrupted or not in the correct format.": {
-      "localizations": {
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ошибка импорта словаря: %@. Возможно, файл повреждён или имеет неверный формат."
           }
         }
       }
@@ -8243,6 +8203,1053 @@
           "stringUnit": {
             "state": "translated",
             "value": "«%@» добавлено в «Никогда не исправлять»"
+          }
+        }
+      }
+    },
+    "ollama pull qwen3.5:9b": {
+      "shouldTranslate": false
+    },
+    "claude --model sonnet --strict-mcp-config --setting-sources \"\" -p \"$VOICEINK_FULL_PROMPT\"": {
+      "shouldTranslate": false
+    },
+    "esc": {
+      "shouldTranslate": false
+    },
+    "No active prompts enabled. Using default prompt for this enhancement.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Нет активных промптов. Для этого улучшения используется промпт по умолчанию."
+          }
+        }
+      }
+    },
+    "The API key was verified but could not be saved to the keychain.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "API-ключ проверен, но его не удалось сохранить в связку ключей."
+          }
+        }
+      }
+    },
+    "e.g. gemini_3_1_pro_preview, gpt_5_5": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "например, gemini_3_1_pro_preview, gpt_5_5"
+          }
+        }
+      }
+    },
+    "Copy command": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Скопировать команду"
+          }
+        }
+      }
+    },
+    "Example": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Пример"
+          }
+        }
+      }
+    },
+    "Custom Headers": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Свои заголовки"
+          }
+        }
+      }
+    },
+    "Additional HTTP headers sent with every request to your custom endpoint.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Дополнительные HTTP-заголовки, которые отправляются с каждым запросом к вашему эндпоинту."
+          }
+        }
+      }
+    },
+    "Header Key": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Имя заголовка"
+          }
+        }
+      }
+    },
+    "Value": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Значение"
+          }
+        }
+      }
+    },
+    "Add Header": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Добавить заголовок"
+          }
+        }
+      }
+    },
+    "Key": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Имя"
+          }
+        }
+      }
+    },
+    "Remove Header": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Удалить заголовок"
+          }
+        }
+      }
+    },
+    "Imported %lld vocabulary entries.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Импортировано словарных слов: %lld."
+          }
+        },
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Imported %lld vocabulary entry."
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Imported %lld vocabulary entries."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Imported %lld word replacement rules.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Импортировано правил замены: %lld."
+          }
+        },
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Imported %lld word replacement rule."
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Imported %lld word replacement rules."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Skipped %lld duplicate, conflicting, invalid, or cyclic entries.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Пропущено дублей, конфликтов, некорректных и циклических записей: %lld."
+          }
+        },
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Skipped %lld duplicate, conflicting, invalid, or cyclic entry."
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Skipped %lld duplicate, conflicting, invalid, or cyclic entries."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Removed %@ and %@.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Удалены %@ и %@."
+          }
+        }
+      }
+    },
+    "This file does not contain a valid VoiceInk dictionary.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Файл не содержит корректного словаря VoiceInk."
+          }
+        }
+      }
+    },
+    "Unsupported dictionary format: %@": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Неподдерживаемый формат словаря: %@"
+          }
+        }
+      }
+    },
+    "This dictionary uses unsupported schema version %d.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Словарь использует неподдерживаемую версию схемы %d."
+          }
+        }
+      }
+    },
+    "The dictionary changed while preparing the import. Review it and try again.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Словарь изменился во время подготовки импорта. Проверьте его и попробуйте снова."
+          }
+        }
+      }
+    },
+    "The dictionary could not be saved: %@": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Не удалось сохранить словарь: %@"
+          }
+        }
+      }
+    },
+    "No valid entries are available to import.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Нет корректных записей для импорта."
+          }
+        }
+      }
+    },
+    "Replace Current Dictionary?": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Заменить текущий словарь?"
+          }
+        }
+      }
+    },
+    "Replace Dictionary": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Заменить словарь"
+          }
+        }
+      }
+    },
+    "Import Failed": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Импорт не удался"
+          }
+        }
+      }
+    },
+    "Dictionary Imported": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Словарь импортирован"
+          }
+        }
+      }
+    },
+    "This removes %@ and %@. This action cannot be undone.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Будут удалены %@ и %@. Это действие нельзя отменить."
+          }
+        }
+      }
+    },
+    "This action cannot be undone.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Это действие нельзя отменить."
+          }
+        }
+      }
+    },
+    "Import Mode": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Режим импорта"
+          }
+        }
+      }
+    },
+    "Merge adds new entries while keeping the current dictionary and skips duplicates or conflicts. Replace removes the current vocabulary and word replacements before importing.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Объединение добавляет новые записи к текущему словарю и пропускает дубли и конфликты. Замена перед импортом удаляет текущие словарные слова и замены слов."
+          }
+        }
+      }
+    },
+    "Merge": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Объединить"
+          }
+        }
+      }
+    },
+    "Import Preview": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Предпросмотр импорта"
+          }
+        }
+      }
+    },
+    "Duplicates Skipped": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Пропущено дублей"
+          }
+        }
+      }
+    },
+    "Conflicts Skipped": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Пропущено конфликтов"
+          }
+        }
+      }
+    },
+    "Invalid or Cyclic Skipped": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Пропущено некорректных или циклических"
+          }
+        }
+      }
+    },
+    "Sources With Commas Skipped": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Пропущено исходных фраз с запятыми"
+          }
+        }
+      }
+    },
+    "Current Entries Removed": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Удалено текущих записей"
+          }
+        }
+      }
+    },
+    "Disable prompt": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Выключить промпт"
+          }
+        }
+      }
+    },
+    "Enable prompt": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Включить промпт"
+          }
+        }
+      }
+    },
+    "ON": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ВКЛ"
+          }
+        }
+      }
+    },
+    "OFF": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ВЫКЛ"
+          }
+        }
+      }
+    },
+    "Quick History": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Быстрая история"
+          }
+        }
+      }
+    },
+    "No matching transcriptions": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Нет подходящих транскрипций"
+          }
+        }
+      }
+    },
+    "Try another search term.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Попробуйте другой запрос."
+          }
+        }
+      }
+    },
+    "Your recent transcriptions will appear here.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Здесь появятся ваши последние транскрипции."
+          }
+        }
+      }
+    },
+    "Paste Text": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Вставить текст"
+          }
+        }
+      }
+    },
+    "Transcription Details": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Подробности транскрипции"
+          }
+        }
+      }
+    },
+    "Back to history": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Назад к истории"
+          }
+        }
+      }
+    },
+    "Enhanced": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Улучшено"
+          }
+        }
+      }
+    },
+    "Selects this transcription. Double-click to paste.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Выбирает транскрипцию. Двойной щелчок — вставить."
+          }
+        }
+      }
+    },
+    "Hide transcription info": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Скрыть сведения о транскрипции"
+          }
+        }
+      }
+    },
+    "Show transcription info": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Показать сведения о транскрипции"
+          }
+        }
+      }
+    },
+    "Paste enhanced text when available, otherwise paste the original transcription": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Вставить улучшенный текст, если он есть, иначе исходную транскрипцию"
+          }
+        }
+      }
+    },
+    "Configure AI Enhancement to use this shortcut": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Настройте AI-улучшение, чтобы использовать это сочетание"
+          }
+        }
+      }
+    },
+    "Open recent transcriptions without opening the main VoiceInk window. Search, select, and press Return to paste into your current app.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Открывает последние транскрипции без главного окна VoiceInk. Найдите, выберите и нажмите Return, чтобы вставить в текущее приложение."
+          }
+        }
+      }
+    },
+    "Open Quick History": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Открыть быструю историю"
+          }
+        }
+      }
+    },
+    "Date": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Дата"
+          }
+        }
+      }
+    },
+    "Duration": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Длительность"
+          }
+        }
+      }
+    },
+    "Transcription Model": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Модель транскрипции"
+          }
+        }
+      }
+    },
+    "Transcription Time": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Время транскрипции"
+          }
+        }
+      }
+    },
+    "Enhancement Model": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Модель улучшения"
+          }
+        }
+      }
+    },
+    "Enhancement Time": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Время улучшения"
+          }
+        }
+      }
+    },
+    "%lld entries": {
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld entry"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld entries"
+                }
+              }
+            }
+          }
+        },
+        "ru": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld запись"
+                }
+              },
+              "few": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld записи"
+                }
+              },
+              "many": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld записей"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld записи"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld rules": {
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld rule"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld rules"
+                }
+              }
+            }
+          }
+        },
+        "ru": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld правило"
+                }
+              },
+              "few": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld правила"
+                }
+              },
+              "many": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld правил"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld правила"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld source phrases": {
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld source phrase"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld source phrases"
+                }
+              }
+            }
+          }
+        },
+        "ru": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld исходная фраза"
+                }
+              },
+              "few": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld исходные фразы"
+                }
+              },
+              "many": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld исходных фраз"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld исходные фразы"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld current vocabulary entries": {
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld current vocabulary entry"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld current vocabulary entries"
+                }
+              }
+            }
+          }
+        },
+        "ru": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld текущее словарное слово"
+                }
+              },
+              "few": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld текущих словарных слова"
+                }
+              },
+              "many": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld текущих словарных слов"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld текущих словарных слова"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld current word replacements": {
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld current word replacement"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld current word replacements"
+                }
+              }
+            }
+          }
+        },
+        "ru": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld текущая замена слова"
+                }
+              },
+              "few": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld текущие замены слов"
+                }
+              },
+              "many": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld текущих замен слов"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld текущие замены слов"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld previous vocabulary entries": {
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld previous vocabulary entry"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld previous vocabulary entries"
+                }
+              }
+            }
+          }
+        },
+        "ru": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld прежнее словарное слово"
+                }
+              },
+              "few": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld прежних словарных слова"
+                }
+              },
+              "many": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld прежних словарных слов"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld прежних словарных слова"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld previous word replacements": {
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld previous word replacement"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld previous word replacements"
+                }
+              }
+            }
+          }
+        },
+        "ru": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld прежняя замена слова"
+                }
+              },
+              "few": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld прежние замены слов"
+                }
+              },
+              "many": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld прежних замен слов"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld прежние замены слов"
+                }
+              }
+            }
           }
         }
       }
