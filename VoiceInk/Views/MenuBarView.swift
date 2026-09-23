@@ -219,6 +219,12 @@ struct MenuBarView: View {
                 menuBarManager.openHistoryWindow()
             }
             .keyboardShortcut("h", modifiers: [.command, .shift])
+
+            Button {
+                menuBarManager.openQuickHistory()
+            } label: {
+                menuItemLabel("Quick History", shortcut: ShortcutStore.shortcut(for: .openQuickHistory))
+            }
             
             Button("Settings") {
                 menuBarManager.openMainWindowAndNavigate(to: "Settings")

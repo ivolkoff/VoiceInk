@@ -118,6 +118,18 @@ struct SettingsView: View {
                 }
 
                 LabeledContent {
+                    ShortcutRecorder(action: .openQuickHistory) {
+                        recordingShortcutManager.updateShortcutStatus()
+                    }
+                        .controlSize(.small)
+                } label: {
+                    HStack(spacing: 4) {
+                        Text("Open Quick History")
+                        InfoTip("Open recent transcriptions without opening the main VoiceInk window. Search, select, and press Return to paste into your current app.")
+                    }
+                }
+
+                LabeledContent {
                     ShortcutRecorder(action: .enhanceSelectedText) {
                         recordingShortcutManager.updateShortcutStatus()
                     }

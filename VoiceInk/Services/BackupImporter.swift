@@ -121,6 +121,9 @@ enum BackupImporter {
         if let convertLayoutShortcut = general.convertLayoutShortcut {
             ShortcutStore.setShortcut(convertLayoutShortcut.shortcut, for: .convertLayout)
         }
+        if let quickHistoryShortcut = general.openQuickHistoryShortcut {
+            ShortcutStore.setShortcut(quickHistoryShortcut.shortcut, for: .openQuickHistory)
+        }
         if let cancelShortcut = general.cancelRecorderShortcut {
             ShortcutStore.setShortcut(cancelShortcut.shortcut, for: .cancelRecorder)
         }
