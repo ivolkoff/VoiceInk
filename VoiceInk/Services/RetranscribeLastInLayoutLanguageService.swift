@@ -112,6 +112,8 @@ enum RetranscribeLastInLayoutLanguageService {
         try? await Task.sleep(nanoseconds: 40_000_000)
 
         if FocusedTextAccessibility.selectedText() == expected {
+            // Close Auto Learn's watch of the old paste now; after the replacement it would learn the new text as edits.
+            await AutoLearnService.shared.recordingDidStart()
             let pasteResult = await CursorPaster.pasteAtCursorAndWaitUntilPosted(newText)
             guard pasteResult.didPostPasteCommand else {
                 // Paste didn't post — leave the (still-selected) original intact and fall back.

@@ -76,6 +76,8 @@ final class SelectedTextEnhancementService {
             // Response arrived: replace the loading indicator, then paste over the selection.
             // CursorPaster preserves the clipboard.
             notify(String(localized: "Selected text enhanced"), type: .success, duration: 2.0)
+            // The selection may be a watched paste; the rewrite must not reach Auto Learn as user edits.
+            await AutoLearnService.shared.recordingDidStart()
             CursorPaster.startPasteAtCursor(enhanced)
         } catch {
             logger.error("Enhancement failed: \(error.localizedDescription, privacy: .public)")
