@@ -103,4 +103,24 @@ enum SelectionEditService {
         </TRANSCRIPT>
         """
     }
+
+    /// What the model decided to do with the selection.
+    enum SelectionEditOutcome: Equatable {
+        case replacement(String)
+        case answer(String)
+    }
+
+    /// Splits the model output by the `ANSWER:` marker (case-insensitive, at the
+    /// start of the trimmed output): what follows is the answer to a question about
+    /// the selection, anything else replaces it. nil ⇒ marker with nothing after it.
+    static func parseEditResult(_ result: String) -> SelectionEditOutcome? {
+        let trimmed = result.trimmingCharacters(in: .whitespacesAndNewlines)
+        let marker = "answer:"
+        guard trimmed.lowercased().hasPrefix(marker) else {
+            return .replacement(trimmed)
+        }
+        let answer = trimmed.dropFirst(marker.count).trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !answer.isEmpty else { return nil }
+        return .answer(answer)
+    }
 }

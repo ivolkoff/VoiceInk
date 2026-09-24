@@ -135,4 +135,27 @@ struct SelectionEditTests {
         #expect(selectedRange.upperBound < transcriptHeader.lowerBound)
         #expect(transcriptHeader.upperBound < spokenRange.lowerBound)
     }
+
+    // MARK: - Result parsing
+
+    @Test func answerMarkerYieldsAnswer() {
+        #expect(SelectionEditService.parseEditResult("ANSWER: Завтра в десять") == .answer("Завтра в десять"))
+    }
+
+    @Test func answerMarkerCaseAndWhitespaceInsensitive() {
+        #expect(SelectionEditService.parseEditResult("  \n answer:   Завтра в десять \n ") == .answer("Завтра в десять"))
+    }
+
+    @Test func noMarkerYieldsReplacement() {
+        #expect(SelectionEditService.parseEditResult("Понедельник") == .replacement("Понедельник"))
+    }
+
+    @Test func markerNotAtStartYieldsReplacement() {
+        #expect(SelectionEditService.parseEditResult("Хорошо. ANSWER: да") == .replacement("Хорошо. ANSWER: да"))
+    }
+
+    @Test func emptyAnswerAfterMarkerIsUnusable() {
+        #expect(SelectionEditService.parseEditResult("ANSWER:") == nil)
+        #expect(SelectionEditService.parseEditResult("answer:   ") == nil)
+    }
 }
