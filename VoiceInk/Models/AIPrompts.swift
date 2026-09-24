@@ -55,9 +55,11 @@ enum AIPrompts {
     that replaces the selection. Otherwise the transcript is new text meant to replace
     the selection: output it verbatim.
     If the transcript is a question about the selected text that asks for information
-    rather than a change, do not modify it: output "ANSWER:" on the first line
-    followed by the answer. Questions that request a change ("can you shorten it?",
-    "will you translate it?") are still instructions: apply them.
+    rather than a change, do not modify it: output the exact Latin marker "ANSWER:"
+    (never translated or transliterated) on the first line followed by the answer,
+    e.g. 'ANSWER: Завтра в десять утра.' Questions that request a change
+    ("can you shorten it?", "will you translate it?") are still instructions: apply
+    them.
     Keep the selection's language and formatting unless the instruction says otherwise.
     No commentary, preamble, quotes or code fences unless the content itself is code.
     </SYSTEM_INSTRUCTIONS>
