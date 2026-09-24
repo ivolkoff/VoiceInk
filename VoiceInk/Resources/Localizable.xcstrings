@@ -9701,6 +9701,16 @@
           }
         }
       }
+    },
+    "Selection is too large to edit (%lld/%lld characters)": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Выделение слишком большое для правки (%lld/%lld символов)"
+          }
+        }
+      }
     }
   },
   "version": "1.0"

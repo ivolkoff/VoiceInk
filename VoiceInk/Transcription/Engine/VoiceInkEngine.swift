@@ -17,7 +17,7 @@ class VoiceInkEngine: NSObject, ObservableObject {
 
     let recorder = Recorder()
     var recordedFile: URL? = nil
-    var pendingSelectionEdit: SelectionEditContext?
+    var pendingSelectionEdit: SelectionEditCapture?
     let recordingsDirectory: URL
 
     // Injected managers
@@ -268,7 +268,7 @@ class VoiceInkEngine: NSObject, ObservableObject {
 
     // MARK: - Pipeline Dispatch
 
-    private func runPipeline(on transcription: Transcription, audioURL: URL, selectionEdit: SelectionEditContext?) async {
+    private func runPipeline(on transcription: Transcription, audioURL: URL, selectionEdit: SelectionEditCapture?) async {
         guard let model = transcriptionModelManager.currentTranscriptionModel else {
             transcription.text = "Transcription Failed: No model selected"
             transcription.transcriptionStatus = TranscriptionStatus.failed.rawValue

@@ -41,7 +41,7 @@ class TranscriptionPipeline {
         audioURL: URL,
         model: any TranscriptionModel,
         session: TranscriptionSession?,
-        selectionEdit: SelectionEditContext?,
+        selectionEdit: SelectionEditCapture?,
         onStateChange: @escaping (RecordingState) -> Void,
         shouldCancel: () -> Bool,
         onCancel: @escaping () async -> Void,
@@ -169,35 +169,54 @@ class TranscriptionPipeline {
                 }
             }
 
-            if let selectionEdit, let enhancementService, enhancementService.isConfigured {
-                if shouldCancel() { await finishCanceledTranscription(); return }
+            if let selectionEdit {
+                switch selectionEdit {
+                case .edit(let selectionEditContext):
+                    if let enhancementService, enhancementService.isConfigured {
+                        if shouldCancel() { await finishCanceledTranscription(); return }
 
-                onStateChange(.enhancing)
-                do {
-                    let editStart = Date()
-                    let result = try await enhancementService.editSelection(
-                        selectedText: selectionEdit.text,
-                        spokenText: cleanedText
-                    )
-                    transcription.enhancedText = result
-                    transcription.aiEnhancementModelName = enhancementService.getAIService()?.currentModel
-                    transcription.promptName = "Selection Edit"
-                    transcription.enhancementDuration = Date().timeIntervalSince(editStart)
-                    transcription.aiRequestSystemMessage = enhancementService.lastSystemMessageSent
-                    transcription.aiRequestUserMessage = enhancementService.lastUserMessageSent
-                    finalPastedText = result
-                } catch {
-                    // Nothing pasted, selection intact; the dictated text stays in history.
+                        onStateChange(.enhancing)
+                        do {
+                            let editStart = Date()
+                            let result = try await enhancementService.editSelection(
+                                selectedText: selectionEditContext.text,
+                                spokenText: cleanedText
+                            )
+                            transcription.enhancedText = result
+                            transcription.aiEnhancementModelName = enhancementService.getAIService()?.currentModel
+                            transcription.promptName = "Selection Edit"
+                            transcription.enhancementDuration = Date().timeIntervalSince(editStart)
+                            transcription.aiRequestSystemMessage = enhancementService.lastSystemMessageSent
+                            transcription.aiRequestUserMessage = enhancementService.lastUserMessageSent
+                            finalPastedText = result
+                        } catch {
+                            // Nothing pasted, selection intact; the dictated text stays in history.
+                            finalPastedText = nil
+                            let errorDescription = (error as? LocalizedError)?.errorDescription ?? error.localizedDescription
+                            let shortReason = String(errorDescription.prefix(80))
+                            await MainActor.run {
+                                NotificationManager.shared.showNotification(
+                                    title: String.localizedStringWithFormat(String(localized: "Selection edit failed: %@"), shortReason),
+                                    type: .warning
+                                )
+                            }
+                            if shouldCancel() { await finishCanceledTranscription(); return }
+                        }
+                    }
+                case .tooLarge(let selectionLength, let maxLength):
+                    // The selection is too big to edit; pasting ordinary dictation over it
+                    // would destroy it, so the dictated text goes to the clipboard instead.
                     finalPastedText = nil
-                    let errorDescription = (error as? LocalizedError)?.errorDescription ?? error.localizedDescription
-                    let shortReason = String(errorDescription.prefix(80))
+                    let copied = ClipboardManager.copyToClipboard(cleanedText)
                     await MainActor.run {
                         NotificationManager.shared.showNotification(
-                            title: String.localizedStringWithFormat(String(localized: "Selection edit failed: %@"), shortReason),
-                            type: .warning
+                            title: String.localizedStringWithFormat(
+                                String(localized: "Selection is too large to edit (%lld/%lld characters)"),
+                                selectionLength, maxLength
+                            ),
+                            type: copied ? .info : .warning
                         )
                     }
-                    if shouldCancel() { await finishCanceledTranscription(); return }
                 }
             }
 
@@ -249,8 +268,9 @@ class TranscriptionPipeline {
             return
         }
 
-        let selectionPasteMode = selectionEdit.map { context in
-            SelectionEditService.pasteDecision(
+        let selectionPasteMode = selectionEdit.flatMap { capture -> SelectionEditService.PasteDecision? in
+            guard case .edit(let context) = capture else { return nil }
+            return SelectionEditService.pasteDecision(
                 context: context,
                 frontmostBundleID: NSWorkspace.shared.frontmostApplication?.bundleIdentifier,
                 currentSelection: FocusedTextAccessibility.selectedText()

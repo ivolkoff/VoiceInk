@@ -7,6 +7,13 @@ struct SelectionEditContext: Equatable {
     let bundleID: String?
 }
 
+/// Outcome of the capture: an editable selection within the length limit, or an
+/// over-limit selection the edit must not touch.
+enum SelectionEditCapture: Equatable {
+    case edit(SelectionEditContext)
+    case tooLarge(length: Int, limit: Int)
+}
+
 enum SelectionEditService {
     static let isEnabledKey = "IsSelectionVoiceEditEnabled"
 
@@ -23,23 +30,28 @@ enum SelectionEditService {
         focusedSubrole: String?,
         maxInputLength: Int,
         frontmostBundleID: String?
-    ) -> SelectionEditContext? {
+    ) -> SelectionEditCapture? {
         guard isEnabled, isProviderConfigured else { return nil }
         guard let selection,
               !selection.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return nil }
-        guard selection.count <= maxInputLength else { return nil }
         // Secure fields report role `AXTextField` + this subrole; some apps put the
         // name straight into the role, so both are checked.
         let secure = kAXSecureTextFieldSubrole as String
         guard focusedRole != secure, focusedSubrole != secure else { return nil }
-        return SelectionEditContext(text: selection, bundleID: frontmostBundleID)
+        let length = selection.count
+        if length > maxInputLength {
+            // An over-limit selection must not fall through to ordinary dictation:
+            // a short spoken command would replace the whole document.
+            return .tooLarge(length: length, limit: maxInputLength)
+        }
+        return .edit(SelectionEditContext(text: selection, bundleID: frontmostBundleID))
     }
 
     /// Reads the live selection while the target app still owns focus. Call at
     /// recording start, next to `KeyboardLayoutLanguageService.captureCurrentLayout()`.
     /// `nil` ⇒ ordinary dictation (no AX selection, disabled, unconfigured, secure field…).
     @MainActor
-    static func capture(isProviderConfigured: Bool) -> SelectionEditContext? {
+    static func capture(isProviderConfigured: Bool) -> SelectionEditCapture? {
         // Check the role before reading the value so a secure field's content is
         // never read at all; `captureDecision` re-checks for direct callers.
         let role = FocusedTextAccessibility.focusedRole()

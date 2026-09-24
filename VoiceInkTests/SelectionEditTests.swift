@@ -14,7 +14,7 @@ struct SelectionEditTests {
         subrole: String? = nil,
         maxLength: Int = 100,
         bundleID: String? = "com.apple.TextEdit"
-    ) -> SelectionEditContext? {
+    ) -> SelectionEditCapture? {
         SelectionEditService.captureDecision(
             isEnabled: isEnabled,
             isProviderConfigured: configured,
@@ -46,12 +46,15 @@ struct SelectionEditTests {
         #expect(capture(selection: "  \n\t ") == nil)
     }
 
-    @Test func overLimitSelectionMeansNoCapture() {
-        #expect(capture(selection: "abcdef", maxLength: 5) == nil)
+    @Test func overLimitSelectionGoesToTooLarge() {
+        #expect(capture(selection: "abcdef", maxLength: 5) == .tooLarge(length: 6, limit: 5))
     }
 
     @Test func atLimitCaptures() {
-        #expect(capture(selection: "abcde", maxLength: 5)?.text == "abcde")
+        #expect(
+            capture(selection: "abcde", maxLength: 5)
+                == .edit(SelectionEditContext(text: "abcde", bundleID: "com.apple.TextEdit"))
+        )
     }
 
     @Test func secureRoleMeansNoCapture() {
@@ -60,7 +63,7 @@ struct SelectionEditTests {
     }
 
     @Test func normalCaptureCarriesTextAndBundle() {
-        #expect(capture() == SelectionEditContext(text: "hello", bundleID: "com.apple.TextEdit"))
+        #expect(capture() == .edit(SelectionEditContext(text: "hello", bundleID: "com.apple.TextEdit")))
     }
 
     // MARK: - Paste decision
