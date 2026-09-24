@@ -3,6 +3,7 @@ import UniformTypeIdentifiers
 
 struct EnhancementSettingsView: View {
     @EnvironmentObject private var enhancementService: AIEnhancementService
+    @AppStorage(SelectionEditService.isEnabledKey) private var isSelectionVoiceEditEnabled = true
     @State private var isEditingPrompt = false
     @State private var isShowingSettings = false
     @State private var selectedPromptForEdit: CustomPrompt?
@@ -48,6 +49,16 @@ struct EnhancementSettingsView: View {
                             "AI enhancement lets you pass the transcribed audio through LLMs to post-process using different prompts suitable for different use cases like e-mails, summary, writing, etc.",
                             learnMoreURL: "https://tryvoiceink.com/docs/enhancements-configuring-models"
                         )
+                    }
+                }
+                .toggleStyle(.switch)
+
+                Toggle(isOn: $isSelectionVoiceEditEnabled) {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Edit selection by voice")
+                        Text("Dictation over a selection is sent to the AI as an instruction; the result replaces the selection.")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
                     }
                 }
                 .toggleStyle(.switch)

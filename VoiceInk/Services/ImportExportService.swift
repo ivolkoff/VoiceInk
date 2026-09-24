@@ -194,7 +194,8 @@ class ImportExportService {
             isAutoLearnDictionaryEnabled: AutoLearnSettings.isEnabled,
             autoLearnReviewSchedule: AutoLearnSettings.reviewSchedule.rawValue,
             autoLearnProvider: AutoLearnSettings.selectedProvider?.rawValue,
-            autoLearnModel: AutoLearnSettings.selectedModel
+            autoLearnModel: AutoLearnSettings.selectedModel,
+            isSelectionVoiceEditEnabled: SelectionEditService.isEnabled
         )
 
         let exportedSettings = BackupFile(

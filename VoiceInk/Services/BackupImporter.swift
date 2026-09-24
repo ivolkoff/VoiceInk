@@ -247,6 +247,10 @@ enum BackupImporter {
             }
         }
 
+        if let selectionVoiceEditEnabled = general.isSelectionVoiceEditEnabled {
+            UserDefaults.standard.set(selectionVoiceEditEnabled, forKey: SelectionEditService.isEnabledKey)
+        }
+
         print("Successfully imported general settings.")
     }
 

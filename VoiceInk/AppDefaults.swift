@@ -54,6 +54,7 @@ enum AppDefaults {
             "ShortEnhancementWordThreshold": 3,
             "EnhancementTimeoutSeconds": 7,
             "EnhancementRetryOnTimeout": true,
+            SelectionEditService.isEnabledKey: true,
 
             // Model
             "PrewarmModelOnWake": true,

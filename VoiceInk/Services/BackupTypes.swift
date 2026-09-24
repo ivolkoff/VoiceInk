@@ -109,6 +109,7 @@ struct GeneralBackup: Codable {
     let autoLearnReviewSchedule: String?
     let autoLearnProvider: String?
     let autoLearnModel: String?
+    let isSelectionVoiceEditEnabled: Bool?
 }
 
 struct WordBackup: Codable {
