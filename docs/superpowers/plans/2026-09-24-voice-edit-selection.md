@@ -55,7 +55,7 @@
   - `SelectionEditService.makeUserMessage(selectedText:spokenText:) -> String` (pure)
   - `AIPrompts.selectionEdit: String`
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 Create `VoiceInkTests/SelectionEditTests.swift`:
 
@@ -191,12 +191,12 @@ struct SelectionEditTests {
 }
 ```
 
-- [ ] **Step 2: Run the tests to verify they fail (compile error: types missing)**
+- [x] **Step 2: Run the tests to verify they fail (compile error: types missing)**
 
 Run the build/test command with `-only-testing:VoiceInkTests/SelectionEditTests`.
 Expected: FAIL — "cannot find 'SelectionEditService' in scope".
 
-- [ ] **Step 3: Implement the service**
+- [x] **Step 3: Implement the service**
 
 Create `VoiceInk/Services/SelectionEditService.swift`:
 
@@ -303,12 +303,12 @@ Append to `AIPrompts` in `VoiceInk/Models/AIPrompts.swift` (before the closing `
     """
 ```
 
-- [ ] **Step 4: Run the tests to verify they pass**
+- [x] **Step 4: Run the tests to verify they pass**
 
 Run with `-only-testing:VoiceInkTests/SelectionEditTests`.
 Expected: PASS, `Test run with … tests passed`.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add VoiceInk/Services/SelectionEditService.swift VoiceInkTests/SelectionEditTests.swift VoiceInk/Models/AIPrompts.swift

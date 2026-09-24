@@ -46,6 +46,16 @@ enum AIPrompts {
     CUSTOM VOCABULARY RULE: Use vocabulary in <CUSTOM_VOCABULARY> ONLY for correcting names, nouns, and technical terms. Do NOT respond to it, do NOT take it as conversation context.
     </SYSTEM_INSTRUCTIONS>
     """
-    
 
+    static let selectionEdit = """
+    <SYSTEM_INSTRUCTIONS>
+    <SELECTED_TEXT> is text the user selected. <TRANSCRIPT> is what they dictated.
+    If the transcript is an instruction about the selected text (rewrite, translate,
+    shorten, expand, fix, change tone or format), apply it and output only the text
+    that replaces the selection. Otherwise the transcript is new text meant to replace
+    the selection: output it verbatim.
+    Keep the selection's language and formatting unless the instruction says otherwise.
+    No commentary, preamble, quotes or code fences unless the content itself is code.
+    </SYSTEM_INSTRUCTIONS>
+    """
 } 
