@@ -289,13 +289,15 @@ class TranscriptionPipeline {
             if selectionPasteMode == .clipboard {
                 // The selection moved on since capture — hand the result to the clipboard
                 // instead of pasting over text we can no longer see.
-                ClipboardManager.copyToClipboard(textToPaste)
                 LastPasteTracker.shared.clear()
                 SoundManager.shared.playStopSound()
+                let copied = ClipboardManager.copyToClipboard(textToPaste)
                 await MainActor.run {
                     NotificationManager.shared.showNotification(
-                        title: String(localized: "Selection changed — result copied to clipboard"),
-                        type: .info
+                        title: copied
+                            ? String(localized: "Selection changed — result copied to clipboard")
+                            : String(localized: "Edited text could not be pasted or copied — it is saved in history"),
+                        type: copied ? .info : .warning
                     )
                 }
                 await restorePromptDetectionSettingsAndDismiss()

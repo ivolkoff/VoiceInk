@@ -9711,6 +9711,16 @@
           }
         }
       }
+    },
+    "Edited text could not be pasted or copied — it is saved in history": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Изменённый текст не удалось вставить или скопировать — он сохранён в истории"
+          }
+        }
+      }
     }
   },
   "version": "1.0"
