@@ -28,10 +28,13 @@ enum SelectionEditService {
         selection: String?,
         focusedRole: String?,
         focusedSubrole: String?,
+        isEditable: Bool,
         maxInputLength: Int,
         frontmostBundleID: String?
     ) -> SelectionEditCapture? {
-        guard isEnabled, isProviderConfigured else { return nil }
+        // A read-only selection (web page, PDF, terminal output) has nowhere for the
+        // result to land — treating it as an edit would paste into whatever is focused.
+        guard isEnabled, isProviderConfigured, isEditable else { return nil }
         guard let selection,
               !selection.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return nil }
         // Secure fields report role `AXTextField` + this subrole; some apps put the
@@ -64,6 +67,7 @@ enum SelectionEditService {
             selection: FocusedTextAccessibility.selectedText(),
             focusedRole: role,
             focusedSubrole: subrole,
+            isEditable: SelectedTextService.isFocusedElementEditable(),
             maxInputLength: SelectedTextEnhancementSettings.maxInputLength(),
             frontmostBundleID: NSWorkspace.shared.frontmostApplication?.bundleIdentifier
         )

@@ -12,6 +12,7 @@ struct SelectionEditTests {
         selection: String? = "hello",
         role: String? = "AXTextArea",
         subrole: String? = nil,
+        isEditable: Bool = true,
         maxLength: Int = 100,
         bundleID: String? = "com.apple.TextEdit"
     ) -> SelectionEditCapture? {
@@ -21,6 +22,7 @@ struct SelectionEditTests {
             selection: selection,
             focusedRole: role,
             focusedSubrole: subrole,
+            isEditable: isEditable,
             maxInputLength: maxLength,
             frontmostBundleID: bundleID
         )
@@ -60,6 +62,10 @@ struct SelectionEditTests {
     @Test func secureRoleMeansNoCapture() {
         #expect(capture(role: "AXSecureTextField") == nil)
         #expect(capture(subrole: "AXSecureTextField") == nil)
+    }
+
+    @Test func nonEditableElementMeansNoCapture() {
+        #expect(capture(isEditable: false) == nil)
     }
 
     @Test func normalCaptureCarriesTextAndBundle() {

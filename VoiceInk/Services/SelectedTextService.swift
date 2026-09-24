@@ -51,6 +51,14 @@ class SelectedTextService {
 
     // MARK: - Focused editable element detection
 
+    /// Whether the system-wide focused element accepts text edits (editable role or
+    /// a settable `AXSelectedText`). Reuses the same predicate as
+    /// `focusedEditableElement()` so the selection-edit capture never re-defines
+    /// editability.
+    static func isFocusedElementEditable() -> Bool {
+        focusedEditableElement() != nil
+    }
+
     private static func focusedEditableElement() -> AXUIElement? {
         guard AXIsProcessTrusted() else { return nil }
 
