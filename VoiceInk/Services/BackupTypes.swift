@@ -105,6 +105,10 @@ struct GeneralBackup: Codable {
     let restoreClipboardAfterPaste: Bool?
     let clipboardRestoreDelay: Double?
     let customProviderHeaders: [String: String]?
+    let isAutoLearnDictionaryEnabled: Bool?
+    let autoLearnReviewSchedule: String?
+    let autoLearnProvider: String?
+    let autoLearnModel: String?
 }
 
 struct WordBackup: Codable {

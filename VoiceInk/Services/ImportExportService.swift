@@ -190,7 +190,11 @@ class ImportExportService {
             isExperimentalFeaturesEnabled: UserDefaults.standard.bool(forKey: "isExperimentalFeaturesEnabled"),
             restoreClipboardAfterPaste: UserDefaults.standard.bool(forKey: "restoreClipboardAfterPaste"),
             clipboardRestoreDelay: UserDefaults.standard.double(forKey: "clipboardRestoreDelay"),
-            customProviderHeaders: (UserDefaults.standard.data(forKey: "customProviderHeaders").flatMap { try? JSONDecoder().decode([String: String].self, from: $0) })
+            customProviderHeaders: (UserDefaults.standard.data(forKey: "customProviderHeaders").flatMap { try? JSONDecoder().decode([String: String].self, from: $0) }),
+            isAutoLearnDictionaryEnabled: AutoLearnSettings.isEnabled,
+            autoLearnReviewSchedule: AutoLearnSettings.reviewSchedule.rawValue,
+            autoLearnProvider: AutoLearnSettings.selectedProvider?.rawValue,
+            autoLearnModel: AutoLearnSettings.selectedModel
         )
 
         let exportedSettings = BackupFile(
