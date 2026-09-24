@@ -17,7 +17,7 @@ class VoiceInkEngine: NSObject, ObservableObject {
 
     let recorder = Recorder()
     var recordedFile: URL? = nil
-    var pendingSelectionEdit: SelectionEditCapture?
+    var pendingSelectionEditTask: Task<SelectionEditCapture?, Never>?
     let recordingsDirectory: URL
 
     // Injected managers
@@ -113,12 +113,14 @@ class VoiceInkEngine: NSObject, ObservableObject {
                         logger.error("❌ Failed to save pending transcription: \(error.localizedDescription, privacy: .public)")
                     }
 
-                    await runPipeline(on: transcription, audioURL: recordedFile, selectionEdit: pendingSelectionEdit)
+                    let selectionEdit = await pendingSelectionEditTask?.value
+                    pendingSelectionEditTask = nil
+                    await runPipeline(on: transcription, audioURL: recordedFile, selectionEdit: selectionEdit)
                 } else {
                     // Cancel landed while stopRecording() was suspended. Mirror the cancelRecording
                     // .recording path: finishActiveRecorderCancellation() alone doesn't restore the
                     // power-mode session or clear captured contexts, so pair it with finishRecorderSession().
-                    pendingSelectionEdit = nil
+                    pendingSelectionEditTask = nil
                     await finishActiveRecorderCancellation()
                     await finishRecorderSession()
                 }
@@ -127,7 +129,7 @@ class VoiceInkEngine: NSObject, ObservableObject {
                 if !shouldCancelRecording {
                     logger.error("❌ No recorded file found after stopping recording")
                 }
-                pendingSelectionEdit = nil
+                pendingSelectionEditTask = nil
                 recordingState = .idle
                 await cleanupResources()
             }
@@ -136,10 +138,11 @@ class VoiceInkEngine: NSObject, ObservableObject {
             // Capture the keyboard layout now, while the target app still owns the input
             // source, so language-matching reflects what the user is typing in.
             KeyboardLayoutLanguageService.captureCurrentLayout()
-            // Same reasoning as the layout capture: the target app still owns focus,
-            // so the AX read sees the selection the user is about to have edited.
-            pendingSelectionEdit = enhancementService.flatMap { service in
-                SelectionEditService.capture(isProviderConfigured: service.isConfigured)
+            // Same reasoning as the layout capture: the target app still owns focus
+            // for the whole recording, so the AX read runs beside the recorder start
+            // instead of delaying it — runPipeline awaits the result.
+            pendingSelectionEditTask = enhancementService.map { service in
+                Task { SelectionEditService.capture(isProviderConfigured: service.isConfigured) }
             }
             guard transcriptionModelManager.currentTranscriptionModel != nil else {
                 NotificationManager.shared.showNotification(title: String(localized: "No AI Model Selected"), type: .error)
@@ -249,7 +252,7 @@ class VoiceInkEngine: NSObject, ObservableObject {
                             self.recordingState = .idle
                             self.recordedFile = nil
                             self.activeRecordingStartID = nil
-                            self.pendingSelectionEdit = nil
+                            self.pendingSelectionEditTask = nil
                             NotificationManager.shared.showNotification(title: String(localized: "Recording failed to start"), type: .error)
                             self.logger.notice("toggleRecord: calling dismissMiniRecorder from error handler")
                             await self.recorderUIManager?.dismissMiniRecorder()
@@ -320,7 +323,7 @@ class VoiceInkEngine: NSObject, ObservableObject {
             activePipelineTranscriptionID = nil
             currentSession = nil
             recordedFile = nil
-            pendingSelectionEdit = nil
+            pendingSelectionEditTask = nil
             shouldCancelRecording = false
         }
         canceledPipelineTranscriptionIDs.remove(transcriptionID)
@@ -340,7 +343,7 @@ class VoiceInkEngine: NSObject, ObservableObject {
         switch recordingState {
         case .starting, .recording:
             requestRecordingCancellation()
-            pendingSelectionEdit = nil
+            pendingSelectionEditTask = nil
             await finishActiveRecorderCancellation()
             shouldFinishSessionImmediately = true
         case .transcribing, .enhancing:

@@ -47,6 +47,34 @@ enum FocusedTextAccessibility {
         return role as? String
     }
 
+    /// Focused element plus its role/subrole from a single lookup. `selectedText` reads
+    /// lazily so a caller can gate on editability before pulling the value across the
+    /// process boundary; separate focused-element lookups would each pay the 0.5 s
+    /// messaging timeout.
+    struct SelectionSnapshot {
+        let element: AXUIElement
+        let role: String?
+        let subrole: String?
+
+        var selectedText: String? {
+            var selection: CFTypeRef?
+            guard AXUIElementCopyAttributeValue(element, kAXSelectedTextAttribute as CFString, &selection) == .success else {
+                return nil
+            }
+            return selection as? String
+        }
+    }
+
+    @MainActor
+    static func selectionSnapshot() -> SelectionSnapshot? {
+        guard let element = focusedElement() else { return nil }
+        var role: CFTypeRef?
+        let roleValue = AXUIElementCopyAttributeValue(element, kAXRoleAttribute as CFString, &role) == .success ? role as? String : nil
+        var subrole: CFTypeRef?
+        let subroleValue = AXUIElementCopyAttributeValue(element, kAXSubroleAttribute as CFString, &subrole) == .success ? subrole as? String : nil
+        return SelectionSnapshot(element: element, role: roleValue, subrole: subroleValue)
+    }
+
     /// Subrole of the focused element. Secure text fields carry role `AXTextField` and this
     /// subrole `AXSecureTextField`, so the password-field gate must check both.
     @MainActor
