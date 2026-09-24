@@ -100,11 +100,12 @@ final class AutoLearnAIReviewer {
         Self.logger.notice(
             "Auto Learn review started provider=\(provider.rawValue, privacy: .public) model=\(modelName, privacy: .public) candidates=\(candidates.count, privacy: .public)"
         )
-        let responseText = try await enhancementService.reviewAutoLearnCandidates(
-            payload: requestText,
+        let responseText = try await enhancementService.chatCompletion(
             systemPrompt: Self.reviewPrompt,
+            userContent: requestText,
             provider: provider,
-            modelName: modelName
+            modelName: modelName,
+            timeout: enhancementService.backgroundTimeout
         )
         return try Self.reviewResult(from: responseText, for: candidates)
     }

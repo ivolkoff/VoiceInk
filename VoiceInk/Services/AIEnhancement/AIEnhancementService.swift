@@ -326,38 +326,35 @@ class AIEnhancementService: ObservableObject {
         }
     }
 
-    /// Auto Learn picks its own provider and model, so it cannot reuse
-    /// `makeRequest`, which is bound to the enhancement selection and prompt.
-    func reviewAutoLearnCandidates(
-        payload: String,
+    /// Shared transport for requests that pick their own provider and model
+    /// (Auto Learn review, selection edit) and cannot reuse `makeRequest`,
+    /// which is bound to the enhancement selection and prompt.
+    func chatCompletion(
         systemPrompt: String,
+        userContent: String,
         provider: AIProvider,
-        modelName: String
+        modelName: String,
+        timeout: TimeInterval
     ) async throws -> String {
-        guard AutoLearnProviderPolicy.isSupported(provider) else {
-            throw EnhancementError.notConfigured
-        }
         let apiKey = APIKeyManager.shared.getAPIKey(forProvider: provider.rawValue) ?? ""
-        // Runs in the background with a large prompt; the short dictation timeout would fail it repeatedly.
-        let timeout = max(baseTimeout, 30)
 
         do {
             let result: String
             switch provider {
             case .ollama:
                 result = try await aiService.enhanceWithOllama(
-                    text: payload,
+                    text: userContent,
                     systemPrompt: systemPrompt,
                     model: modelName,
                     timeout: timeout
                 )
             case .localCLI:
-                result = try await aiService.enhanceWithLocalCLI(systemPrompt: systemPrompt, userPrompt: payload)
+                result = try await aiService.enhanceWithLocalCLI(systemPrompt: systemPrompt, userPrompt: userContent)
             case .anthropic:
                 result = try await AnthropicLLMClient.chatCompletion(
                     apiKey: apiKey,
                     model: modelName,
-                    messages: [.user(payload)],
+                    messages: [.user(userContent)],
                     systemPrompt: systemPrompt,
                     timeout: timeout
                 )
@@ -370,7 +367,7 @@ class AIEnhancementService: ObservableObject {
                     apiKey: apiKey,
                     model: modelName,
                     systemPrompt: systemPrompt,
-                    userContent: payload,
+                    userContent: userContent,
                     temperature: modelName.lowercased().hasPrefix("gpt-5") ? 1.0 : 0.3,
                     reasoningEffort: ReasoningConfig.getReasoningParameter(for: provider, modelName: modelName),
                     extraBody: ReasoningConfig.getExtraBodyParameters(for: provider, modelName: modelName),
@@ -382,6 +379,32 @@ class AIEnhancementService: ObservableObject {
         } catch let error as LLMKitError {
             throw mapLLMKitError(error)
         }
+    }
+
+    /// Background-grade timeout shared by Auto Learn review and selection edit;
+    /// the short dictation timeout would fail long requests repeatedly.
+    var backgroundTimeout: TimeInterval {
+        max(baseTimeout, 30)
+    }
+
+    /// Applies a spoken instruction to (or replaces) the selected text, using the
+    /// enhancement provider and model so a Power Mode per-app provider applies.
+    func editSelection(selectedText: String, spokenText: String) async throws -> String {
+        let systemMessage = AIPrompts.selectionEdit
+        let userMessage = SelectionEditService.makeUserMessage(selectedText: selectedText, spokenText: spokenText)
+        let result = try await chatCompletion(
+            systemPrompt: systemMessage,
+            userContent: userMessage,
+            provider: aiService.selectedProvider,
+            modelName: aiService.currentModel,
+            timeout: backgroundTimeout
+        )
+        guard !result.isEmpty else {
+            throw EnhancementError.enhancementFailed
+        }
+        lastSystemMessageSent = systemMessage
+        lastUserMessageSent = userMessage
+        return result
     }
 
     /// OpenAI-compatible chat completion built in-repo so that custom HTTP
