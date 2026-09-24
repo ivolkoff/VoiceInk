@@ -127,6 +127,7 @@ class VoiceInkEngine: NSObject, ObservableObject {
                 if !shouldCancelRecording {
                     logger.error("❌ No recorded file found after stopping recording")
                 }
+                pendingSelectionEdit = nil
                 recordingState = .idle
                 await cleanupResources()
             }
@@ -248,6 +249,7 @@ class VoiceInkEngine: NSObject, ObservableObject {
                             self.recordingState = .idle
                             self.recordedFile = nil
                             self.activeRecordingStartID = nil
+                            self.pendingSelectionEdit = nil
                             NotificationManager.shared.showNotification(title: String(localized: "Recording failed to start"), type: .error)
                             self.logger.notice("toggleRecord: calling dismissMiniRecorder from error handler")
                             await self.recorderUIManager?.dismissMiniRecorder()
@@ -338,6 +340,7 @@ class VoiceInkEngine: NSObject, ObservableObject {
         switch recordingState {
         case .starting, .recording:
             requestRecordingCancellation()
+            pendingSelectionEdit = nil
             await finishActiveRecorderCancellation()
             shouldFinishSessionImmediately = true
         case .transcribing, .enhancing:

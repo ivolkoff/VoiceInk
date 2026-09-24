@@ -399,7 +399,7 @@ class AIEnhancementService: ObservableObject {
             modelName: aiService.currentModel,
             timeout: backgroundTimeout
         )
-        guard !result.isEmpty else {
+        guard !result.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
             throw EnhancementError.enhancementFailed
         }
         lastSystemMessageSent = systemMessage

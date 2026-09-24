@@ -40,12 +40,18 @@ enum SelectionEditService {
     /// `nil` ⇒ ordinary dictation (no AX selection, disabled, unconfigured, secure field…).
     @MainActor
     static func capture(isProviderConfigured: Bool) -> SelectionEditContext? {
-        captureDecision(
+        // Check the role before reading the value so a secure field's content is
+        // never read at all; `captureDecision` re-checks for direct callers.
+        let role = FocusedTextAccessibility.focusedRole()
+        let subrole = FocusedTextAccessibility.focusedSubrole()
+        let secure = kAXSecureTextFieldSubrole as String
+        guard role != secure, subrole != secure else { return nil }
+        return captureDecision(
             isEnabled: isEnabled,
             isProviderConfigured: isProviderConfigured,
             selection: FocusedTextAccessibility.selectedText(),
-            focusedRole: FocusedTextAccessibility.focusedRole(),
-            focusedSubrole: FocusedTextAccessibility.focusedSubrole(),
+            focusedRole: role,
+            focusedSubrole: subrole,
             maxInputLength: SelectedTextEnhancementSettings.maxInputLength(),
             frontmostBundleID: NSWorkspace.shared.frontmostApplication?.bundleIdentifier
         )
