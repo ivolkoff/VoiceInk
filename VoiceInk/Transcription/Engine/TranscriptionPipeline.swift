@@ -182,13 +182,36 @@ class TranscriptionPipeline {
                                 selectedText: selectionEditContext.text,
                                 spokenText: cleanedText
                             )
-                            transcription.enhancedText = result
                             transcription.aiEnhancementModelName = enhancementService.getAIService()?.currentModel
-                            transcription.promptName = "Selection Edit"
                             transcription.enhancementDuration = Date().timeIntervalSince(editStart)
                             transcription.aiRequestSystemMessage = enhancementService.lastSystemMessageSent
                             transcription.aiRequestUserMessage = enhancementService.lastUserMessageSent
-                            finalPastedText = result
+
+                            switch SelectionEditService.parseEditResult(result) {
+                            case .replacement(let text):
+                                transcription.enhancedText = text
+                                transcription.promptName = "Selection Edit"
+                                finalPastedText = text
+                            case .answer(let answer):
+                                // A question about the selection: the text stays untouched,
+                                // the answer goes to the clipboard instead.
+                                transcription.enhancedText = answer
+                                transcription.promptName = "Selection Answer"
+                                finalPastedText = nil
+                                let copied = ClipboardManager.copyToClipboard(answer)
+                                let preview = String(answer.prefix(200))
+                                await MainActor.run {
+                                    NotificationManager.shared.showNotification(
+                                        title: copied
+                                            ? String.localizedStringWithFormat(String(localized: "Answer: %@ — the full answer is in the clipboard"), preview)
+                                            : String.localizedStringWithFormat(String(localized: "Answer: %@ — it is saved in history"), preview),
+                                        type: copied ? .info : .warning
+                                    )
+                                }
+                            case nil:
+                                // The model marked an answer but left it empty — no usable result.
+                                throw EnhancementError.enhancementFailed
+                            }
                         } catch {
                             // Nothing pasted, selection intact; the dictated text stays in history.
                             finalPastedText = nil

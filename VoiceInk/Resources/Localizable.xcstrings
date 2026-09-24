@@ -9721,6 +9721,26 @@
           }
         }
       }
+    },
+    "Answer: %@ — the full answer is in the clipboard": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ответ: %@ — полный ответ в буфере обмена"
+          }
+        }
+      }
+    },
+    "Answer: %@ — it is saved in history": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ответ: %@ — он сохранён в истории"
+          }
+        }
+      }
     }
   },
   "version": "1.0"
