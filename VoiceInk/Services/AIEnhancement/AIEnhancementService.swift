@@ -338,6 +338,8 @@ class AIEnhancementService: ObservableObject {
             throw EnhancementError.notConfigured
         }
         let apiKey = APIKeyManager.shared.getAPIKey(forProvider: provider.rawValue) ?? ""
+        // Runs in the background with a large prompt; the short dictation timeout would fail it repeatedly.
+        let timeout = max(baseTimeout, 30)
 
         do {
             let result: String
@@ -347,7 +349,7 @@ class AIEnhancementService: ObservableObject {
                     text: payload,
                     systemPrompt: systemPrompt,
                     model: modelName,
-                    timeout: baseTimeout
+                    timeout: timeout
                 )
             case .localCLI:
                 result = try await aiService.enhanceWithLocalCLI(systemPrompt: systemPrompt, userPrompt: payload)
@@ -357,7 +359,7 @@ class AIEnhancementService: ObservableObject {
                     model: modelName,
                     messages: [.user(payload)],
                     systemPrompt: systemPrompt,
-                    timeout: baseTimeout
+                    timeout: timeout
                 )
             default:
                 guard let baseURL = URL(string: provider.baseURL) else {
@@ -373,7 +375,7 @@ class AIEnhancementService: ObservableObject {
                     reasoningEffort: ReasoningConfig.getReasoningParameter(for: provider, modelName: modelName),
                     extraBody: ReasoningConfig.getExtraBodyParameters(for: provider, modelName: modelName),
                     extraHeaders: provider == .custom && !aiService.customHeaders.isEmpty ? aiService.customHeaders : nil,
-                    timeout: baseTimeout
+                    timeout: timeout
                 )
             }
             return AIEnhancementOutputFilter.filter(result)
