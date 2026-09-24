@@ -9661,6 +9661,46 @@
           }
         }
       }
+    },
+    "Edit selection by voice": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Правка выделения голосом"
+          }
+        }
+      }
+    },
+    "Dictation over a selection is sent to the AI as an instruction; the result replaces the selection.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Диктовка над выделением уходит в AI как инструкция; результат заменяет выделение."
+          }
+        }
+      }
+    },
+    "Selection edit failed: %@": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Не удалось отредактировать выделение: %@"
+          }
+        }
+      }
+    },
+    "Selection changed — result copied to clipboard": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Выделение изменилось — результат скопирован в буфер обмена"
+          }
+        }
+      }
     }
   },
   "version": "1.0"
