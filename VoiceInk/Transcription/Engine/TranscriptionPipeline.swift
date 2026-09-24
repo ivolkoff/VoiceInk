@@ -41,6 +41,7 @@ class TranscriptionPipeline {
         audioURL: URL,
         model: any TranscriptionModel,
         session: TranscriptionSession?,
+        selectionEdit: SelectionEditContext?,
         onStateChange: @escaping (RecordingState) -> Void,
         shouldCancel: () -> Bool,
         onCancel: @escaping () async -> Void,
@@ -124,7 +125,7 @@ class TranscriptionPipeline {
             transcription.language = TranscriptionLanguagePreference.resolvedLanguage(for: model)
             finalPastedText = cleanedText
 
-            if let enhancementService, enhancementService.isConfigured {
+            if let enhancementService, enhancementService.isConfigured, selectionEdit == nil {
                 let detectionResult = promptDetectionService.analyzeText(text, with: enhancementService)
                 promptDetectionResult = detectionResult
                 await promptDetectionService.applyDetectionResult(detectionResult, to: enhancementService)
@@ -138,7 +139,8 @@ class TranscriptionPipeline {
             if let enhancementService,
                enhancementService.isEnhancementEnabled,
                enhancementService.isConfigured,
-               !shouldSkipEnhancement {
+               !shouldSkipEnhancement,
+               selectionEdit == nil {
                 if shouldCancel() { await finishCanceledTranscription(); return }
 
                 onStateChange(.enhancing)
@@ -160,6 +162,38 @@ class TranscriptionPipeline {
                     await MainActor.run {
                         NotificationManager.shared.showNotification(
                             title: String.localizedStringWithFormat(String(localized: "Enhancement failed: %@"), shortReason),
+                            type: .warning
+                        )
+                    }
+                    if shouldCancel() { await finishCanceledTranscription(); return }
+                }
+            }
+
+            if let selectionEdit, let enhancementService, enhancementService.isConfigured {
+                if shouldCancel() { await finishCanceledTranscription(); return }
+
+                onStateChange(.enhancing)
+                do {
+                    let editStart = Date()
+                    let result = try await enhancementService.editSelection(
+                        selectedText: selectionEdit.text,
+                        spokenText: cleanedText
+                    )
+                    transcription.enhancedText = result
+                    transcription.aiEnhancementModelName = enhancementService.getAIService()?.currentModel
+                    transcription.promptName = "Selection Edit"
+                    transcription.enhancementDuration = Date().timeIntervalSince(editStart)
+                    transcription.aiRequestSystemMessage = enhancementService.lastSystemMessageSent
+                    transcription.aiRequestUserMessage = enhancementService.lastUserMessageSent
+                    finalPastedText = result
+                } catch {
+                    // Nothing pasted, selection intact; the dictated text stays in history.
+                    finalPastedText = nil
+                    let errorDescription = (error as? LocalizedError)?.errorDescription ?? error.localizedDescription
+                    let shortReason = String(errorDescription.prefix(80))
+                    await MainActor.run {
+                        NotificationManager.shared.showNotification(
+                            title: String.localizedStringWithFormat(String(localized: "Selection edit failed: %@"), shortReason),
                             type: .warning
                         )
                     }
@@ -215,6 +249,14 @@ class TranscriptionPipeline {
             return
         }
 
+        let selectionPasteMode = selectionEdit.map { context in
+            SelectionEditService.pasteDecision(
+                context: context,
+                frontmostBundleID: NSWorkspace.shared.frontmostApplication?.bundleIdentifier,
+                currentSelection: FocusedTextAccessibility.selectedText()
+            )
+        }
+
         if var textToPaste = finalPastedText,
            transcription.transcriptionStatus == TranscriptionStatus.completed.rawValue {
             if case .trialExpired = licenseViewModel.licenseState {
@@ -224,34 +266,51 @@ class TranscriptionPipeline {
                     """
             }
 
-            let appendSpace = UserDefaults.standard.bool(forKey: "AppendTrailingSpace")
-            let pastedText = textToPaste + (appendSpace ? " " : "")
-            let pasteOutcome = await CursorPaster.startPasteAtCursor(pastedText).value
-            let autoSendKey = PowerModeManager.shared.currentActiveConfiguration?.autoSendKey
-
-            // Record the exact paste so the re-transcribe-last hotkey can safely replace it.
-            // Skip when AutoSend fired: the text was submitted, so it can't be replaced in place.
-            if autoSendKey?.isEnabled == true {
+            if selectionPasteMode == .clipboard {
+                // The selection moved on since capture — hand the result to the clipboard
+                // instead of pasting over text we can no longer see.
+                ClipboardManager.copyToClipboard(textToPaste)
                 LastPasteTracker.shared.clear()
+                SoundManager.shared.playStopSound()
+                await MainActor.run {
+                    NotificationManager.shared.showNotification(
+                        title: String(localized: "Selection changed — result copied to clipboard"),
+                        type: .info
+                    )
+                }
+                await restorePromptDetectionSettingsAndDismiss()
             } else {
-                LastPasteTracker.shared.record(
-                    transcriptionID: transcription.id,
-                    pastedText: pastedText,
-                    targetBundleID: NSWorkspace.shared.frontmostApplication?.bundleIdentifier,
-                    posted: pasteOutcome.result.didPostPasteCommand
-                )
-            }
+                let appendSpace = selectionPasteMode == nil && UserDefaults.standard.bool(forKey: "AppendTrailingSpace")
+                let pastedText = textToPaste + (appendSpace ? " " : "")
+                let pasteOutcome = await CursorPaster.startPasteAtCursor(pastedText).value
+                let autoSendKey = PowerModeManager.shared.currentActiveConfiguration?.autoSendKey
 
-            SoundManager.shared.playStopSound()
-            await restorePromptDetectionSettingsAndDismiss {
-                if let autoSendKey, autoSendKey.isEnabled {
-                    Task { @MainActor in
-                        try? await Task.sleep(nanoseconds: 500_000_000)
-                        // Return submits and clears the field; that is not a correction to learn.
-                        if let generation = pasteOutcome.autoLearnGeneration {
-                            await AutoLearnService.shared.cancelForAutoSend(generation: generation)
+                // Record the exact paste so the re-transcribe-last hotkey can safely replace it.
+                // Skip when AutoSend fired: the text was submitted, so it can't be replaced in place.
+                // A selection edit is never tracked: re-transcribing the spoken instruction
+                // must not replace the edit result.
+                if autoSendKey?.isEnabled == true || selectionPasteMode != nil {
+                    LastPasteTracker.shared.clear()
+                } else {
+                    LastPasteTracker.shared.record(
+                        transcriptionID: transcription.id,
+                        pastedText: pastedText,
+                        targetBundleID: NSWorkspace.shared.frontmostApplication?.bundleIdentifier,
+                        posted: pasteOutcome.result.didPostPasteCommand
+                    )
+                }
+
+                SoundManager.shared.playStopSound()
+                await restorePromptDetectionSettingsAndDismiss {
+                    if let autoSendKey, autoSendKey.isEnabled {
+                        Task { @MainActor in
+                            try? await Task.sleep(nanoseconds: 500_000_000)
+                            // Return submits and clears the field; that is not a correction to learn.
+                            if let generation = pasteOutcome.autoLearnGeneration {
+                                await AutoLearnService.shared.cancelForAutoSend(generation: generation)
+                            }
+                            CursorPaster.performAutoSend(autoSendKey)
                         }
-                        CursorPaster.performAutoSend(autoSendKey)
                     }
                 }
             }
