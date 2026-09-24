@@ -80,7 +80,10 @@ final class AutoLearnAIReviewer {
               let provider = resolvedProvider(in: aiService) else {
             throw ReviewError.unavailable
         }
-        let modelName = AutoLearnSettings.selectedModel ?? aiService.selectedModel(for: provider)
+        // Custom has no model list to pick from, so follow the model configured for it in AI settings.
+        let modelName = provider == .custom
+            ? aiService.selectedModel(for: provider)
+            : AutoLearnSettings.selectedModel ?? aiService.selectedModel(for: provider)
 
         let candidatesForReview = candidates.enumerated().map { index, candidate in
             AutoLearnReviewRequest.CandidateForReview(
@@ -106,15 +109,27 @@ final class AutoLearnAIReviewer {
         return try Self.reviewResult(from: responseText, for: candidates)
     }
 
-    // The user's Auto Learn choice wins; otherwise follow the enhancement provider.
+    /// Adopts the enhancement provider once at launch, before a Power Mode session can swap it.
+    func prepareProviderAtLaunch() async {
+        guard let aiService = enhancementService.getAIService() else { return }
+        if (AutoLearnSettings.selectedProvider ?? aiService.selectedProvider) == .ollama {
+            _ = await aiService.refreshOllamaConnectionAndModels()
+        }
+        guard AutoLearnSettings.selectedProvider == nil,
+              let provider = resolvedProvider(in: aiService) else { return }
+        UserDefaults.standard.set(provider.rawValue, forKey: AutoLearnSettings.providerKey)
+        UserDefaults.standard.set(aiService.selectedModel(for: provider), forKey: AutoLearnSettings.modelKey)
+    }
+
+    // The user's Auto Learn choice wins, else the enhancement provider. Never an arbitrary
+    // provider that merely has a key (e.g. one saved only for transcription).
     private func resolvedProvider(in aiService: AIService) -> AIProvider? {
         let connectedProviders = aiService.connectedProviders.filter {
             AutoLearnProviderPolicy.isSupported($0)
                 && ($0 != .ollama || !aiService.availableModels(for: $0).isEmpty)
         }
-        let provider = AutoLearnSettings.selectedProvider
-            ?? (connectedProviders.contains(aiService.selectedProvider) ? aiService.selectedProvider : connectedProviders.first)
-        guard let provider, connectedProviders.contains(provider) else { return nil }
+        let provider = AutoLearnSettings.selectedProvider ?? aiService.selectedProvider
+        guard connectedProviders.contains(provider) else { return nil }
         return provider
     }
 

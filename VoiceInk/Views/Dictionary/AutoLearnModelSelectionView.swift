@@ -111,6 +111,11 @@ struct AutoLearnModelSelectionView: View {
 
     // Adopts the enhancement provider first, so an existing AI setup works without extra steps.
     private func prepareSelectionIfNeeded() {
+        // A stored Ollama choice reads as unavailable until its connection check finishes; keep it.
+        if selectedProvider == nil, AutoLearnSettings.selectedProvider == .ollama {
+            refreshModelsIfNeeded(for: .ollama)
+            return
+        }
         guard let provider = selectedProvider else {
             let fallback = providerOptions.contains(aiService.selectedProvider)
                 ? aiService.selectedProvider
@@ -136,7 +141,7 @@ struct AutoLearnModelSelectionView: View {
             let models: [String]
             switch provider {
             case .ollama:
-                models = await aiService.fetchOllamaModels().map(\.name)
+                models = await aiService.refreshOllamaConnectionAndModels().map(\.name)
             case .openRouter:
                 await aiService.fetchOpenRouterModels()
                 models = aiService.availableModels(for: provider)

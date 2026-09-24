@@ -462,6 +462,14 @@ class AIService: ObservableObject {
         await ollamaService.refreshModels()
         return ollamaService.availableModels
     }
+
+    /// `connectedProviders` lists Ollama only after a connection check, which nothing runs at launch.
+    func refreshOllamaConnectionAndModels() async -> [OllamaModel] {
+        await ollamaService.checkConnection()
+        let models = await fetchOllamaModels()
+        objectWillChange.send()
+        return models
+    }
     
     func enhanceWithOllama(text: String, systemPrompt: String, model: String? = nil, timeout: TimeInterval = 30) async throws -> String {
         try await ollamaService.enhance(text, withSystemPrompt: systemPrompt, model: model, timeout: timeout)

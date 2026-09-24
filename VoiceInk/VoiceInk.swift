@@ -106,6 +106,8 @@ struct VoiceInkApp: App {
         let autoLearnReviewer = AutoLearnAIReviewer(enhancementService: enhancementService)
         Task {
             await AutoLearnService.shared.configure(modelContainer: resolvedContainer, reviewer: autoLearnReviewer)
+            await autoLearnReviewer.prepareProviderAtLaunch()
+            await AutoLearnService.shared.serviceConfigurationDidChange()
         }
 
         // 1. Create modelsDirectory URL
