@@ -58,7 +58,7 @@ enum SelectionEditService {
         // One focused-element lookup for all attributes; gate on editability and the
         // secure subrole before reading the value so protected text is never read.
         guard let snapshot = FocusedTextAccessibility.selectionSnapshot(),
-              SelectedTextService.isEditableText(snapshot.element) else { return nil }
+              SelectedTextService.isEditableText(snapshot.element, knownRole: snapshot.role) else { return nil }
         let secure = kAXSecureTextFieldSubrole as String
         guard snapshot.role != secure, snapshot.subrole != secure else { return nil }
         return captureDecision(

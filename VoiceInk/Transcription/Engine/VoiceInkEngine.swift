@@ -138,12 +138,6 @@ class VoiceInkEngine: NSObject, ObservableObject {
             // Capture the keyboard layout now, while the target app still owns the input
             // source, so language-matching reflects what the user is typing in.
             KeyboardLayoutLanguageService.captureCurrentLayout()
-            // Same reasoning as the layout capture: the target app still owns focus
-            // for the whole recording, so the AX read runs beside the recorder start
-            // instead of delaying it — runPipeline awaits the result.
-            pendingSelectionEditTask = enhancementService.map { service in
-                Task { SelectionEditService.capture(isProviderConfigured: service.isConfigured) }
-            }
             guard transcriptionModelManager.currentTranscriptionModel != nil else {
                 NotificationManager.shared.showNotification(title: String(localized: "No AI Model Selected"), type: .error)
                 return
@@ -196,6 +190,13 @@ class VoiceInkEngine: NSObject, ObservableObject {
                             // not awaited so the Accessibility read does not delay the streaming session.
                             if AutoLearnSettings.isEnabled {
                                 Task { await AutoLearnService.shared.recordingDidStart() }
+                            }
+
+                            // The target app still owns focus for the whole recording, so the
+                            // AX read happens now — the microphone is already recording, and the
+                            // start no longer waits for it. runPipeline awaits the result.
+                            pendingSelectionEditTask = enhancementService.map { service in
+                                Task { SelectionEditService.capture(isProviderConfigured: service.isConfigured) }
                             }
 
                             await ActiveWindowService.shared.applyConfiguration(powerModeId: powerModeId)

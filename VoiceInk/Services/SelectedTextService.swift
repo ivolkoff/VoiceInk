@@ -53,9 +53,13 @@ class SelectedTextService {
 
     /// Whether this element accepts text edits (editable role or a settable
     /// `AXSelectedText`); shared with the selection-edit capture so both paths
-    /// use one definition of editability.
-    static func isEditableText(_ element: AXUIElement) -> Bool {
-        isEditableTextRole(element) || isSelectedTextSettable(element)
+    /// use one definition of editability. Pass `knownRole` when the role is
+    /// already read, so it is not fetched from the element a second time.
+    static func isEditableText(_ element: AXUIElement, knownRole: String? = nil) -> Bool {
+        if let knownRole {
+            return Self.editableRoles.contains(knownRole) || isSelectedTextSettable(element)
+        }
+        return isEditableTextRole(element) || isSelectedTextSettable(element)
     }
 
     private static func focusedEditableElement() -> AXUIElement? {
@@ -83,13 +87,14 @@ class SelectedTextService {
             return false
         }
 
-        let editableRoles: Set<String> = [
-            kAXTextFieldRole as String,
-            kAXTextAreaRole as String,
-            kAXComboBoxRole as String
-        ]
-        return editableRoles.contains(role)
+        return Self.editableRoles.contains(role)
     }
+
+    private static let editableRoles: Set<String> = [
+        kAXTextFieldRole as String,
+        kAXTextAreaRole as String,
+        kAXComboBoxRole as String
+    ]
 
     private static func isSelectedTextSettable(_ element: AXUIElement) -> Bool {
         var settable: DarwinBoolean = false
