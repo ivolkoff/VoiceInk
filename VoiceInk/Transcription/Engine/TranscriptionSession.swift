@@ -117,6 +117,9 @@ final class StreamingTranscriptionSession: TranscriptionSession {
                 let text = try await streamingService.stopAndGetFinalText()
                 logger.notice("Streaming transcript received elapsed=\(Date().timeIntervalSince(start), format: .fixed(precision: 3), privacy: .public)s chars=\(text.count, privacy: .public)")
                 return text
+            } catch StreamingTranscriptionError.cancelled {
+                // The user cancelled; don't upload the cancelled audio through the fallback.
+                throw StreamingTranscriptionError.cancelled
             } catch {
                 logger.error("❌ Streaming failed, falling back to batch: \(error.localizedDescription, privacy: .public)")
                 streamingService.cancel()

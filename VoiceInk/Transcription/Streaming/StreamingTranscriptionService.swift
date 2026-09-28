@@ -135,7 +135,14 @@ class StreamingTranscriptionService {
             ?? (UserDefaults.standard.string(forKey: "SelectedLanguage") ?? "auto")
         logger.notice("Streaming start requested model=\(model.displayName, privacy: .public) language=\(selectedLanguage, privacy: .public)")
 
-        try await provider.connect(model: model, language: selectedLanguage)
+        do {
+            try await provider.connect(model: model, language: selectedLanguage)
+        } catch {
+            // No send loop exists to consume the source; finishing it drops the audio the
+            // recorder keeps pushing instead of buffering the whole session (~32 KB/s).
+            chunkSource.finish()
+            throw error
+        }
 
         // If cancel() was called while we were awaiting the connection, tear down immediately.
         if state == .cancelled {
@@ -171,6 +178,12 @@ class StreamingTranscriptionService {
         // Finish the chunk source so the send loop drains remaining chunks and exits naturally.
         await drainRemainingChunks()
 
+        // cancel() may have run while the drain was suspended. Committing now would race the
+        // disconnect task it spawned, so stop here — the caller discards a cancelled recording.
+        guard state != .cancelled else {
+            throw StreamingTranscriptionError.cancelled
+        }
+
         // Set up the commit signal BEFORE sending commit to avoid a race with the response.
         let (signalStream, signalContinuation) = AsyncStream.makeStream(of: Void.self)
         self.commitSignal = signalContinuation
@@ -189,6 +202,12 @@ class StreamingTranscriptionService {
 
         // Wait for the server to acknowledge our commit (or timeout)
         let finalText = await waitForFinalCommit(signalStream: signalStream)
+
+        // A cancel during the wait clears the committed segments; an empty result would
+        // then trigger the batch fallback and upload audio the user already cancelled.
+        guard state != .cancelled else {
+            throw StreamingTranscriptionError.cancelled
+        }
         if let stopStartedAt {
             logger.notice("Streaming stop completed elapsed=\(Date().timeIntervalSince(stopStartedAt), format: .fixed(precision: 3), privacy: .public)s finalChars=\(finalText.count, privacy: .public)")
         }
