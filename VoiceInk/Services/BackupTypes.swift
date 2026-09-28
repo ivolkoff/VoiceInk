@@ -79,6 +79,7 @@ struct GeneralBackup: Codable {
     let openHistoryWindowShortcut: ShortcutBackup?
     let quickAddToDictionaryShortcut: ShortcutBackup?
     let toggleEnhancementShortcut: ShortcutBackup?
+    let enhanceSelectedTextShortcut: ShortcutBackup?
     let primaryRecordingShortcutRawValue: String?
     let secondaryRecordingShortcutRawValue: String?
     let primaryRecordingShortcutModeRawValue: String?
@@ -109,6 +110,7 @@ struct GeneralBackup: Codable {
     let autoLearnReviewSchedule: String?
     let autoLearnProvider: String?
     let autoLearnModel: String?
+    let selectedPromptId: String?
     let isSelectionVoiceEditEnabled: Bool?
 }
 

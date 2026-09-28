@@ -9741,6 +9741,16 @@
           }
         }
       }
+    },
+    "%lld dictionary entries were skipped: their trigger words already exist": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Пропущено записей словаря: %lld — их слова-триггеры уже существуют"
+          }
+        }
+      }
     }
   },
   "version": "1.0"

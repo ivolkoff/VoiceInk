@@ -54,8 +54,12 @@ enum BackupImporter {
             let powerModeManager = PowerModeManager.shared
 
             if !backup.powerModeConfigs.isEmpty {
-                for config in powerModeManager.configurations {
-                    ShortcutStore.removeShortcutStorage(for: .powerMode(config.id))
+                // Erase local bindings only when the backup carries its own shortcut map:
+                // a config-only backup used to wipe this machine's bindings for those IDs.
+                if backup.powerModeShortcuts != nil {
+                    for config in powerModeManager.configurations {
+                        ShortcutStore.removeShortcutStorage(for: .powerMode(config.id))
+                    }
                 }
 
                 powerModeManager.configurations = backup.powerModeConfigs
@@ -135,6 +139,9 @@ enum BackupImporter {
         }
         if let enhancementShortcut = general.toggleEnhancementShortcut {
             ShortcutStore.setShortcut(enhancementShortcut.shortcut, for: .toggleEnhancement)
+        }
+        if let enhanceShortcut = general.enhanceSelectedTextShortcut {
+            ShortcutStore.setShortcut(enhanceShortcut.shortcut, for: .enhanceSelectedText)
         }
 
         if let shortcutRawValue = general.primaryRecordingShortcutRawValue,
@@ -251,6 +258,13 @@ enum BackupImporter {
             UserDefaults.standard.set(selectionVoiceEditEnabled, forKey: SelectionEditService.isEnabledKey)
         }
 
+        if let promptId = general.selectedPromptId, UUID(uuidString: promptId) != nil {
+            // Read by AIEnhancementService at launch; the notification lets a running
+            // instance re-read it too.
+            UserDefaults.standard.set(promptId, forKey: "selectedPromptId")
+            NotificationCenter.default.post(name: .AppSettingsDidChange, object: nil)
+        }
+
         print("Successfully imported general settings.")
     }
 
@@ -259,6 +273,7 @@ enum BackupImporter {
         var insertedWords = 0
         var insertedReplacements = 0
         var skippedInvalidReplacements = 0
+        var skippedConflictingReplacements = 0
 
         if let words = backup.vocabularyWords {
             let descriptor = FetchDescriptor<VocabularyWord>()
@@ -300,7 +315,9 @@ enum BackupImporter {
 
                 let hasConflict = importTokens.contains { existingKeys.contains($0) }
 
-                if !hasConflict {
+                if hasConflict {
+                    skippedConflictingReplacements += 1
+                } else {
                     modelContext.insert(WordReplacement(originalText: trimmedOriginal, replacementText: trimmedReplacement))
                     existingKeys.formUnion(importTokens)
                     insertedReplacements += 1
@@ -324,6 +341,14 @@ enum BackupImporter {
             if skippedInvalidReplacements > 0 {
                 print("Skipped \(skippedInvalidReplacements) invalid word replacements from the imported file.")
             }
+            if skippedConflictingReplacements > 0 {
+                NotificationManager.shared.showNotification(
+                    title: String.localizedStringWithFormat(
+                        String(localized: "%lld dictionary entries were skipped: their trigger words already exist"),
+                        skippedConflictingReplacements),
+                    type: .warning
+                )
+            }
         } catch {
             modelContext.rollback()
             throw BackupImportError.saveFailed("dictionary entries", error)
@@ -342,6 +367,10 @@ enum BackupImporter {
         }
 
         let customModelManager = CustomCloudModelManager.shared
+        let importedModelIds = Set(models.map(\.id))
+        for existing in customModelManager.customModels where !importedModelIds.contains(existing.id) {
+            APIKeyManager.shared.deleteCustomModelAPIKey(forModelId: existing.id)
+        }
         customModelManager.customModels = models.map { $0.makeModel() }
         customModelManager.saveCustomModels()
         transcriptionModelManager.refreshAllAvailableModels()

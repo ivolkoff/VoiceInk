@@ -129,10 +129,10 @@ class ImportExportService {
         let exportablePrompts = enhancementService.customPrompts.filter { !$0.isPredefined }
 
         let powerConfigs = powerModeManager.configurations
-        let powerModeShortcuts = Dictionary(uniqueKeysWithValues: powerConfigs.compactMap { config -> (String, ShortcutBackup)? in
+        let powerModeShortcuts = Dictionary(powerConfigs.compactMap { config -> (String, ShortcutBackup)? in
             guard let shortcut = ShortcutStore.shortcut(for: .powerMode(config.id)) else { return nil }
             return (config.id.uuidString, ShortcutBackup(shortcut))
-        })
+        }, uniquingKeysWith: { first, _ in first })
 
         // Export custom models
         let customModels = CustomCloudModelManager.shared.customModels.map { CustomModelBackup(model: $0) }
@@ -165,6 +165,7 @@ class ImportExportService {
             openHistoryWindowShortcut: ShortcutStore.shortcut(for: .openHistoryWindow).map(ShortcutBackup.init),
             quickAddToDictionaryShortcut: ShortcutStore.shortcut(for: .quickAddToDictionary).map(ShortcutBackup.init),
             toggleEnhancementShortcut: ShortcutStore.shortcut(for: .toggleEnhancement).map(ShortcutBackup.init),
+            enhanceSelectedTextShortcut: ShortcutStore.shortcut(for: .enhanceSelectedText).map(ShortcutBackup.init),
             primaryRecordingShortcutRawValue: recordingShortcutManager.primaryRecordingShortcut.rawValue,
             secondaryRecordingShortcutRawValue: recordingShortcutManager.secondaryRecordingShortcut.rawValue,
             primaryRecordingShortcutModeRawValue: recordingShortcutManager.primaryRecordingShortcutMode.rawValue,
@@ -195,6 +196,7 @@ class ImportExportService {
             autoLearnReviewSchedule: AutoLearnSettings.reviewSchedule.rawValue,
             autoLearnProvider: AutoLearnSettings.selectedProvider?.rawValue,
             autoLearnModel: AutoLearnSettings.selectedModel,
+            selectedPromptId: enhancementService.selectedPromptId?.uuidString,
             isSelectionVoiceEditEnabled: SelectionEditService.isEnabled
         )
 
