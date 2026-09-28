@@ -69,8 +69,10 @@ class PromptDetectionService {
                 if enhancementService.isEnhancementEnabled != result.originalEnhancementState {
                     enhancementService.isEnhancementEnabled = result.originalEnhancementState
                 }
-                if let originalId = result.originalPromptId, enhancementService.selectedPromptId != originalId {
-                    enhancementService.selectedPromptId = originalId
+                // Restore nil too: a fresh user has no prompt selected, and skipping the
+                // restore left the trigger's prompt persisted as their selection.
+                if enhancementService.selectedPromptId != result.originalPromptId {
+                    enhancementService.selectedPromptId = result.originalPromptId
                 }
             }
         }

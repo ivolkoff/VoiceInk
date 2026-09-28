@@ -140,6 +140,9 @@ class TranscriptionPipeline {
                enhancementService.isEnhancementEnabled,
                enhancementService.isConfigured,
                !shouldSkipEnhancement,
+               // Only the trigger word was said: an empty prompt to the LLM would paste
+               // its answer to nothing.
+               !(promptDetectionResult?.processedText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty == true),
                selectionEdit == nil {
                 if shouldCancel() { await finishCanceledTranscription(); return }
 
