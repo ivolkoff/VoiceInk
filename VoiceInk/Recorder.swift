@@ -107,13 +107,14 @@ class Recorder: NSObject, ObservableObject {
         deviceManager.isRecordingActive = true
 
         let currentDeviceID = deviceManager.getCurrentDevice()
-        let lastDeviceID = UserDefaults.standard.string(forKey: "lastUsedMicrophoneDeviceID")
-        if String(currentDeviceID) != lastDeviceID {
-            if let deviceName = deviceManager.availableDevices.first(where: { $0.id == currentDeviceID })?.name {
-                NotificationManager.shared.showNotification(title: String.localizedStringWithFormat(String(localized: "Using: %@"), deviceName), type: .info)
+        // Compare by device UID, not the session-scoped AudioDeviceID: IDs are reassigned
+        // at every launch, so an ID comparison showed "Using: X" after every restart.
+        if let currentDevice = deviceManager.availableDevices.first(where: { $0.id == currentDeviceID }) {
+            if currentDevice.uid != UserDefaults.standard.string(forKey: "lastUsedMicrophoneUID") {
+                NotificationManager.shared.showNotification(title: String.localizedStringWithFormat(String(localized: "Using: %@"), currentDevice.name), type: .info)
             }
+            UserDefaults.standard.set(currentDevice.uid, forKey: "lastUsedMicrophoneUID")
         }
-        UserDefaults.standard.set(String(currentDeviceID), forKey: "lastUsedMicrophoneDeviceID")
 
         let deviceID = currentDeviceID
 
