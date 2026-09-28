@@ -22,12 +22,27 @@ final class LayoutSwitcherSettings: ObservableObject {
     @Published var layout1ID: String { didSet { defaults.set(layout1ID, forKey: Keys.layout1ID) } }
     @Published var layout2ID: String { didSet { defaults.set(layout2ID, forKey: Keys.layout2ID) } }
     @Published var deniedApps: [String] { didSet { defaults.set(deniedApps, forKey: Keys.deniedApps) } }
-    @Published var neverWords: [String] { didSet { defaults.set(neverWords, forKey: Keys.neverWords) } }
+    @Published var neverWords: [String] { didSet { defaults.set(neverWords, forKey: Keys.neverWords); neverWordsCache = nil } }
     /// Target forms («привет»), not the garbage that produced them.
-    @Published var alwaysWords: [String] { didSet { defaults.set(alwaysWords, forKey: Keys.alwaysWords) } }
+    @Published var alwaysWords: [String] { didSet { defaults.set(alwaysWords, forKey: Keys.alwaysWords); alwaysWordsCache = nil } }
 
-    var neverWordsSet: Set<String> { Set(neverWords.map { $0.lowercased() }) }
-    var alwaysWordsSet: Set<String> { Set(alwaysWords.map { $0.lowercased() }) }
+    // Rebuilt lazily: the engine reads these on every word boundary.
+    private var neverWordsCache: Set<String>?
+    private var alwaysWordsCache: Set<String>?
+
+    var neverWordsSet: Set<String> {
+        if let neverWordsCache { return neverWordsCache }
+        let s = Set(neverWords.map { $0.lowercased() })
+        neverWordsCache = s
+        return s
+    }
+
+    var alwaysWordsSet: Set<String> {
+        if let alwaysWordsCache { return alwaysWordsCache }
+        let s = Set(alwaysWords.map { $0.lowercased() })
+        alwaysWordsCache = s
+        return s
+    }
 
     init(defaults: UserDefaults = .standard) {
         self.defaults = defaults
