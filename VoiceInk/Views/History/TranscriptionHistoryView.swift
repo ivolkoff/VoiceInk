@@ -410,16 +410,9 @@ struct TranscriptionHistoryView: View {
         isLoading = false
     }
 
-    private func performDeletion(for transcription: Transcription) {
-        if let urlString = transcription.audioFileURL,
-           let url = URL(string: urlString),
-           FileManager.default.fileExists(atPath: url.path) {
-            do {
-                try FileManager.default.removeItem(at: url)
-            } catch {
-                print("Error deleting audio file: \(error.localizedDescription)")
-            }
-        }
+    /// Marks the record deleted and returns its audio URL for post-commit removal.
+    private func performDeletion(for transcription: Transcription) -> URL? {
+        let audioURL = transcription.audioFileURL.flatMap(URL.init(string:))
 
         if selectedTranscription == transcription {
             selectedTranscription = nil
@@ -427,11 +420,17 @@ struct TranscriptionHistoryView: View {
 
         selectedTranscriptions.remove(transcription)
         modelContext.delete(transcription)
+        return audioURL
     }
 
-    private func saveAndReload() async {
+    private func saveAndReload(deleting audioURLs: [URL]) async {
         do {
             try modelContext.save()
+            // Files only after the delete committed: a failed save keeps the records
+            // and their audio intact instead of leaving rows pointing at deleted files.
+            for url in audioURLs where FileManager.default.fileExists(atPath: url.path) {
+                try? FileManager.default.removeItem(at: url)
+            }
             NotificationCenter.default.post(name: .transcriptionDeleted, object: nil)
             await loadInitialContent()
         } catch {
@@ -441,13 +440,16 @@ struct TranscriptionHistoryView: View {
     }
 
     private func deleteSelectedTranscriptions() {
+        var audioURLs: [URL] = []
         for transcription in selectedTranscriptions {
-            performDeletion(for: transcription)
+            if let url = performDeletion(for: transcription) {
+                audioURLs.append(url)
+            }
         }
         selectedTranscriptions.removeAll()
 
         Task {
-            await saveAndReload()
+            await saveAndReload(deleting: audioURLs)
         }
     }
     
