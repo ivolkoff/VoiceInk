@@ -16,8 +16,8 @@ class AIEnhancementService: ObservableObject {
     @Published var isEnhancementEnabled: Bool {
         didSet {
             UserDefaults.standard.set(isEnhancementEnabled, forKey: "isAIEnhancementEnabled")
-            if isEnhancementEnabled && selectedPromptId == nil {
-                selectedPromptId = customPrompts.first?.id
+            if isEnhancementEnabled {
+                healSelectedPromptId()
             }
             NotificationCenter.default.post(name: .AppSettingsDidChange, object: nil)
             NotificationCenter.default.post(name: .enhancementToggleChanged, object: nil)
@@ -80,8 +80,7 @@ class AIEnhancementService: ObservableObject {
         customPrompts[index].isActive.toggle()
 
         if !customPrompts[index].isActive, selectedPromptId == prompt.id {
-            let firstEnabled = enabledPrompts.first
-            selectedPromptId = firstEnabled?.id ?? customPrompts.first?.id
+            selectedPromptId = enabledPrompts.first?.id
         }
     }
 
@@ -107,9 +106,8 @@ class AIEnhancementService: ObservableObject {
         self.isEnhancementEnabled = UserDefaults.standard.bool(forKey: "isAIEnhancementEnabled")
         self.useClipboardContext = UserDefaults.standard.bool(forKey: "useClipboardContext")
         self.useScreenCaptureContext = UserDefaults.standard.bool(forKey: "useScreenCaptureContext")
-        if let savedPromptsData = UserDefaults.standard.data(forKey: "customPrompts"),
-           let decodedPrompts = try? JSONDecoder().decode([CustomPrompt].self, from: savedPromptsData) {
-            self.customPrompts = decodedPrompts
+        if let savedPromptsData = UserDefaults.standard.data(forKey: "customPrompts") {
+            self.customPrompts = Self.decodePromptsLossily(savedPromptsData)
         } else {
             self.customPrompts = []
         }
@@ -118,9 +116,6 @@ class AIEnhancementService: ObservableObject {
             self.selectedPromptId = UUID(uuidString: savedPromptId)
         }
 
-        if isEnhancementEnabled && (selectedPromptId == nil || !allPrompts.contains(where: { $0.id == selectedPromptId })) {
-            self.selectedPromptId = allPrompts.first?.id
-        }
 
         NotificationCenter.default.addObserver(
             self,
@@ -130,6 +125,41 @@ class AIEnhancementService: ObservableObject {
         )
 
         initializePredefinedPrompts()
+        // After the predefined list exists: an id dangling from a deleted prompt, a
+        // restored Power Mode baseline or an import used to degrade every dictation
+        // to the Default prompt with a toast until the user clicked a prompt.
+        if isEnhancementEnabled {
+            healSelectedPromptId()
+        }
+    }
+
+    /// Resolves a selectedPromptId that points at nothing (or nothing enabled) to the
+    /// first enabled prompt. Disabled prompts are never auto-selected: the fallbacks in
+    /// togglePromptEnabled/deletePrompt and the Default fallback all honor isActive now.
+    func healSelectedPromptId() {
+        if let id = selectedPromptId, customPrompts.contains(where: { $0.id == id && $0.isActive }) {
+            return
+        }
+        selectedPromptId = enabledPrompts.first?.id
+    }
+
+    /// One malformed element used to discard the whole saved prompt list; drop only the
+    /// bad elements instead.
+    private static func decodePromptsLossily(_ data: Data) -> [CustomPrompt] {
+        if let prompts = try? JSONDecoder().decode([CustomPrompt].self, from: data) {
+            return prompts
+        }
+        guard let raw = try? JSONSerialization.jsonObject(with: data) as? [[String: Any]] else { return [] }
+        let decoder = JSONDecoder()
+        return raw.compactMap { try? decoder.decode(CustomPrompt.self, from: JSONSerialization.data(withJSONObject: $0)) }
+    }
+
+    /// Title of another prompt already owning one of `words`, for save-time validation.
+    func conflictingTriggerOwner(for words: [String], excluding excludedId: UUID?) -> String? {
+        let lowered = Set(words.map { $0.lowercased() })
+        return customPrompts.first(where: {
+            $0.id != excludedId && !$0.triggerWords.filter({ lowered.contains($0.lowercased()) }).isEmpty
+        })?.title
     }
 
     deinit {
@@ -217,7 +247,8 @@ class AIEnhancementService: ObservableObject {
                 return activePrompt.finalPromptText + finalContextSection
             }
         } else {
-            let defaultPrompt = allPrompts.first(where: { $0.id == PredefinedPrompts.defaultPromptId }) ?? allPrompts.first
+            let defaultPrompt = allPrompts.first(where: { $0.id == PredefinedPrompts.defaultPromptId && $0.isActive })
+                ?? allPrompts.first(where: { $0.isActive })
             return (defaultPrompt?.finalPromptText ?? "Improve the following transcript.") + finalContextSection
         }
     }
@@ -633,8 +664,10 @@ class AIEnhancementService: ObservableObject {
 
     func addPrompt(title: String, promptText: String, icon: PromptIcon = "doc.text.fill", description: String? = nil, triggerWords: [String] = [], useSystemInstructions: Bool = true) {
         let newPrompt = CustomPrompt(title: title, promptText: promptText, icon: icon, description: description, isPredefined: false, triggerWords: triggerWords, useSystemInstructions: useSystemInstructions)
+        // The old count==1 guard never fired: the predefined prompts are always present.
+        let isFirstCustomPrompt = !customPrompts.contains(where: { !$0.isPredefined })
         customPrompts.append(newPrompt)
-        if customPrompts.count == 1 {
+        if isFirstCustomPrompt {
             selectedPromptId = newPrompt.id
         }
     }
@@ -648,11 +681,17 @@ class AIEnhancementService: ObservableObject {
     func deletePrompt(_ prompt: CustomPrompt) {
         customPrompts.removeAll { $0.id == prompt.id }
         if selectedPromptId == prompt.id {
-            selectedPromptId = enabledPrompts.first?.id ?? allPrompts.first?.id
+            // Enabled only: a disabled fallback overrode the user's OFF state.
+            selectedPromptId = enabledPrompts.first?.id
         }
     }
 
     func setActivePrompt(_ prompt: CustomPrompt) {
+        // Selecting a disabled prompt from the menu is an explicit ask: enable it, or the
+        // selection silently yields "Prompt: None" and dictations fall back to Default.
+        if let index = customPrompts.firstIndex(where: { $0.id == prompt.id }), !customPrompts[index].isActive {
+            customPrompts[index].isActive = true
+        }
         selectedPromptId = prompt.id
     }
 

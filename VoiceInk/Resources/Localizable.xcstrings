@@ -9761,6 +9761,26 @@
           }
         }
       }
+    },
+    "Duplicate trigger word": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Дублирующееся слово-триггер"
+          }
+        }
+      }
+    },
+    "Another prompt (%@) already uses one of these trigger words; the later prompt would never fire by voice.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Другой промпт (%@) уже использует одно из этих слов-триггеров; более поздний промпт никогда не сработает голосом."
+          }
+        }
+      }
     }
   },
   "version": "1.0"

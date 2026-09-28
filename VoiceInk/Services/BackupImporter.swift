@@ -47,8 +47,14 @@ enum BackupImporter {
         // the user's custom prompts / power-mode configs with no undo.
         if categories.contains(.prompts), !backup.customPrompts.isEmpty {
             let predefinedPrompts = enhancementService.customPrompts.filter { $0.isPredefined }
-            enhancementService.customPrompts = predefinedPrompts + backup.customPrompts
-            print("Successfully imported \(backup.customPrompts.count) custom prompts.")
+            let predefinedIds = Set(predefinedPrompts.map(\.id))
+            var seenIds = predefinedIds
+            // Exports never contain predefined prompts, but a hand-edited or foreign
+            // file can — duplicates by id would shadow real prompts after import.
+            let importablePrompts = backup.customPrompts.filter { seenIds.insert($0.id).inserted }
+            enhancementService.customPrompts = predefinedPrompts + importablePrompts
+            enhancementService.healSelectedPromptId()
+            print("Successfully imported \(importablePrompts.count) custom prompts.")
         }
 
         if categories.contains(.powerMode) {

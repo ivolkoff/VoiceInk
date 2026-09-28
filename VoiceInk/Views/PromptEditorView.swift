@@ -28,7 +28,8 @@ struct PromptEditorView: View {
     @State private var triggerWords: [String]
     @State private var useSystemInstructions: Bool
     @State private var showingIconPicker = false
-    
+    @State private var triggerConflictOwner: String?
+
     private var isEditingPredefinedPrompt: Bool {
         if case .edit(let prompt) = mode {
             return prompt.isPredefined
@@ -241,9 +242,27 @@ struct PromptEditorView: View {
         }
         .formStyle(.grouped)
         .scrollContentBackground(.hidden)
+        .alert(
+            "Duplicate trigger word",
+            isPresented: Binding(
+                get: { triggerConflictOwner != nil },
+                set: { if !$0 { triggerConflictOwner = nil } }
+            )
+        ) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text("Another prompt (\(triggerConflictOwner ?? "")) already uses one of these trigger words; the later prompt would never fire by voice.")
+        }
     }
 
     private func save() {
+        // Duplicate triggers across prompts make the later prompt unreachable by voice
+        // (detection returns the first match) with no runtime signal — block at save time.
+        let excludedId: UUID? = if case .edit(let prompt) = mode { prompt.id } else { nil }
+        if let owner = enhancementService.conflictingTriggerOwner(for: triggerWords, excluding: excludedId) {
+            triggerConflictOwner = owner
+            return
+        }
         switch mode {
         case .add:
             enhancementService.addPrompt(
