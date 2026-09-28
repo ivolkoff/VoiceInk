@@ -186,6 +186,13 @@ struct VoiceInkApp: App {
             await migrationTask?.value
             TranscriptionAutoCleanupService.shared.startMonitoring(modelContext: mainContext)
         }
+
+        // App-lifetime audio cleanup, not window lifetime: tying the timer to the main
+        // window stops it in menu-bar-only usage until the window reopens.
+        // Start the automatic audio cleanup process only if transcript cleanup is not enabled
+        if !UserDefaults.standard.bool(forKey: "IsTranscriptionCleanupEnabled") {
+            audioCleanupManager.startAutomaticCleanup(modelContext: resolvedContainer.mainContext)
+        }
     }
 
     // MARK: - Container Creation Helpers
@@ -312,11 +319,6 @@ struct VoiceInkApp: App {
                             AnnouncementsService.shared.start()
                         }
 
-                        // Start the automatic audio cleanup process only if transcript cleanup is not enabled
-                        if !UserDefaults.standard.bool(forKey: "IsTranscriptionCleanupEnabled") {
-                            audioCleanupManager.startAutomaticCleanup(modelContext: container.mainContext)
-                        }
-
                         // Process any pending open-file request now that the main ContentView is ready.
                         if let pendingURL = appDelegate.pendingOpenFileURL {
                             NotificationCenter.default.post(name: .navigateToDestination, object: nil, userInfo: ["destination": "Transcribe Audio"])
@@ -332,9 +334,6 @@ struct VoiceInkApp: App {
                     .onDisappear {
                         AnnouncementsService.shared.stop()
                         whisperModelManager.unloadModel()
-
-                        // Stop the automatic audio cleanup process
-                        audioCleanupManager.stopAutomaticCleanup()
                     }
             } else {
                 OnboardingView(hasCompletedOnboarding: $hasCompletedOnboarding)
