@@ -204,6 +204,13 @@ class VoiceInkEngine: NSObject, ObservableObject {
 
                             await ActiveWindowService.shared.applyConfiguration(powerModeId: powerModeId)
 
+                            // A cancel during that await already ran the session teardown;
+                            // a configuration applied after it must not leave an orphaned
+                            // power-mode session with switched settings and no recording.
+                            if self.shouldCancelRecording {
+                                await self.finishRecorderSession()
+                            }
+
                             if self.recordingState == .recording,
                                let model = self.transcriptionModelManager.currentTranscriptionModel {
                                 let session = self.serviceRegistry.createSession(
