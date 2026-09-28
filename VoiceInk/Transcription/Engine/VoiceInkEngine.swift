@@ -9,7 +9,9 @@ import os
 class VoiceInkEngine: NSObject, ObservableObject {
     @Published var recordingState: RecordingState = .idle
     @Published var shouldCancelRecording = false
-    var partialTranscript: String = ""
+    // @Published: the recorder panels render the live preview from this; a plain stored
+    // property never invalidated SwiftUI, so the live transcript never appeared.
+    @Published var partialTranscript: String = ""
     var currentSession: TranscriptionSession?
     private var activeRecordingStartID: UUID?
     private var activePipelineTranscriptionID: UUID?
