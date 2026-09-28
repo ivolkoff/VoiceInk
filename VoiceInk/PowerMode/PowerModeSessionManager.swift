@@ -171,7 +171,15 @@ class PowerModeSessionManager {
         if let modelName = state.transcriptionModelName,
            let selectedModel = await stateProvider.allAvailableModels.first(where: { $0.name == modelName }),
            stateProvider.currentTranscriptionModel?.name != modelName {
-            await handleModelChange(to: selectedModel)
+            // Same availability guard as applyConfiguration: restoring a whisper model
+            // whose files are gone would strand the default on a model that can't load.
+            var loadable = selectedModel.provider != .whisper
+            if !loadable {
+                loadable = await stateProvider.availableModels.contains { $0.name == modelName }
+            }
+            if loadable {
+                await handleModelChange(to: selectedModel)
+            }
         }
 
         if let language = state.selectedLanguage {
