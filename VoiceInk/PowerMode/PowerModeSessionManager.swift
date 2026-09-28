@@ -116,7 +116,16 @@ class PowerModeSessionManager {
         if let modelName = config.selectedTranscriptionModelName,
            let selectedModel = await stateProvider.allAvailableModels.first(where: { $0.name == modelName }),
            stateProvider.currentTranscriptionModel?.name != modelName {
-            await handleModelChange(to: selectedModel)
+            // A whisper model whose files are gone must not become the default: the switch
+            // evicts the working context, the load then fails, and every later recording
+            // is stuck on a model that can't transcribe.
+            var loadable = selectedModel.provider != .whisper
+            if !loadable {
+                loadable = await stateProvider.availableModels.contains { $0.name == modelName }
+            }
+            if loadable {
+                await handleModelChange(to: selectedModel)
+            }
         }
 
         if let language = config.selectedLanguage {
@@ -214,6 +223,9 @@ class PowerModeSessionManager {
         print("Recovering abandoned Power Mode session.")
         Task {
             await endSession()
+            // The engine's restore path normally clears this; recovery alone left a stale
+            // active configuration whose autoSendKey and mode labels kept firing.
+            PowerModeManager.shared.setActiveConfiguration(nil)
         }
     }
 
