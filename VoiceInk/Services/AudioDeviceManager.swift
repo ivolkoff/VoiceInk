@@ -15,6 +15,19 @@ enum AudioInputMode: String, CaseIterable {
     case prioritized = "Prioritized"
 }
 
+/// Shared by add and remove: CoreAudio matches listeners on the exact (proc, userData)
+/// pair, so a different closure in deinit silently failed to unregister.
+private func audioDeviceListChangedProc(_ inObjectID: AudioObjectID,
+                                        _ inNumberAddresses: UInt32,
+                                        _ inAddresses: UnsafePointer<AudioObjectPropertyAddress>,
+                                        _ userData: UnsafeMutableRawPointer?) -> OSStatus {
+    let manager = Unmanaged<AudioDeviceManager>.fromOpaque(userData!).takeUnretainedValue()
+    DispatchQueue.main.async {
+        manager.handleDeviceListChange()
+    }
+    return noErr
+}
+
 class AudioDeviceManager: ObservableObject {
     private let logger = Logger(subsystem: "com.prakashjoshipax.voiceink", category: "AudioDeviceManager")
     @Published var availableDevices: [(id: AudioDeviceID, uid: String, name: String)] = []
@@ -387,13 +400,7 @@ class AudioDeviceManager: ObservableObject {
         let status = AudioObjectAddPropertyListener(
             systemObjectID,
             &address,
-            { (_, _, _, userData) -> OSStatus in
-                let manager = Unmanaged<AudioDeviceManager>.fromOpaque(userData!).takeUnretainedValue()
-                DispatchQueue.main.async {
-                    manager.handleDeviceListChange()
-                }
-                return noErr
-            },
+            audioDeviceListChangedProc,
             UnsafeMutableRawPointer(Unmanaged.passUnretained(self).toOpaque())
         )
         
@@ -402,13 +409,33 @@ class AudioDeviceManager: ObservableObject {
         }
     }
     
-    private func handleDeviceListChange() {
+    fileprivate func handleDeviceListChange() {
         logger.notice("🎙️ Device list change detected")
 
+        let previousDefaultDeviceID = getCurrentDevice()
         loadAvailableDevices { [weak self] in
             guard let self = self else { return }
 
             if self.inputMode == .systemDefault {
+                // The recorder pins the default device it started with; when that mic is
+                // unplugged the AUHAL keeps pointing at the dead device and everything
+                // spoken afterwards is silently lost. Switch like the custom modes do.
+                if self.isRecordingActive,
+                   previousDefaultDeviceID != 0,
+                   !self.isDeviceAvailable(previousDefaultDeviceID) {
+                    let newDeviceID = self.getCurrentDevice()
+                    if newDeviceID != 0, newDeviceID != previousDefaultDeviceID {
+                        self.logger.warning("🎙️ Default recording device gone - requesting switch")
+                        NotificationCenter.default.post(
+                            name: .audioDeviceSwitchRequired,
+                            object: nil,
+                            userInfo: ["newDeviceID": newDeviceID]
+                        )
+                    } else if newDeviceID == 0 {
+                        self.logger.error("No audio input devices available!")
+                        NotificationCenter.default.post(name: .toggleMiniRecorder, object: nil)
+                    }
+                }
                 self.notifyDeviceChange()
                 return
             }
@@ -473,13 +500,11 @@ class AudioDeviceManager: ObservableObject {
             mScope: kAudioObjectPropertyScopeGlobal,
             mElement: kAudioObjectPropertyElementMain
         )
-        
+
         AudioObjectRemovePropertyListener(
             AudioObjectID(kAudioObjectSystemObject),
             &address,
-            { (_, _, _, userData) -> OSStatus in
-                return noErr
-            },
+            audioDeviceListChangedProc,
             UnsafeMutableRawPointer(Unmanaged.passUnretained(self).toOpaque())
         )
     }
