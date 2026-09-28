@@ -41,4 +41,17 @@ struct LayoutConversionTests {
         // A smart result that changed something is kept as is.
         #expect(LayoutConversion.selectionResult(smart: "привет iPhone", selection: "ghbdtn iPhone", map: map) == "привет iPhone")
     }
+    @Test func punctuationSuffixFlipsWithTheWord() {
+        // macOS Russian: the comma/period keys render as "^"/"&" in the U.S. layout, so
+        // «привет,» typed in the wrong layout arrives as "ghbdtn^". The suffix must come
+        // out as the comma, and "^"/"&" must split off the word like any other punctuation.
+        guard let q = plan("ghbdtn^"), let w = plan("ghbdtn&"), let f = plan("ghbdtn/") else { return }
+        #expect(q.converted == "привет,")
+        #expect(q.verdict == .switchToConverted && q.convertedLength == 6)
+        #expect(w.converted == "привет.")
+        #expect(w.verdict == .switchToConverted && w.convertedLength == 6)
+        // "/" and "?" share their image between this pair's layouts; the flip is identity.
+        #expect(f.converted == "привет/")
+        #expect(f.verdict == .switchToConverted && f.convertedLength == 6)
+    }
 }

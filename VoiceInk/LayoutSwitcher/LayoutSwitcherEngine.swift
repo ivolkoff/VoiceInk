@@ -172,8 +172,10 @@ final class LayoutSwitcherEngine {
             return
         }
         let original = plan.typed + " "
-        let produced = String(plan.converted.prefix(plan.convertedLength))
-            + String(plan.typed.dropFirst(plan.convertedLength)) + " "
+        // The whole converted string, suffix included: the tail chars come from the same
+        // physical keys, and retyping them from `typed` would keep the wrong layout's image
+        // («ghbdtn?» → «привет?» instead of «привет,»).
+        let produced = plan.converted + " "
         let switchTarget = plan.switchToB ? both.bSource : both.aSource
         guard resonance.allow(word: original, produced: produced) else {
             buffer.reset()

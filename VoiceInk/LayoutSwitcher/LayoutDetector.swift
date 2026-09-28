@@ -107,11 +107,13 @@ enum LayoutDetector {
         }
     }
 
-    /// Splits punctuation stuck to the end of a word. Digits, hyphen, @ and # are not split so
-    /// URLs and code keep tripping the detector's vetoes; quotes are skipped because smart
-    /// punctuation and dead-key layouts change them under our feet.
+    /// Splits punctuation stuck to the end of a word. "^", "&", "%" and "*" are the U.S. images
+    /// of the macOS-Russian comma, period, colon and semicolon — «ghbdtn^» must read as
+    /// «привет,». "/" is the period key's image on Russian-PC. Digits, hyphen, @ and # are not
+    /// split so URLs, emails and code keep tripping the detector's vetoes; quotes are skipped
+    /// because smart punctuation and dead-key layouts change them under our feet.
     static func splitTrailingPunctuation(_ s: String) -> (coreLength: Int, suffix: String) {
-        let punct: Set<Character> = [",", ".", "!", "?", ";", ":", ")", "`", "[", "]"]
+        let punct: Set<Character> = [",", ".", "!", "?", ";", ":", ")", "`", "[", "]", "/", "^", "&", "%", "*"]
         var core = s[...]
         while let last = core.last, punct.contains(last) { core = core.dropLast() }
         return (core.count, String(s.dropFirst(core.count)))
