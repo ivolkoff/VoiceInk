@@ -110,7 +110,9 @@ final class LayoutSwitcherEngine {
             case 49 where !combo:   // space
                 lastConversion = nil
                 if let word = buffer.space() {
-                    scheduleAutoConversion(of: word, capsLock: flags.contains(.maskAlphaShift), seq: seq)
+                    // The word's own keys, not the space's flags: CapsLock may have been
+                    // released between the word and the boundary.
+                    scheduleAutoConversion(of: word, capsLock: word.allSatisfy(\.caps), seq: seq)
                 }
             case 36, 76, 48, 53, 123...126:   // return, keypad enter, tab, escape, arrows
                 resetContext()
@@ -225,9 +227,14 @@ final class LayoutSwitcherEngine {
         // An undone auto-conversion teaches the never list.
         if let last = lastConversion, last.bundleID == front {
             logger.notice("manual trigger: undo")
+            let original = last.original
             perform(deleteCount: last.produced.count, text: last.original, original: last.produced,
-                    wasAuto: false, bundleID: front, switchTo: last.restore, afterSeq: seq)
-            if last.wasAuto { learnNever(last.original) }
+                    wasAuto: false, bundleID: front, switchTo: last.restore, afterSeq: seq,
+                    onSuccess: { [weak self] in
+                        // Teach the never list only when the undo actually replaced the text;
+                        // a dropped job leaves the converted word on screen.
+                        if last.wasAuto { self?.learnNever(original) }
+                    })
             return
         }
 
@@ -318,7 +325,8 @@ final class LayoutSwitcherEngine {
     // MARK: - Replacement
 
     private func perform(deleteCount: Int, text: String, original: String, wasAuto: Bool,
-                         bundleID: String?, switchTo: TISInputSource?, afterSeq: UInt64) {
+                         bundleID: String?, switchTo: TISInputSource?, afterSeq: UInt64,
+                         onSuccess: (() -> Void)? = nil) {
         guard let tap else { return }
         if deleteCount > 0, let role = FocusedTextAccessibility.focusedRole(), Self.itemListRoles.contains(role) {
             logger.notice("replacement skipped: focus is \(role, privacy: .public), Backspace would delete items")
@@ -341,6 +349,7 @@ final class LayoutSwitcherEngine {
                 self.lastConversion = Conversion(original: original, produced: text, wasAuto: wasAuto,
                                                  bundleID: bundleID, restore: restore)
                 self.logger.notice("\(wasAuto ? "auto" : "manual", privacy: .public): \(original, privacy: .private) -> \(text, privacy: .private)")
+                onSuccess?()
             }
         })
     }
