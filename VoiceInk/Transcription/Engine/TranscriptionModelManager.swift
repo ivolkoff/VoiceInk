@@ -96,8 +96,10 @@ class TranscriptionModelManager: ObservableObject {
         ensureSelectedLanguageIsSupported(by: model)
 
         if model.provider != .whisper {
-            whisperModelManager?.loadedWhisperModel = nil
-            whisperModelManager?.isModelLoaded = true
+            // Release the resident whisper context instead of just forgetting its name:
+            // the old code kept the context in memory while making a return to it
+            // load a second copy.
+            whisperModelManager?.unloadModel()
         }
 
         NotificationCenter.default.post(name: .didChangeModel, object: nil, userInfo: ["modelName": model.name])
