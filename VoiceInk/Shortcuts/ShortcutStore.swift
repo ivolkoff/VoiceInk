@@ -20,13 +20,15 @@ enum ShortcutStore {
         return rawShortcut(for: action)
     }
 
-    static func setShortcut(_ shortcut: Shortcut?, for action: ShortcutAction) {
+    /// false ⇒ the validator rejected the shortcut and nothing was stored.
+    @discardableResult
+    static func setShortcut(_ shortcut: Shortcut?, for action: ShortcutAction) -> Bool {
         guard action.isStored else {
-            return
+            return false
         }
 
         if let shortcut, ShortcutValidator.validationError(for: shortcut, action: action) != nil {
-            return
+            return false
         }
 
         if let shortcut,
@@ -46,6 +48,7 @@ enum ShortcutStore {
             name: shortcutDidChange,
             object: action
         )
+        return true
     }
 
     /// Temporarily disables a shortcut (so the global monitor stops firing it) while

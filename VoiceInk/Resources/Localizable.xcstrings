@@ -9751,6 +9751,16 @@
           }
         }
       }
+    },
+    "%lld shortcuts from the backup conflict with existing ones and were not imported": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Конфликт шорткатов: %lld сочетаний из бэкапа не импортировано"
+          }
+        }
+      }
     }
   },
   "version": "1.0"

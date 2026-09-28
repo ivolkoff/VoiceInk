@@ -28,8 +28,9 @@ enum BackupImporter {
             try importDictionary(from: backup, modelContext: modelContext)
         }
 
+        var rejectedShortcuts: [(action: ShortcutAction, shortcut: Shortcut)] = []
         if categories.contains(.general) {
-            importGeneral(
+            rejectedShortcuts = importGeneral(
                 backup.generalSettings,
                 recordingShortcutManager: recordingShortcutManager,
                 menuBarManager: menuBarManager,
@@ -90,58 +91,109 @@ enum BackupImporter {
             print("Successfully imported \(backup.powerModeConfigs.count) Power Mode configurations.")
         }
 
+        // The general import runs before power modes, so its shortcuts can be rejected
+        // by bindings this machine still had — which the power-mode import above just
+        // replaced. Retry once, then surface what truly couldn't land.
+        if !rejectedShortcuts.isEmpty {
+            var stillRejected: [(action: ShortcutAction, shortcut: Shortcut)] = []
+            for (action, shortcut) in rejectedShortcuts where !ShortcutStore.setShortcut(shortcut, for: action) {
+                stillRejected.append((action, shortcut))
+            }
+            if !stillRejected.isEmpty {
+                NotificationManager.shared.showNotification(
+                    title: String.localizedStringWithFormat(
+                        String(localized: "%lld shortcuts from the backup conflict with existing ones and were not imported"),
+                        stillRejected.count),
+                    type: .warning
+                )
+            }
+        }
+
         if categories.contains(.customModels) {
             importCustomModels(backup.customCloudModels, transcriptionModelManager: transcriptionModelManager)
         }
     }
 
     @MainActor
-    private static func importGeneral(_ general: GeneralBackup?, recordingShortcutManager: RecordingShortcutManager, menuBarManager: MenuBarManager, mediaController: MediaController, playbackController: PlaybackController, soundManager: SoundManager, recorderUIManager: RecorderUIManager) {
+    /// Returns shortcuts the validator rejected (e.g. still held by a local power-mode
+    /// binding that the power-mode import frees a moment later); `apply` retries them.
+    private static func importGeneral(_ general: GeneralBackup?, recordingShortcutManager: RecordingShortcutManager, menuBarManager: MenuBarManager, mediaController: MediaController, playbackController: PlaybackController, soundManager: SoundManager, recorderUIManager: RecorderUIManager) -> [(action: ShortcutAction, shortcut: Shortcut)] {
+        var rejected: [(ShortcutAction, Shortcut)] = []
         guard let general else {
             print("No general settings found in the imported file.")
-            return
+            return []
         }
 
         if let shortcut = general.primaryRecordingShortcut {
-            ShortcutStore.setShortcut(shortcut.shortcut, for: .primaryRecording)
-            recordingShortcutManager.primaryRecordingShortcut = .custom
+            // Only switch the UI to Custom when the store actually accepted the binding;
+            // a rejected one used to leave "Custom" with no shortcut behind it.
+            if ShortcutStore.setShortcut(shortcut.shortcut, for: .primaryRecording) {
+                recordingShortcutManager.primaryRecordingShortcut = .custom
+            } else {
+                rejected.append((.primaryRecording, shortcut.shortcut))
+            }
         }
         if let shortcut2 = general.secondaryRecordingShortcut {
-            ShortcutStore.setShortcut(shortcut2.shortcut, for: .secondaryRecording)
-            recordingShortcutManager.secondaryRecordingShortcut = .custom
+            if ShortcutStore.setShortcut(shortcut2.shortcut, for: .secondaryRecording) {
+                recordingShortcutManager.secondaryRecordingShortcut = .custom
+            } else {
+                rejected.append((.secondaryRecording, shortcut2.shortcut))
+            }
         }
         if let pasteShortcut = general.pasteLastTranscriptionShortcut {
-            ShortcutStore.setShortcut(pasteShortcut.shortcut, for: .pasteLastTranscription)
+            if !ShortcutStore.setShortcut(pasteShortcut.shortcut, for: .pasteLastTranscription) {
+                rejected.append((.pasteLastTranscription, pasteShortcut.shortcut))
+            }
         }
         if let pasteEnhancementShortcut = general.pasteLastEnhancementShortcut {
-            ShortcutStore.setShortcut(pasteEnhancementShortcut.shortcut, for: .pasteLastEnhancement)
+            if !ShortcutStore.setShortcut(pasteEnhancementShortcut.shortcut, for: .pasteLastEnhancement) {
+                rejected.append((.pasteLastEnhancement, pasteEnhancementShortcut.shortcut))
+            }
         }
         if let retryShortcut = general.retryLastTranscriptionShortcut {
-            ShortcutStore.setShortcut(retryShortcut.shortcut, for: .retryLastTranscription)
+            if !ShortcutStore.setShortcut(retryShortcut.shortcut, for: .retryLastTranscription) {
+                rejected.append((.retryLastTranscription, retryShortcut.shortcut))
+            }
         }
         if let retranscribeLayoutShortcut = general.retranscribeLastInLayoutLanguageShortcut {
-            ShortcutStore.setShortcut(retranscribeLayoutShortcut.shortcut, for: .retranscribeLastInLayoutLanguage)
+            if !ShortcutStore.setShortcut(retranscribeLayoutShortcut.shortcut, for: .retranscribeLastInLayoutLanguage) {
+                rejected.append((.retranscribeLastInLayoutLanguage, retranscribeLayoutShortcut.shortcut))
+            }
         }
         if let convertLayoutShortcut = general.convertLayoutShortcut {
-            ShortcutStore.setShortcut(convertLayoutShortcut.shortcut, for: .convertLayout)
+            if !ShortcutStore.setShortcut(convertLayoutShortcut.shortcut, for: .convertLayout) {
+                rejected.append((.convertLayout, convertLayoutShortcut.shortcut))
+            }
         }
         if let quickHistoryShortcut = general.openQuickHistoryShortcut {
-            ShortcutStore.setShortcut(quickHistoryShortcut.shortcut, for: .openQuickHistory)
+            if !ShortcutStore.setShortcut(quickHistoryShortcut.shortcut, for: .openQuickHistory) {
+                rejected.append((.openQuickHistory, quickHistoryShortcut.shortcut))
+            }
         }
         if let cancelShortcut = general.cancelRecorderShortcut {
-            ShortcutStore.setShortcut(cancelShortcut.shortcut, for: .cancelRecorder)
+            if !ShortcutStore.setShortcut(cancelShortcut.shortcut, for: .cancelRecorder) {
+                rejected.append((.cancelRecorder, cancelShortcut.shortcut))
+            }
         }
         if let historyShortcut = general.openHistoryWindowShortcut {
-            ShortcutStore.setShortcut(historyShortcut.shortcut, for: .openHistoryWindow)
+            if !ShortcutStore.setShortcut(historyShortcut.shortcut, for: .openHistoryWindow) {
+                rejected.append((.openHistoryWindow, historyShortcut.shortcut))
+            }
         }
         if let dictionaryShortcut = general.quickAddToDictionaryShortcut {
-            ShortcutStore.setShortcut(dictionaryShortcut.shortcut, for: .quickAddToDictionary)
+            if !ShortcutStore.setShortcut(dictionaryShortcut.shortcut, for: .quickAddToDictionary) {
+                rejected.append((.quickAddToDictionary, dictionaryShortcut.shortcut))
+            }
         }
         if let enhancementShortcut = general.toggleEnhancementShortcut {
-            ShortcutStore.setShortcut(enhancementShortcut.shortcut, for: .toggleEnhancement)
+            if !ShortcutStore.setShortcut(enhancementShortcut.shortcut, for: .toggleEnhancement) {
+                rejected.append((.toggleEnhancement, enhancementShortcut.shortcut))
+            }
         }
         if let enhanceShortcut = general.enhanceSelectedTextShortcut {
-            ShortcutStore.setShortcut(enhanceShortcut.shortcut, for: .enhanceSelectedText)
+            if !ShortcutStore.setShortcut(enhanceShortcut.shortcut, for: .enhanceSelectedText) {
+                rejected.append((.enhanceSelectedText, enhanceShortcut.shortcut))
+            }
         }
 
         if let shortcutRawValue = general.primaryRecordingShortcutRawValue,
@@ -266,6 +318,7 @@ enum BackupImporter {
         }
 
         print("Successfully imported general settings.")
+        return rejected
     }
 
     @MainActor
