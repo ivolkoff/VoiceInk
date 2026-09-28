@@ -10,7 +10,7 @@ enum DirectTyper {
     static let marker: Int64 = 0x564B_4C53
 
     private static let backspace: CGKeyCode = 51
-    /// A CGEvent carries ~20 UTF-16 units; 12 leaves headroom for surrogate pairs.
+    /// A CGEvent carries ~20 UTF-16 units; 12 leaves headroom.
     private static let chunkSize = 12
 
     static func replace(deleteCount: Int, with text: String) {
@@ -40,9 +40,12 @@ enum DirectTyper {
         let units = Array(text.utf16)
         var i = 0
         while i < units.count {
-            let chunk = Array(units[i..<min(i + chunkSize, units.count)])
+            var end = min(i + chunkSize, units.count)
+            // Never split a surrogate pair across events: a lone half inserts garbage.
+            if end < units.count, (0xD800...0xDBFF).contains(units[end - 1]) { end -= 1 }
+            let chunk = Array(units[i..<end])
             post(virtualKey: 0, source: source, unicode: chunk)
-            i += chunkSize
+            i = end
             usleep(800)
         }
     }
