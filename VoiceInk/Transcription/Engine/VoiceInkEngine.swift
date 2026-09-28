@@ -18,6 +18,9 @@ class VoiceInkEngine: NSObject, ObservableObject {
     let recorder = Recorder()
     var recordedFile: URL? = nil
     var pendingSelectionEditTask: Task<SelectionEditCapture?, Never>?
+    /// Model preload + context capture at recording start; cancelled at session end so a
+    /// late capture can't repopulate contexts the teardown just cleared.
+    private var sessionPreloadTask: Task<Void, Never>?
     let recordingsDirectory: URL
 
     // Injected managers
@@ -225,7 +228,7 @@ class VoiceInkEngine: NSObject, ObservableObject {
                                 }
                             }
 
-                            Task { @MainActor [weak self] in
+                            self.sessionPreloadTask = Task { @MainActor [weak self] in
                                 guard let self else { return }
 
                                 if let model = self.transcriptionModelManager.currentTranscriptionModel,
@@ -242,7 +245,7 @@ class VoiceInkEngine: NSObject, ObservableObject {
                                     try? await self.serviceRegistry.fluidAudioTranscriptionService.loadModel(for: fluidAudioModel)
                                 }
 
-                                if let enhancementService = self.enhancementService {
+                                if let enhancementService = self.enhancementService, !Task.isCancelled {
                                     enhancementService.captureClipboardContext()
                                     await enhancementService.captureScreenContext()
                                 }
@@ -360,8 +363,11 @@ class VoiceInkEngine: NSObject, ObservableObject {
             recordingState = .idle
             shouldFinishSessionImmediately = false
         case .idle, .busy:
+            // Keep shouldCancelRecording as requestRecordingCancellation() left it: a stop
+            // branch may still be suspended at recorder.stopRecording() and observes only
+            // this flag — clearing it here (a second cancel inside that window) would let
+            // the cancelled audio be transcribed and pasted. The next start resets it.
             partialTranscript = ""
-            shouldCancelRecording = false
             recordingState = .idle
             shouldFinishSessionImmediately = true
         }
@@ -476,6 +482,8 @@ class VoiceInkEngine: NSObject, ObservableObject {
     }
 
     private func finishRecorderSession() async {
+        sessionPreloadTask?.cancel()
+        sessionPreloadTask = nil
         enhancementService?.clearCapturedContexts()
         await restorePowerModeIfNeeded()
     }
