@@ -130,6 +130,12 @@ struct InlineHistoryView: View {
         .onDisappear {
             isViewCurrentlyVisible = false
         }
+        // Retention sweeps and "Run Cleanup Now" delete records outside this view;
+        // without this, deleted rows stay on screen until the next transcription.
+        .onReceive(NotificationCenter.default.publisher(for: .transcriptionDeleted)) { _ in
+            guard isViewCurrentlyVisible else { return }
+            Task { await loadInitialContent() }
+        }
         .onChange(of: searchText) { _, _ in
             Task {
                 await resetPagination()
