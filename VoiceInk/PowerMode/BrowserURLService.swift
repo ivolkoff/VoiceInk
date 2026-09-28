@@ -110,43 +110,46 @@ class BrowserURLService {
         let task = Process()
         task.launchPath = "/usr/bin/osascript"
         task.arguments = [scriptURL.path]
-        
+
         let pipe = Pipe()
         task.standardOutput = pipe
         task.standardError = pipe
-        
-        do {
-            logger.debug("▶️ Executing AppleScript for \(browser.displayName, privacy: .public)")
-            try task.run()
-            task.waitUntilExit()
-            
-            let data = pipe.fileHandleForReading.readDataToEndOfFile()
-            if let output = String(data: data, encoding: .utf8)?.trimmingCharacters(in: .whitespacesAndNewlines) {
-                // Two failure conventions: Chrome/Safari let errors propagate so
-                // osascript exits non-zero, while the Firefox/Zen scripts catch
-                // internally and return an "ERROR: ..." sentinel with exit 0. Check
-                // both. A real URL never starts with "ERROR:", so this avoids the old
-                // contains("error") false-positive on legitimate URLs.
-                if task.terminationStatus != 0 || output.hasPrefix("ERROR:") {
-                    logger.error("❌ AppleScript error for \(browser.displayName, privacy: .public): \(output, privacy: .public)")
-                    throw BrowserURLError.executionFailed
-                }
 
-                if output.isEmpty {
-                    logger.error("❌ Empty output from AppleScript for \(browser.displayName, privacy: .public)")
-                    throw BrowserURLError.noActiveTab
+        // The synchronous waitUntilExit blocks for as long as osascript runs — on the
+        // first browser recording that includes a TCC dialog the user must answer.
+        // Run it on the global queue instead of pinning a cooperative thread.
+        let result: (status: Int32, output: String) = await withCheckedContinuation { continuation in
+            DispatchQueue.global(qos: .userInitiated).async {
+                do {
+                    try task.run()
+                    task.waitUntilExit()
+                    let data = pipe.fileHandleForReading.readDataToEndOfFile()
+                    let output = String(data: data, encoding: .utf8)?
+                        .trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+                    continuation.resume(returning: (task.terminationStatus, output))
+                } catch {
+                    continuation.resume(returning: (-1, ""))
                 }
-
-                logger.debug("✅ Successfully retrieved URL from \(browser.displayName, privacy: .public): \(output, privacy: .public)")
-                return output
-            } else {
-                logger.error("❌ Failed to decode output from AppleScript for \(browser.displayName, privacy: .public)")
-                throw BrowserURLError.executionFailed
             }
-        } catch {
-            logger.error("❌ AppleScript execution failed for \(browser.displayName, privacy: .public): \(error.localizedDescription, privacy: .public)")
+        }
+
+        // Two failure conventions: Chrome/Safari let errors propagate so osascript
+        // exits non-zero, while the Firefox/Zen scripts catch internally and return
+        // an "ERROR: ..." sentinel with exit 0. Check both. A real URL never starts
+        // with "ERROR:", so this avoids a contains("error") false-positive on
+        // legitimate URLs.
+        if result.status != 0 || result.output.hasPrefix("ERROR:") {
+            logger.error("❌ AppleScript error for \(browser.displayName, privacy: .public): \(result.output, privacy: .public)")
             throw BrowserURLError.executionFailed
         }
+
+        if result.output.isEmpty {
+            logger.error("❌ Empty output from AppleScript for \(browser.displayName, privacy: .public)")
+            throw BrowserURLError.noActiveTab
+        }
+
+        logger.debug("✅ Successfully retrieved URL from \(browser.displayName, privacy: .public): \(result.output, privacy: .public)")
+        return result.output
     }
     
     func isRunning(_ browser: BrowserType) -> Bool {
