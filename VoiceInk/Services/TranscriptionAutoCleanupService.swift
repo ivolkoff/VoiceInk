@@ -69,22 +69,26 @@ class TranscriptionAutoCleanupService {
             return
         }
 
-        if let urlString = transcription.audioFileURL,
-           let url = URL(string: urlString) {
+        // Defer past the poster's call stack: posters keep using the record after
+        // `post` returns (e.g. the audio-file queue links it to its item), and a
+        // synchronous delete+save invalidates the model under their feet.
+        DispatchQueue.main.async { [weak self] in
+            guard let self else { return }
+
+            modelContext.delete(transcription)
             do {
-                try FileManager.default.removeItem(at: url)
+                try modelContext.save()
             } catch {
-                logger.error("Failed to delete audio file: \(error.localizedDescription, privacy: .public)")
+                self.logger.error("Failed to save after transcription deletion: \(error.localizedDescription, privacy: .public)")
+                return
             }
-        }
-
-        modelContext.delete(transcription)
-
-        do {
-            try modelContext.save()
+            // Delete the record first, the file after: a crash between the two leaves an
+            // orphan file the startup sweep collects, not a record pointing at deleted audio.
+            if let urlString = transcription.audioFileURL,
+               let url = URL(string: urlString) {
+                try? FileManager.default.removeItem(at: url)
+            }
             NotificationCenter.default.post(name: .transcriptionDeleted, object: nil)
-        } catch {
-            logger.error("Failed to save after transcription deletion: \(error.localizedDescription, privacy: .public)")
         }
     }
 
@@ -97,6 +101,10 @@ class TranscriptionAutoCleanupService {
         let effectiveMinutes = max(retentionMinutes, 0)
 
         let cutoffDate = Date().addingTimeInterval(TimeInterval(-effectiveMinutes * 60))
+        // Never touch a pending row: it is the record a live pipeline is transcribing into,
+        // and with retention 0 ("Immediately") a sweep on another completion would delete it
+        // — and its WAV — out from under that pipeline.
+        let pendingStatus = TranscriptionStatus.pending.rawValue
 
         let modelContainer = await MainActor.run { modelContext.container }
 
@@ -106,21 +114,27 @@ class TranscriptionAutoCleanupService {
             let descriptor = FetchDescriptor<Transcription>(
                 predicate: #Predicate<Transcription> { transcription in
                     transcription.timestamp < cutoffDate
+                        && transcription.transcriptionStatus != pendingStatus
                 }
             )
             let items = try backgroundContext.fetch(descriptor)
             var deletedCount = 0
+            var audioURLs: [URL] = []
             for transcription in items {
                 if let urlString = transcription.audioFileURL,
-                   let url = URL(string: urlString),
-                   FileManager.default.fileExists(atPath: url.path) {
-                    try? FileManager.default.removeItem(at: url)
+                   let url = URL(string: urlString) {
+                    audioURLs.append(url)
                 }
                 backgroundContext.delete(transcription)
                 deletedCount += 1
             }
             if deletedCount > 0 {
                 try backgroundContext.save()
+                // Files only after the record delete committed: a failed save must leave
+                // the records intact; orphaned files are collectable, dangling records are not.
+                for url in audioURLs where FileManager.default.fileExists(atPath: url.path) {
+                    try? FileManager.default.removeItem(at: url)
+                }
                 logger.notice("Cleaned up \(deletedCount, privacy: .public) old transcription(s)")
                 await MainActor.run {
                     NotificationCenter.default.post(name: .transcriptionDeleted, object: nil)
