@@ -422,7 +422,9 @@ final class ShortcutMonitor {
         let mouseButton = Int(event.getIntegerValueField(.mouseEventButtonNumber))
         let modifierFlags = NSEvent.ModifierFlags(rawValue: UInt(event.flags.rawValue))
         if type == .keyDown || type == .keyUp || type == .flagsChanged {
-            logger.notice("cg event: type=\(type.rawValue, privacy: .public), keyCode=\(keyCode, privacy: .public), flags=\(modifierFlags.rawValue, privacy: .public)")
+            // debug, not notice: notice persists to disk, and the key-code stream reconstructs
+            // everything typed in every app, passwords included.
+            logger.debug("cg event: type=\(type.rawValue, privacy: .public), keyCode=\(keyCode, privacy: .public), flags=\(modifierFlags.rawValue, privacy: .public)")
         } else if type == .otherMouseDown || type == .otherMouseUp {
             logger.notice("cg mouse event: type=\(type.rawValue, privacy: .public), button=\(mouseButton, privacy: .public), flags=\(modifierFlags.rawValue, privacy: .public)")
         }
