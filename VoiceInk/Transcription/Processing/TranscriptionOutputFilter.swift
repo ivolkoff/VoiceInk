@@ -76,7 +76,10 @@ struct TranscriptionOutputFilter {
         // Remove filler words (if enabled)
         if FillerWordManager.shared.isEnabled {
             for fillerWord in FillerWordManager.shared.fillerWords {
-                let pattern = "\\b\(NSRegularExpression.escapedPattern(for: fillerWord))\\b[,.]?"
+                // Hyphen counts as a word char here: \b would treat «ну-ка» as «ну» + boundary
+                // and split the word. The trailing punctuation class swallows the sign the
+                // filler carried, so «um?» leaves no orphaned «?» behind.
+                let pattern = "(?<![\\p{L}\\p{N}-])\(NSRegularExpression.escapedPattern(for: fillerWord))(?![\\p{L}\\p{N}-])[,.?!;:]?"
                 if let regex = try? NSRegularExpression(pattern: pattern, options: .caseInsensitive) {
                     let range = NSRange(filteredText.startIndex..., in: filteredText)
                     filteredText = regex.stringByReplacingMatches(in: filteredText, options: [], range: range, withTemplate: "")
@@ -84,8 +87,8 @@ struct TranscriptionOutputFilter {
             }
         }
 
-        // Clean whitespace
-        filteredText = filteredText.replacingOccurrences(of: #"\s{2,}"#, with: " ", options: .regularExpression)
+        // Clean whitespace: space/tab runs only — collapsing all \s{2,} flattened paragraphs.
+        filteredText = filteredText.replacingOccurrences(of: #"[^\S\n]{2,}"#, with: " ", options: .regularExpression)
         filteredText = filteredText.trimmingCharacters(in: .whitespacesAndNewlines)
 
         return filteredText
