@@ -218,6 +218,12 @@ class PowerModeManager: ObservableObject {
         let previousEnabledConfigIds = enabledConfigurationIds
         ShortcutStore.removeShortcutStorage(for: .powerMode(id))
         configurations.removeAll { $0.id == id }
+        if activeConfiguration?.id == id {
+            // End the live session: otherwise the deleted mode's settings stay applied
+            // until some later recording finishes — or forever with persist on.
+            setActiveConfiguration(nil)
+            Task { await PowerModeSessionManager.shared.endSession() }
+        }
         saveConfigurations()
         postShortcutAvailabilityChangeIfNeeded(previousEnabledConfigIds: previousEnabledConfigIds)
     }
