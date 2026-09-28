@@ -30,4 +30,15 @@ struct LayoutConversionTests {
         guard let a = plan("ghbdtn"), let b = plan("ghbdtn") else { return }
         #expect(a == b)
     }
+    @Test func selectionSmartPassLeftUnchangedIsFlippedWhole() {
+        guard let l = TestLayouts.usAndRussian() else { return }
+        let map = LayoutMapper.bidirectionalMap(l.us, l.ru)
+        func force(_ s: String) -> String? { LayoutConversion.selectionResult(smart: s, selection: s, map: map) }
+        #expect(force("привет") == "ghbdtn")
+        #expect(force("ПРИВЕТ") == "GHBDTN")
+        #expect(force("iPhone") == "шЗрщту")
+        #expect(force("123 ") == nil)
+        // A smart result that changed something is kept as is.
+        #expect(LayoutConversion.selectionResult(smart: "привет iPhone", selection: "ghbdtn iPhone", map: map) == "привет iPhone")
+    }
 }

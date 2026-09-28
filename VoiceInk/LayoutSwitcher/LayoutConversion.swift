@@ -33,6 +33,15 @@ enum LayoutConversion {
                     convertedLength: decision.convertedLength, switchToB: typedIsA)
     }
 
+    /// A selection the smart pass left untouched is flipped whole: selecting and pressing the
+    /// hotkey is an explicit request, and pressing it again undoes. nil when nothing flips.
+    /// `map` must be the bidirectional character map of the pair.
+    static func selectionResult(smart: String, selection: String, map: [Character: Character]) -> String? {
+        if smart != selection { return smart }
+        let forced = LayoutMapper.convertText(selection, map: map)
+        return forced == selection ? nil : forced
+    }
+
     /// True when the dominant letter script of `s` matches the (Latin/Cyrillic) family of `lang`.
     static func scriptMatchesLang(_ s: String, lang: String) -> Bool {
         var cyr = 0, lat = 0

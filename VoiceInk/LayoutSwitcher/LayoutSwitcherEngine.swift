@@ -292,12 +292,13 @@ final class LayoutSwitcherEngine {
         } else {
             result = LayoutMapper.convertText(selection, map: LayoutMapper.characterMap(from: pair.currentData, to: pair.otherData))
         }
-        guard result != selection else {
+        let forceMap = LayoutMapper.bidirectionalMap(pair.currentData, pair.otherData)
+        guard let output = LayoutConversion.selectionResult(smart: result, selection: selection, map: forceMap) else {
             NotificationManager.shared.showNotification(title: String(localized: "Nothing to convert"), type: .info)
             return
         }
         // Typing over a selection replaces it; no Backspaces, no layout switch.
-        perform(deleteCount: 0, text: result, original: selection, wasAuto: false, bundleID: bundleID,
+        perform(deleteCount: 0, text: output, original: selection, wasAuto: false, bundleID: bundleID,
                 switchTo: nil, afterSeq: afterSeq)
     }
 
