@@ -18,6 +18,9 @@ class RecorderUIManager: ObservableObject {
                 }
                 Task { @MainActor in
                     try? await Task.sleep(nanoseconds: 50_000_000)
+                    // A cancel/dismiss landing inside the window already hid the panel;
+                    // recreating it now would leave an orphaned bar nothing tracks.
+                    guard isMiniRecorderVisible else { return }
                     showRecorderPanel()
                 }
             }
