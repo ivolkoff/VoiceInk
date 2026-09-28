@@ -169,9 +169,13 @@ class Recorder: NSObject, ObservableObject {
 
         resetAudioMeter()
 
-        audioRestorationTask = Task {
-            await mediaController.unmuteSystemAudio()
-            await playbackController.resumeMedia()
+        // Restore only when this call actually stopped a recorder: the cancel-during-stop
+        // path stops twice, and a second unmute/resume can restart media the user paused.
+        if currentRecorder != nil {
+            audioRestorationTask = Task {
+                await mediaController.unmuteSystemAudio()
+                await playbackController.resumeMedia()
+            }
         }
         deviceManager.isRecordingActive = false
     }
