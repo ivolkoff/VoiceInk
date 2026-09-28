@@ -419,7 +419,8 @@ final class RecordingShortcutModeHandler {
     private var interruptedRecordingActions = Set<ShortcutAction>()
     private var activeShortcutCanCancelAccidentalStart = false
     private var activeShortcutIsDoubleTap = false
-    private var lastShortcutPressTime: Date?
+    /// Keyed per action: one shortcut's press must not swallow a different one's.
+    private var lastShortcutPressTimes: [ShortcutAction: Date] = [:]
     /// First short tap of a pending double tap, per action.
     private var pendingDoubleTapTimes: [ShortcutAction: TimeInterval] = [:]
 
@@ -505,7 +506,7 @@ final class RecordingShortcutModeHandler {
         }
 
         // The cooldown would swallow the second tap of a double tap.
-        if mode != .doubleTap, let lastTrigger = lastShortcutPressTime,
+        if mode != .doubleTap, let lastTrigger = lastShortcutPressTimes[action],
            Date().timeIntervalSince(lastTrigger) < shortcutPressCooldown {
             logger.notice("handleKeyDown ignored: cooldown action=\(action.storageName, privacy: .public)")
             return
@@ -520,7 +521,7 @@ final class RecordingShortcutModeHandler {
         activeShortcutIsDoubleTap = mode == .doubleTap
         activeShortcutCanCancelAccidentalStart = mode != .doubleTap && canCurrentShortcutPressCancelAccidentalStart
         if mode != .doubleTap {
-            lastShortcutPressTime = Date()
+            lastShortcutPressTimes[action] = Date()
         }
         shortcutPressStartTime = eventTime
 
