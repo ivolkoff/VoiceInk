@@ -185,6 +185,9 @@ struct VoiceInkApp: App {
         Task {
             await migrationTask?.value
             TranscriptionAutoCleanupService.shared.startMonitoring(modelContext: mainContext)
+            // Deferred past launch: reading the full defaults dictionary inside the
+            // manager's init raced CFPrefs during early boot and crashed the host.
+            ShortcutStore.recoverAllInterruptedRecordings()
         }
 
         // App-lifetime audio cleanup, not window lifetime: tying the timer to the main

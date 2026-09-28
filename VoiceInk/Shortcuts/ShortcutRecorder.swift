@@ -93,8 +93,9 @@ struct ShortcutRecorder: View {
         }
         .onAppear {
             // Self-heal a binding left paused by a crash during a previous recording.
-            // Guard on !isRecording so a re-appear mid-capture can't un-pause the live one.
-            guard !recorder.isRecording else { return }
+            // Guard on any live capture — another recorder of the same action mid-capture
+            // must not have its pause lifted from under it.
+            guard !recorder.isRecording, ShortcutRecorderModel.activeCaptureCount == 0 else { return }
             ShortcutStore.recoverInterruptedRecording(for: action)
         }
         .onDisappear {
@@ -129,8 +130,12 @@ struct ShortcutRecorder: View {
 
     private func restoreShortcutAfterFailedRecording() {
         guard let previousShortcut else { return }
-        ShortcutStore.setShortcut(previousShortcut, for: action)
-        shortcut = previousShortcut
+        // A rejected restore keeps the pause; showing the old binding as active would
+        // display a hotkey that no longer fires. recoverInterruptedRecording sorts the
+        // pause out once the conflicting binding is gone.
+        if ShortcutStore.setShortcut(previousShortcut, for: action) {
+            shortcut = previousShortcut
+        }
         self.previousShortcut = nil
         onShortcutChanged()
     }
@@ -215,6 +220,9 @@ final class ShortcutRecorderModel: ObservableObject {
     @Published var isRecording = false
     @Published var previewShortcut: Shortcut?
 
+    /// Live captures across all recorder instances; recovery must wait them out.
+    static var activeCaptureCount = 0
+
     private var localMonitor: Any?
     private var onCapture: ((Shortcut) -> Void)?
     private var onConflictOrCancel: (() -> Void)?
@@ -236,6 +244,7 @@ final class ShortcutRecorderModel: ObservableObject {
         activeAction = action
         self.onCapture = onCapture
         self.onConflictOrCancel = onConflictOrCancel
+        if !isRecording { Self.activeCaptureCount += 1 }
         isRecording = true
         previewShortcut = nil
         installRecordingMonitor()
@@ -272,6 +281,7 @@ final class ShortcutRecorderModel: ObservableObject {
     }
 
     private func resetRecordingState() {
+        if isRecording { Self.activeCaptureCount -= 1 }
         isRecording = false
         previewShortcut = nil
         onCapture = nil

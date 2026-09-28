@@ -93,7 +93,11 @@ class RecorderUIManager: ObservableObject {
             case .recording:
                 logger.notice("toggleMiniRecorder: stopping recording (was recording)")
                 await engine.toggleRecord(powerModeId: powerModeId)
-            case .starting, .transcribing, .enhancing:
+            case .transcribing, .enhancing:
+                // The hotkey toggle is a no-op in these states; the intent path must not
+                // destroy in-flight work the hotkeys deliberately protect.
+                logger.notice("toggleMiniRecorder: busy transcribing/enhancing — ignoring")
+            case .starting:
                 logger.notice("toggleMiniRecorder: cancelling active recorder work")
                 await cancelRecording()
             case .idle, .busy:
@@ -150,9 +154,16 @@ class RecorderUIManager: ObservableObject {
         )
     }
 
+    /// Serializes notification-driven toggles: a second invoke inside the ~100 ms start
+    /// window used to cancel the recording it just started (hotkeys have a cooldown).
+    private var intentToggleInFlight = false
+
     @objc public func handleToggleMiniRecorder() {
         logger.notice("handleToggleMiniRecorder: .toggleMiniRecorder notification received")
+        guard !intentToggleInFlight else { return }
+        intentToggleInFlight = true
         Task {
+            defer { intentToggleInFlight = false }
             await toggleMiniRecorder()
         }
     }

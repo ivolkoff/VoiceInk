@@ -67,6 +67,41 @@ enum ShortcutStore {
         )
     }
 
+    /// Launch-time sweep: without it, a crash during interactive capture left the global
+    /// hotkey dead until the specific settings recorder that paused it was opened again.
+    static func recoverAllInterruptedRecordings() {
+        for key in UserDefaults.standard.dictionaryRepresentation().keys
+        where key.hasPrefix("Shortcut_") {
+            recoverInterruptedRecording(forStorageName: key.dropFirst("Shortcut_".count))
+        }
+    }
+
+    static func recoverInterruptedRecording(forStorageName storageName: Substring) {
+        // The power-mode-agnostic actions share their storage name with the case; power
+        // modes carry the config id after "powerMode_".
+        if storageName.hasPrefix("powerMode_"),
+           let id = UUID(uuidString: String(storageName.dropFirst("powerMode_".count))) {
+            recoverInterruptedRecording(for: .powerMode(id))
+            return
+        }
+        switch storageName {
+        case "primaryRecording": recoverInterruptedRecording(for: .primaryRecording)
+        case "secondaryRecording": recoverInterruptedRecording(for: .secondaryRecording)
+        case "pasteLastTranscription": recoverInterruptedRecording(for: .pasteLastTranscription)
+        case "pasteLastEnhancement": recoverInterruptedRecording(for: .pasteLastEnhancement)
+        case "retryLastTranscription": recoverInterruptedRecording(for: .retryLastTranscription)
+        case "retranscribeLastInLayoutLanguage": recoverInterruptedRecording(for: .retranscribeLastInLayoutLanguage)
+        case "cancelRecorder": recoverInterruptedRecording(for: .cancelRecorder)
+        case "openHistoryWindow": recoverInterruptedRecording(for: .openHistoryWindow)
+        case "quickAddToDictionary": recoverInterruptedRecording(for: .quickAddToDictionary)
+        case "toggleEnhancement": recoverInterruptedRecording(for: .toggleEnhancement)
+        case "enhanceSelectedText": recoverInterruptedRecording(for: .enhanceSelectedText)
+        case "convertLayout": recoverInterruptedRecording(for: .convertLayout)
+        case "openQuickHistory": recoverInterruptedRecording(for: .openQuickHistory)
+        default: break
+        }
+    }
+
     /// If a shortcut is marked cleared but its definition is still stored, the app was
     /// killed after pauseShortcut but before recording finished (a real removal erases
     /// the raw data too). Clear the flag to restore the previous binding.
