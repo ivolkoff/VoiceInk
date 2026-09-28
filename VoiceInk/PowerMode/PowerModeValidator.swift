@@ -80,7 +80,11 @@ struct PowerModeValidator {
                     }
                     
                     if let existingUrlConfigs = existingConfig.urlConfigs,
-                       existingUrlConfigs.contains(where: { $0.url == urlConfig.url }) {
+                       // Cleaned, like the matcher: "https://github.com" and "github.com/"
+                       // are the same trigger; raw comparison let duplicates through.
+                       existingUrlConfigs.contains(where: {
+                           powerModeManager.cleanURL($0.url) == powerModeManager.cleanURL(urlConfig.url)
+                       }) {
                         errors.append(.duplicateWebsiteTrigger(urlConfig.url, existingConfig.name))
                     }
                 }
