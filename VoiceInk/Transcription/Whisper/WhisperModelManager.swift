@@ -109,17 +109,50 @@ class WhisperModelManager: ObservableObject {
 
     // MARK: - Model Loading
 
+    private var activeModelLoad: (name: String, task: Task<WhisperContext, Error>)?
+    private var modelUseCount = 0
+
+    func beginModelUse() {
+        modelUseCount += 1
+    }
+
+    func endModelUse() {
+        modelUseCount = max(0, modelUseCount - 1)
+    }
+
     func loadModel(_ model: WhisperModelFile) async throws {
-        guard whisperContext == nil else { return }
+        // Same model already resident: nothing to do. (A bare `whisperContext == nil`
+        // guard made a switch between models a silent no-op that kept the old model.)
+        if whisperContext != nil, loadedWhisperModel?.name == model.name { return }
+
+        // Same model already loading (prewarm racing the recording preload):
+        // ride along instead of initializing the multi-GB model twice.
+        if let active = activeModelLoad, active.name == model.name {
+            _ = try? await active.task.value
+            if whisperContext != nil, loadedWhisperModel?.name == model.name { return }
+        }
 
         isModelLoading = true
         defer { isModelLoading = false }
 
+        // Free the resident model before loading the replacement.
+        if let previous = whisperContext {
+            whisperContext = nil
+            isModelLoaded = false
+            loadedWhisperModel = nil
+            await previous.releaseResources()
+        }
+
+        let loadTask = Task { try await WhisperContext.createContext(path: model.url.path) }
+        activeModelLoad = (model.name, loadTask)
+        defer { activeModelLoad = nil }
+
         do {
-            whisperContext = try await WhisperContext.createContext(path: model.url.path)
+            let context = try await loadTask.value
+            whisperContext = context
 
             let currentPrompt = UserDefaults.standard.string(forKey: "TranscriptionPrompt") ?? whisperPrompt.transcriptionPrompt
-            await whisperContext?.setPrompt(currentPrompt)
+            await context.setPrompt(currentPrompt)
 
             isModelLoaded = true
             loadedWhisperModel = model
@@ -385,10 +418,22 @@ class WhisperModelManager: ObservableObject {
     }
 
     func unloadModel() {
+        // A transcription using the shared context is in flight: freeing it now makes
+        // that dictation fail spuriously. The next unload (window close, model switch)
+        // collects the model instead.
+        guard modelUseCount == 0 else {
+            logger.notice("unloadModel skipped: a transcription is using the model")
+            return
+        }
         Task {
-            await whisperContext?.releaseResources()
+            guard modelUseCount == 0 else { return }
+            // Detach the context before the (suspending) release, so a transcription
+            // starting meanwhile takes the private-context path instead of a dying one.
+            let context = whisperContext
             whisperContext = nil
             isModelLoaded = false
+            loadedWhisperModel = nil
+            await context?.releaseResources()
         }
     }
 

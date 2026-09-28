@@ -22,6 +22,12 @@ class WhisperTranscriptionService: TranscriptionService {
         logger.notice("Initiating local transcription for model: \(model.displayName, privacy: .public)")
 
         // Check if the required model is already loaded in the model provider
+        var sharedProvider: (any WhisperModelProvider)?
+        defer {
+            if let sharedProvider {
+                Task { await sharedProvider.endModelUse() }
+            }
+        }
         if let provider = modelProvider,
            await provider.isModelLoaded,
            let loadedContext = await provider.whisperContext,
@@ -29,6 +35,10 @@ class WhisperTranscriptionService: TranscriptionService {
 
             logger.notice("Using already loaded model: \(model.name, privacy: .public)")
             whisperContext = loadedContext
+            // Pin the context: a window close can call unloadModel mid-transcription
+            // and free the underlying whisper state under this run.
+            await provider.beginModelUse()
+            sharedProvider = provider
         } else {
             // Resolve the on-disk URL using the provider's availableModels (covers imports)
             let resolvedURL: URL? = await modelProvider?.availableModels.first(where: { $0.name == model.name })?.url
