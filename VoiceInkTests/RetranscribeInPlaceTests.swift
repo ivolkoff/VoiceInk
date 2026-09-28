@@ -46,11 +46,16 @@ struct RetranscribeInPlaceTests {
     }
 
     private func inMemoryContext() throws -> ModelContext {
+        // retranscribeInPlace runs word replacements, so the schema needs that model too:
+        // fetching an entity missing from the schema traps inside SwiftData, not a thrown error.
         let container = try ModelContainer(
-            for: Transcription.self,
+            for: Transcription.self, WordReplacement.self,
             configurations: ModelConfiguration(isStoredInMemoryOnly: true)
         )
-        return container.mainContext
+        // container.mainContext traps inside fetch here even on the main thread (reproduced
+        // with the full schema; the specific SwiftData precondition is unidentified).
+        // A plain ModelContext is stable in the same setup.
+        return ModelContext(container)
     }
 
     @Test func overwritesRecordAndPassesChosenLanguage() async throws {
