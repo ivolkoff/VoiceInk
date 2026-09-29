@@ -222,7 +222,10 @@ struct ConfigurationRow: View {
             .padding(.vertical, 12)
             .padding(.horizontal, 14)
             
-            if selectedModel != nil || selectedLanguage != nil || config.isAIEnhancementEnabled || config.autoSendKey.isEnabled {
+            // Compare against the "Default" fallbacks: both computed values never return
+            // nil, so the old `!= nil` checks were always true and rendered an empty
+            // details strip under every plain config.
+            if selectedModel != "Default" || selectedLanguage != "Default" || config.isAIEnhancementEnabled || config.autoSendKey.isEnabled {
                 Divider()
                 
                 HStack(spacing: 8) {

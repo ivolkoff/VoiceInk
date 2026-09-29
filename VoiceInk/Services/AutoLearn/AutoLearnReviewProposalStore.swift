@@ -108,10 +108,30 @@ actor AutoLearnReviewProposalStore {
 
     private func loadIfNeeded() throws {
         guard !isLoaded else { return }
-        defer { isLoaded = true }
-        guard fileManager.fileExists(atPath: fileURL.path) else { return }
+        guard fileManager.fileExists(atPath: fileURL.path) else {
+            isLoaded = true
+            return
+        }
+
+        // A throw must NOT mark the store loaded (the old `defer` did): an empty
+        // loaded state made the next append's save() overwrite the file, destroying
+        // every stored proposal.
         let data = try Data(contentsOf: fileURL)
-        proposals = try JSONDecoder().decode([AutoLearnReviewProposal].self, from: data)
+        if let decoded = try? JSONDecoder().decode([AutoLearnReviewProposal].self, from: data) {
+            proposals = decoded
+        } else {
+            // One drifted record must not strand the whole file: back the blob up and
+            // decode element-wise, dropping only the unreadable proposals.
+            try? data.write(to: fileURL.appendingPathExtension("corrupt"))
+            guard let raw = try? JSONSerialization.jsonObject(with: data) as? [[String: Any]] else {
+                throw CocoaError(.fileReadCorruptFile)
+            }
+            let decoder = JSONDecoder()
+            proposals = raw.compactMap {
+                try? decoder.decode(AutoLearnReviewProposal.self, from: JSONSerialization.data(withJSONObject: $0))
+            }
+        }
+        isLoaded = true
     }
 
     private func save() throws {

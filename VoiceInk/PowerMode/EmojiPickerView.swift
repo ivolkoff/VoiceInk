@@ -141,6 +141,10 @@ struct EmojiPickerView: View {
         } else {
             if emojiManager.removeCustomEmoji(emojiToRemove) {
                 if selectedEmoji == emojiToRemove {
+                    // The draft kept pointing at an emoji that no longer exists in the
+                    // palette; fall back to the first remaining one so Save can't store
+                    // an unpickable emoji.
+                    selectedEmoji = emojiManager.allEmojis.first ?? "🏢"
                 }
             }
         }

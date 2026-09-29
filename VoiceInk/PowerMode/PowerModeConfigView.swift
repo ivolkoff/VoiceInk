@@ -36,6 +36,12 @@ struct ConfigurationView: View {
     @State private var powerModeConfigId: UUID = UUID()
     @State private var isTranscriptFormattingExpanded = false
     @State private var didSaveConfiguration = false
+    // The config's shortcut as it was when the editor opened; an unsaved dismissal
+    // restores it, because a newly recorded shortcut persists at capture time.
+    @State private var originalShortcut: Shortcut?
+    // The user's language before a model switch clamped it; switching back to a
+    // compatible model restores it instead of keeping the clamp fallback.
+    @State private var rememberedIncompatibleLanguage: String?
 
     private var effectiveModelName: String? {
         selectedTranscriptionModelName ?? transcriptionModelManager.currentTranscriptionModel?.name
@@ -63,10 +69,25 @@ struct ConfigurationView: View {
     }
 
     private func useCompatibleLanguage(for model: any TranscriptionModel) {
-        selectedLanguage = TranscriptionLanguageSupport.validLanguageOrFallback(
-            selectedLanguage ?? UserDefaults.standard.string(forKey: "SelectedLanguage"),
-            for: model
-        )
+        let languages = availableLanguages(for: model)
+
+        // Restore the remembered choice first: a round trip through an incompatible
+        // model (multilingual → English-only → back) must not permanently rewrite
+        // the user's language to the clamp fallback.
+        if let remembered = rememberedIncompatibleLanguage, languages[remembered] != nil {
+            rememberedIncompatibleLanguage = nil
+            selectedLanguage = remembered
+            return
+        }
+
+        let current = selectedLanguage ?? UserDefaults.standard.string(forKey: "SelectedLanguage")
+        if let current, languages[current] != nil {
+            return
+        }
+        if rememberedIncompatibleLanguage == nil, let current {
+            rememberedIncompatibleLanguage = current
+        }
+        selectedLanguage = TranscriptionLanguageSupport.validLanguageOrFallback(current, for: model)
     }
 
     init(mode: ConfigurationMode, powerModeManager: PowerModeManager, onDismiss: @escaping () -> Void) {
@@ -94,6 +115,7 @@ struct ConfigurationView: View {
             _selectedAIProvider = State(initialValue: UserDefaults.standard.string(forKey: "selectedAIProvider"))
             _selectedAIModel = State(initialValue: nil)
             _isTranscriptFormattingExpanded = State(initialValue: false)
+            _originalShortcut = State(initialValue: nil)
         case .edit(let config):
             // Fetch latest version in case config was modified elsewhere
             let latestConfig = powerModeManager.getConfiguration(with: config.id) ?? config
@@ -115,6 +137,7 @@ struct ConfigurationView: View {
             _selectedAIProvider = State(initialValue: latestConfig.selectedAIProvider)
             _selectedAIModel = State(initialValue: latestConfig.selectedAIModel)
             _isTranscriptFormattingExpanded = State(initialValue: latestConfig.isTextFormattingEnabled || latestConfig.punctuationCleanupMode != .keep || latestConfig.lowercaseTranscription)
+            _originalShortcut = State(initialValue: ShortcutStore.shortcut(for: .powerMode(latestConfig.id)))
         }
     }
 
@@ -301,6 +324,9 @@ struct ConfigurationView: View {
                             if let modelName = newModelName ?? transcriptionModelManager.currentTranscriptionModel?.name,
                                let model = transcriptionModelManager.allAvailableModels.first(where: { $0.name == modelName }) {
                                 if model.provider == .gemini {
+                                    if rememberedIncompatibleLanguage == nil, let selectedLanguage, selectedLanguage != "auto" {
+                                        rememberedIncompatibleLanguage = selectedLanguage
+                                    }
                                     selectedLanguage = "auto"
                                 } else {
                                     useCompatibleLanguage(for: model)
@@ -322,7 +348,11 @@ struct ConfigurationView: View {
                               modelInfo.isMultilingualModel {
                         let languageBinding = Binding<String?>(
                             get: { selectedLanguage ?? UserDefaults.standard.string(forKey: "SelectedLanguage") ?? "auto" },
-                            set: { selectedLanguage = $0 }
+                            set: { newValue in
+                                selectedLanguage = newValue
+                                // An explicit pick supersedes any remembered pre-clamp language.
+                                rememberedIncompatibleLanguage = nil
+                            }
                         )
 
                         Picker("Language", selection: languageBinding) {
@@ -457,7 +487,10 @@ struct ConfigurationView: View {
                                 let modelBinding = Binding<String>(
                                     get: {
                                         if let model = selectedAIModel, !model.isEmpty { return model }
-                                        return aiService.currentModel
+                                        // This provider's default, not the global current model —
+                                        // that can belong to another provider and would display a
+                                        // foreign selection while saving nil.
+                                        return provider.defaultModel
                                     },
                                     set: { newModelValue in
                                         selectedAIModel = newModelValue
@@ -764,10 +797,24 @@ struct ConfigurationView: View {
     }
 
     private func cleanupUnsavedShortcutIfNeeded() {
-        guard case .add = mode, !didSaveConfiguration else {
+        guard !didSaveConfiguration else {
             return
         }
 
-        ShortcutStore.removeShortcutStorage(for: .powerMode(powerModeConfigId))
+        switch mode {
+        case .add:
+            ShortcutStore.removeShortcutStorage(for: .powerMode(powerModeConfigId))
+        case .edit:
+            // A recorded shortcut persists and registers as a live hotkey at capture
+            // time; closing the editor without saving must restore the config's own
+            // binding instead of leaving the new hotkey on the old configuration.
+            if ShortcutStore.shortcut(for: .powerMode(powerModeConfigId)) != originalShortcut {
+                if let originalShortcut {
+                    _ = ShortcutStore.setShortcut(originalShortcut, for: .powerMode(powerModeConfigId))
+                } else {
+                    ShortcutStore.removeShortcutStorage(for: .powerMode(powerModeConfigId))
+                }
+            }
+        }
     }
 }

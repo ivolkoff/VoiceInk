@@ -585,8 +585,12 @@ actor AutoLearnService {
     private func releaseAllClaimsToQueue() async throws {
         guard !claimedCandidateIDs.isEmpty else { return }
         let claimedIDs = claimedCandidateIDs
-        try await pendingQueue.release(claimedIDs)
+        // Drop the claims before releasing: pendingQueue.release rolls its own
+        // in-memory state back to .pending when the queue-file save fails, so keeping
+        // the IDs claimed on a throw would strand the batch as .reviewing with every
+        // auto-review path gated on a pendingCount that excludes it.
         claimedCandidateIDs.subtract(claimedIDs)
+        try await pendingQueue.release(claimedIDs)
     }
 
     private func finishReviewTask(generation: UInt64) async {
