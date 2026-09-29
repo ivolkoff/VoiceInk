@@ -329,7 +329,10 @@ struct DictionaryQuickAddView: View {
                 .split(separator: ",")
                 .map { $0.trimmingCharacters(in: .whitespacesAndNewlines).lowercased() }
             if tokens.contains(lower) {
-                return "\"\(selectedText)\" уже есть в заменах слов"
+                return String.localizedStringWithFormat(
+                    String(localized: "\"%@\" is already in word replacements"),
+                    selectedText
+                )
             }
         }
         return nil
@@ -350,7 +353,7 @@ struct DictionaryQuickAddView: View {
             // Selected text context
             if !selectedText.isEmpty {
                 HStack(spacing: 10) {
-                    Text("Заменить")
+                    Text("Replace")
                         .font(.system(size: 12, weight: .medium))
                         .foregroundStyle(.secondary)
                         .lineLimit(1)
@@ -369,7 +372,7 @@ struct DictionaryQuickAddView: View {
                 Image(systemName: "magnifyingglass")
                     .font(.system(size: 12))
                     .foregroundStyle(.secondary)
-                TextField("", text: $insertSearch, prompt: Text(selectedText.isEmpty ? "Поиск замен…" : "На что…").foregroundColor(.secondary))
+                TextField("", text: $insertSearch, prompt: Text(selectedText.isEmpty ? "Search replacements…" : "Replace with…").foregroundColor(.secondary))
                     .textFieldStyle(.roundedBorder)
                     .font(.system(size: 14))
                     .focused($focusedField, equals: .insertSearch)
@@ -385,7 +388,7 @@ struct DictionaryQuickAddView: View {
                     Image(systemName: "magnifyingglass")
                         .font(.system(size: 18))
                         .foregroundStyle(.tertiary)
-                    Text(selectedText.isEmpty ? "Нет совпадений — ↵ для нового слова" : "Нет совпадений — ↵ для добавления")
+                    Text(selectedText.isEmpty ? "No matches — press ↵ for a new word" : "No matches — press ↵ to add")
                         .font(.system(size: 12))
                         .foregroundStyle(.tertiary)
                 }
@@ -418,14 +421,14 @@ struct DictionaryQuickAddView: View {
                 .font(.system(size: 24))
                 .foregroundStyle(.tertiary)
 
-            Text("Нет замен слов")
+            Text("No word replacements")
                 .font(.system(size: 13))
                 .foregroundStyle(.secondary)
 
             Button {
                 withAnimation(.easeInOut(duration: 0.15)) { mode = .replacement }
             } label: {
-                Text("Добавить замену")
+                Text("Add Replacement")
                     .font(.system(size: 12, weight: .medium))
             }
             .buttonStyle(.borderedProminent)
@@ -582,7 +585,7 @@ struct DictionaryQuickAddView: View {
                         } else {
                         HStack(spacing: 4) {
                             KeyHint("↵")
-                            Text("Новое слово или правка")
+                            Text("New word or edit")
                                 .font(.system(size: 11))
                                 .foregroundStyle(.tertiary)
                         }
@@ -596,7 +599,7 @@ struct DictionaryQuickAddView: View {
                     } else {
                         HStack(spacing: 4) {
                             KeyHint("↵")
-                            Text("Добавить замену")
+                            Text("Add Replacement")
                                 .font(.system(size: 11))
                                 .foregroundStyle(.tertiary)
                         }

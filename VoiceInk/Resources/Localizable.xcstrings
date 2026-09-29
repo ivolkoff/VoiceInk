@@ -9801,6 +9801,86 @@
           }
         }
       }
+    },
+    "\"%@\" is already in word replacements": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "«%@» уже есть в заменах слов"
+          }
+        }
+      }
+    },
+    "Search replacements…": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Поиск замен…"
+          }
+        }
+      }
+    },
+    "Replace with…": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "На что…"
+          }
+        }
+      }
+    },
+    "No matches — press ↵ for a new word": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Нет совпадений — ↵ для нового слова"
+          }
+        }
+      }
+    },
+    "No matches — press ↵ to add": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Нет совпадений — ↵ для добавления"
+          }
+        }
+      }
+    },
+    "No word replacements": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Нет замен слов"
+          }
+        }
+      }
+    },
+    "Add Replacement": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Добавить замену"
+          }
+        }
+      }
+    },
+    "New word or edit": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Новое слово или правка"
+          }
+        }
+      }
     }
   },
   "version": "1.0"
