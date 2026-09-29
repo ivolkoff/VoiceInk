@@ -104,8 +104,9 @@ enum SessionMetricRecorder {
             audioDuration > 0 ? audioDuration / duration : nil
         }
         // retranscribeInPlace clears enhancement fields; mirror that on the metric.
+        // powerModeName is NOT reset by the re-transcription — mirror it as-is.
         metric.aiEnhancementModelName = nil
         metric.enhancementDuration = nil
-        metric.powerModeName = nil
+        metric.powerModeName = transcription.powerModeName
     }
 }
