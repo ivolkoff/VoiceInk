@@ -99,7 +99,8 @@ class PowerModeSessionManager {
                 }
 
                 if let aiService = enhancementService.getAIService() {
-                    if let providerName = config.selectedAIProvider, let provider = AIProvider(rawValue: providerName) {
+                    if let providerName = config.selectedAIProvider, let provider = AIProvider(rawValue: providerName),
+                       !provider.isTranscriptionOnly {
                         aiService.selectedProvider = provider
                     }
                     if let model = config.selectedAIModel {

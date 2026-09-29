@@ -445,7 +445,7 @@ struct ConfigurationView: View {
                     let providerBinding = Binding<AIProvider>(
                         get: {
                             if let providerName = selectedAIProvider,
-                               let provider = AIProvider(rawValue: providerName) {
+                               let provider = AIProvider(rawValue: providerName), !provider.isTranscriptionOnly {
                                 return provider
                             }
                             return aiService.selectedProvider
@@ -465,7 +465,7 @@ struct ConfigurationView: View {
                             }
                         } else {
                             Picker("AI Provider", selection: providerBinding) {
-                                ForEach(aiService.connectedProviders.filter { $0 != .elevenLabs && $0 != .deepgram }, id: \.self) { provider in
+                                ForEach(aiService.connectedProviders, id: \.self) { provider in
                                     Text(provider.rawValue).tag(provider)
                                 }
                             }

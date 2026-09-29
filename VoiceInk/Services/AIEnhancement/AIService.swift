@@ -177,6 +177,16 @@ enum AIProvider: String, CaseIterable {
             return true
         }
     }
+
+    // Keys for these are saved for cloud transcription; they have no chat endpoint for enhancement.
+    var isTranscriptionOnly: Bool {
+        switch self {
+        case .elevenLabs, .deepgram, .soniox, .speechmatics, .assemblyAI:
+            return true
+        default:
+            return false
+        }
+    }
 }
 
 class AIService: ObservableObject {
@@ -245,7 +255,9 @@ class AIService: ObservableObject {
     
     var connectedProviders: [AIProvider] {
         AIProvider.allCases.filter { provider in
-            if provider == .ollama {
+            if provider.isTranscriptionOnly {
+                return false
+            } else if provider == .ollama {
                 return ollamaService.isConnected
             } else if provider == .localCLI {
                 return localCLIService.isConfigured
@@ -303,7 +315,7 @@ class AIService: ObservableObject {
         }
 
         if let savedProvider = userDefaults.string(forKey: "selectedAIProvider"),
-           let provider = AIProvider(rawValue: savedProvider) {
+           let provider = AIProvider(rawValue: savedProvider), !provider.isTranscriptionOnly {
             self.selectedProvider = provider
         } else {
             self.selectedProvider = .gemini

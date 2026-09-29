@@ -178,14 +178,8 @@ enum AutoLearnLimits {
 }
 
 enum AutoLearnProviderPolicy {
-    // Transcription-only providers have no chat endpoint for the review.
     static func isSupported(_ provider: AIProvider) -> Bool {
-        switch provider {
-        case .elevenLabs, .deepgram, .soniox, .speechmatics, .assemblyAI:
-            return false
-        default:
-            return true
-        }
+        !provider.isTranscriptionOnly
     }
 }
 
