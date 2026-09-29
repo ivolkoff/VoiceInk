@@ -204,9 +204,7 @@ struct MenuBarView: View {
             Button("Retry Last Transcription") {
                 LastTranscriptionService.retryLastTranscription(
                     from: engine.modelContext,
-                    transcriptionModelManager: transcriptionModelManager,
-                    serviceRegistry: engine.serviceRegistry,
-                    enhancementService: enhancementService
+                    engine: engine
                 )
             }
 

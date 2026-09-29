@@ -195,86 +195,52 @@ class AudioTranscriptionService: ObservableObject {
                 await promptDetectionService.applyDetectionResult(detectionResult, to: enhancementService)
             }
 
-            // Apply AI enhancement if enabled
+            // Apply AI enhancement if enabled; a failure falls back to the raw-text record
+            // instead of losing the transcription.
+            var enhancedText: String?
+            var enhancementDuration: TimeInterval?
+            var promptName: String?
             if let enhancementService = enhancementService,
                enhancementService.isEnhancementEnabled,
                enhancementService.isConfigured {
                 do {
                     let textForAI = promptDetectionResult?.processedText ?? text
-                    let (enhancedText, enhancementDuration, promptName) = try await enhancementService.enhance(textForAI)
-                    let newTranscription = Transcription(
-                        text: originalText,
-                        duration: duration,
-                        enhancedText: enhancedText,
-                        audioFileURL: permanentURLString,
-                        transcriptionModelName: model.displayName,
-                        aiEnhancementModelName: enhancementService.getAIService()?.currentModel,
-                        promptName: promptName,
-                        transcriptionDuration: transcriptionDuration,
-                        enhancementDuration: enhancementDuration,
-                        aiRequestSystemMessage: enhancementService.lastSystemMessageSent,
-                        aiRequestUserMessage: enhancementService.lastUserMessageSent,
-                        powerModeName: powerModeName,
-                        powerModeEmoji: powerModeEmoji,
-                        language: recordLanguage
-                    )
-                    modelContext.insert(newTranscription)
-                    do {
-                        try modelContext.save()
-                        NotificationCenter.default.post(name: .transcriptionCreated, object: newTranscription)
-                        NotificationCenter.default.post(name: .transcriptionCompleted, object: newTranscription)
-                    } catch {
-                        logger.error("❌ Failed to save transcription: \(error.localizedDescription, privacy: .public)")
-                    }
-
-                    // Restore original prompt settings if AI was temporarily enabled
-                    if let result = promptDetectionResult,
-                       result.shouldEnableAI {
-                        await promptDetectionService.restoreOriginalSettings(result, to: enhancementService)
-                    }
-
-                    await MainActor.run {
-                        isTranscribing = false
-                    }
-
-                    return newTranscription
+                    (enhancedText, enhancementDuration, promptName) = try await enhancementService.enhance(textForAI)
                 } catch {
-                    let newTranscription = Transcription(
-                        text: originalText,
-                        duration: duration,
-                        audioFileURL: permanentURLString,
-                        transcriptionModelName: model.displayName,
-                        promptName: nil,
-                        transcriptionDuration: transcriptionDuration,
-                        powerModeName: powerModeName,
-                        powerModeEmoji: powerModeEmoji,
-                        language: recordLanguage
-                    )
-                    modelContext.insert(newTranscription)
-                    do {
-                        try modelContext.save()
-                        NotificationCenter.default.post(name: .transcriptionCreated, object: newTranscription)
-                        NotificationCenter.default.post(name: .transcriptionCompleted, object: newTranscription)
-                    } catch {
-                        logger.error("❌ Failed to save transcription: \(error.localizedDescription, privacy: .public)")
-                    }
-
-                    // Restore original prompt settings if AI was temporarily enabled
-                    // by trigger-word detection — the enhance() failure path must not
-                    // leave the user's global enhancement toggle/prompt flipped.
-                    if let result = promptDetectionResult,
-                       result.shouldEnableAI {
-                        await promptDetectionService.restoreOriginalSettings(result, to: enhancementService)
-                    }
-
-                    await MainActor.run {
-                        isTranscribing = false
-                    }
-
-                    return newTranscription
+                    logger.error("Enhancement failed: \(error.localizedDescription, privacy: .public)")
                 }
+            }
+
+            // Restore original prompt settings on every path if AI was temporarily enabled
+            // by trigger-word detection — or the user's global enhancement toggle/prompt
+            // stays flipped.
+            if let result = promptDetectionResult,
+               result.shouldEnableAI,
+               let enhancementService {
+                await promptDetectionService.restoreOriginalSettings(result, to: enhancementService)
+            }
+
+            let newTranscription: Transcription
+            if let enhancedText, let enhancementDuration, let promptName {
+                newTranscription = Transcription(
+                    text: originalText,
+                    duration: duration,
+                    enhancedText: enhancedText,
+                    audioFileURL: permanentURLString,
+                    transcriptionModelName: model.displayName,
+                    aiEnhancementModelName: enhancementService?.getAIService()?.currentModel,
+                    promptName: promptName,
+                    transcriptionDuration: transcriptionDuration,
+                    enhancementDuration: enhancementDuration,
+                    aiRequestSystemMessage: enhancementService?.lastSystemMessageSent,
+                    aiRequestUserMessage: enhancementService?.lastUserMessageSent,
+                    powerModeName: powerModeName,
+                    powerModeEmoji: powerModeEmoji,
+                    transcriptionStatus: .completed,
+                    language: recordLanguage
+                )
             } else {
-                let newTranscription = Transcription(
+                newTranscription = Transcription(
                     text: originalText,
                     duration: duration,
                     audioFileURL: permanentURLString,
@@ -283,22 +249,30 @@ class AudioTranscriptionService: ObservableObject {
                     transcriptionDuration: transcriptionDuration,
                     powerModeName: powerModeName,
                     powerModeEmoji: powerModeEmoji,
+                    transcriptionStatus: .completed,
                     language: recordLanguage
                 )
-                modelContext.insert(newTranscription)
-                do {
-                    try modelContext.save()
-                    NotificationCenter.default.post(name: .transcriptionCompleted, object: newTranscription)
-                } catch {
-                    logger.error("❌ Failed to save transcription: \(error.localizedDescription, privacy: .public)")
-                }
-
-                await MainActor.run {
-                    isTranscribing = false
-                }
-
-                return newTranscription
             }
+
+            modelContext.insert(newTranscription)
+            do {
+                try modelContext.save()
+            } catch {
+                // A save failure must not report success: drop the unsaved record and the
+                // WAV copy, and let the caller surface the error.
+                modelContext.delete(newTranscription)
+                try? FileManager.default.removeItem(at: permanentURL)
+                logger.error("❌ Failed to save transcription: \(error.localizedDescription, privacy: .public)")
+                throw error
+            }
+            NotificationCenter.default.post(name: .transcriptionCreated, object: newTranscription)
+            NotificationCenter.default.post(name: .transcriptionCompleted, object: newTranscription)
+
+            await MainActor.run {
+                isTranscribing = false
+            }
+
+            return newTranscription
         } catch {
             logger.error("❌ Transcription failed: \(error.localizedDescription, privacy: .public)")
             currentError = .transcriptionFailed

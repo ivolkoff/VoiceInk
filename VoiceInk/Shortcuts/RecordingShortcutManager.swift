@@ -319,9 +319,7 @@ class RecordingShortcutManager: ObservableObject {
         case .retryLastTranscription:
             LastTranscriptionService.retryLastTranscription(
                 from: engine.modelContext,
-                transcriptionModelManager: engine.transcriptionModelManager,
-                serviceRegistry: engine.serviceRegistry,
-                enhancementService: engine.enhancementService
+                engine: engine
             )
         case .retranscribeLastInLayoutLanguage:
             await RetranscribeLastInLayoutLanguageService.run(

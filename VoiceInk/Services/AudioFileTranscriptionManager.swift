@@ -117,6 +117,10 @@ class AudioTranscriptionManager: ObservableObject {
             modelContext: modelContext
         )
 
+        // The WAV is written before the risky work (transcribe/enhance); on any failure
+        // or cancellation below, the file must not stay on disk with no record owning it.
+        var uncommittedAudioURL: URL?
+
         do {
             guard let currentModel = engine.transcriptionModelManager.currentTranscriptionModel else {
                 throw TranscriptionError.noModelSelected
@@ -147,6 +151,7 @@ class AudioTranscriptionManager: ObservableObject {
 
             try FileManager.default.createDirectory(at: recordingsDirectory, withIntermediateDirectories: true)
             try audioProcessor.saveSamplesAsWav(samples: samples, to: permanentURL)
+            uncommittedAudioURL = permanentURL
             try Task.checkCancellation()
 
             // Phase: Transcribing
@@ -192,7 +197,8 @@ class AudioTranscriptionManager: ObservableObject {
                         aiRequestSystemMessage: enhancementService.lastSystemMessageSent,
                         aiRequestUserMessage: enhancementService.lastUserMessageSent,
                         powerModeName: powerModeName,
-                        powerModeEmoji: powerModeEmoji
+                        powerModeEmoji: powerModeEmoji,
+                        transcriptionStatus: .completed
                     )
                 } catch {
                     logger.error("Enhancement failed: \(error.localizedDescription, privacy: .public)")
@@ -205,7 +211,8 @@ class AudioTranscriptionManager: ObservableObject {
                         promptName: nil,
                         transcriptionDuration: transcriptionDuration,
                         powerModeName: powerModeName,
-                        powerModeEmoji: powerModeEmoji
+                        powerModeEmoji: powerModeEmoji,
+                        transcriptionStatus: .completed
                     )
                 }
             } else {
@@ -217,7 +224,8 @@ class AudioTranscriptionManager: ObservableObject {
                     promptName: nil,
                     transcriptionDuration: transcriptionDuration,
                     powerModeName: powerModeName,
-                    powerModeEmoji: powerModeEmoji
+                    powerModeEmoji: powerModeEmoji,
+                    transcriptionStatus: .completed
                 )
             }
 
@@ -227,7 +235,14 @@ class AudioTranscriptionManager: ObservableObject {
             try Task.checkCancellation()
 
             modelContext.insert(transcription)
-            try modelContext.save()
+            do {
+                try modelContext.save()
+            } catch {
+                modelContext.delete(transcription)
+                try? FileManager.default.removeItem(at: permanentURL)
+                throw error
+            }
+            uncommittedAudioURL = nil
             NotificationCenter.default.post(name: .transcriptionCreated, object: transcription)
             NotificationCenter.default.post(name: .transcriptionCompleted, object: transcription)
 
@@ -236,6 +251,9 @@ class AudioTranscriptionManager: ObservableObject {
             lastCompletedItemId = item.id
 
         } catch {
+            if let uncommittedAudioURL {
+                try? FileManager.default.removeItem(at: uncommittedAudioURL)
+            }
             if Task.isCancelled || error is CancellationError {
                 item.status = .pending
                 // The queue item is a separate ObservableObject, so flipping it back

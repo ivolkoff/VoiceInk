@@ -98,8 +98,22 @@ class LastTranscriptionService: ObservableObject {
         }
     }
     
-    static func retryLastTranscription(from modelContext: ModelContext, transcriptionModelManager: TranscriptionModelManager, serviceRegistry: TranscriptionServiceRegistry, enhancementService: AIEnhancementService?) {
+    @MainActor private static var isRetryInFlight = false
+
+    static func retryLastTranscription(from modelContext: ModelContext, engine: VoiceInkEngine) {
         Task { @MainActor in
+            // Same guards as RetranscribeLastInLayoutLanguageService: no re-entrancy (double
+            // press would duplicate records and WAV copies), and never while a recording is
+            // in flight — retranscribeAudio must not share services with a live recording.
+            guard !isRetryInFlight else { return }
+            guard engine.recordingState == .idle else {
+                NotificationManager.shared.showNotification(
+                    title: String(localized: "Finish recording before re-transcribing"),
+                    type: .error
+                )
+                return
+            }
+
             guard let lastTranscription = getLastTranscription(from: modelContext),
                   let audioURLString = lastTranscription.audioFileURL,
                   let audioURL = URL(string: audioURLString),
@@ -111,7 +125,7 @@ class LastTranscriptionService: ObservableObject {
                 return
             }
 
-            guard let currentModel = transcriptionModelManager.currentTranscriptionModel else {
+            guard let currentModel = engine.transcriptionModelManager.currentTranscriptionModel else {
                 NotificationManager.shared.showNotification(
                     title: String(localized: "No transcription model selected"),
                     type: .error
@@ -119,10 +133,20 @@ class LastTranscriptionService: ObservableObject {
                 return
             }
 
+            isRetryInFlight = true
+            defer { isRetryInFlight = false }
+
+            // Own registry, not the shared engine one: the shared instances are not
+            // isolated and would race a live dictation's whisper/fluidAudio context.
+            let serviceRegistry = TranscriptionServiceRegistry(
+                modelProvider: engine.whisperModelManager,
+                modelsDirectory: engine.whisperModelManager.modelsDirectory,
+                modelContext: modelContext
+            )
             let transcriptionService = AudioTranscriptionService(
                 modelContext: modelContext,
                 serviceRegistry: serviceRegistry,
-                enhancementService: enhancementService
+                enhancementService: engine.enhancementService
             )
             do {
                 let newTranscription = try await transcriptionService.retranscribeAudio(from: audioURL, using: currentModel)
@@ -140,6 +164,7 @@ class LastTranscriptionService: ObservableObject {
                     type: .error
                 )
             }
+            await serviceRegistry.cleanup()
         }
     }
 }
