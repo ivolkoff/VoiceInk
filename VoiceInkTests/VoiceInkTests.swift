@@ -6,6 +6,7 @@
 //
 
 import Testing
+import AppKit
 @testable import VoiceInk
 
 struct VoiceInkTests {
@@ -14,6 +15,22 @@ struct VoiceInkTests {
         // Write your test here and use APIs like `#expect(...)` to check expected conditions.
     }
 
+}
+
+struct PromisedClipboardTests {
+
+    @MainActor
+    @Test func promisedPasteCountsAsReadOnlyWhenItsStringIsRead() {
+        let pasteboard = NSPasteboard(name: NSPasteboard.Name("VoiceInkTests.promised.\(UUID().uuidString)"))
+        defer { pasteboard.releaseGlobally() }
+        let tracker = CursorPaster.PasteReadTracker(text: "hello")
+
+        #expect(ClipboardManager.setPromisedClipboard(provider: tracker, sessionID: "s1", on: pasteboard))
+        #expect(pasteboard.string(forType: ClipboardManager.pasteSessionType) == "s1")
+        #expect(!tracker.didRead)
+        #expect(pasteboard.string(forType: .string) == "hello")
+        #expect(tracker.didRead)
+    }
 }
 
 struct ChunkSplittingTests {

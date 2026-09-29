@@ -25,6 +25,23 @@ class CursorPaster {
     private static let prePasteDelay: TimeInterval = 0.10
     private static let pasteShortcutEventDelay: TimeInterval = 0.01
     private static let minimumClipboardRestoreDelay: TimeInterval = 0.25
+    // Upper bound on holding the restore for an unread paste (Cmd+V that landed nowhere, hung app).
+    private static let maximumUnreadRestoreWait: TimeInterval = 5.0
+
+    // Supplies a promised paste string and records that someone read it. Called on the main thread.
+    final class PasteReadTracker: NSObject, NSPasteboardItemDataProvider {
+        let text: String
+        private(set) var didRead = false
+
+        init(text: String) {
+            self.text = text
+        }
+
+        func pasteboard(_ pasteboard: NSPasteboard?, item: NSPasteboardItem, provideDataForType type: NSPasteboard.PasteboardType) {
+            item.setString(text, forType: type)
+            didRead = true
+        }
+    }
 
     // The real user clipboard captured by the paste session currently in flight. Paste sessions
     // overlap (each suspends at `await wait`), so a second session must inherit this instead of
@@ -110,14 +127,19 @@ class CursorPaster {
         let chunks = chunksForPaste(text)
         var allChunksPosted = true
         var lastPreparedChunk: String?
+        var lastReadTracker: PasteReadTracker?
         var clipboardPreparationFailed = false
 
         for (index, chunk) in chunks.enumerated() {
-            guard ClipboardManager.setClipboard(
-                chunk,
-                transient: shouldRestoreClipboard,
-                sessionID: shouldRestoreClipboard ? sessionID : nil
-            ) else {
+            let prepared: Bool
+            if shouldRestoreClipboard {
+                let tracker = PasteReadTracker(text: chunk)
+                prepared = ClipboardManager.setPromisedClipboard(provider: tracker, sessionID: sessionID, on: pasteboard)
+                lastReadTracker = tracker
+            } else {
+                prepared = ClipboardManager.setClipboard(chunk)
+            }
+            guard prepared else {
                 logger.error("Failed to prepare clipboard for paste")
                 allChunksPosted = false
                 clipboardPreparationFailed = true
@@ -148,6 +170,7 @@ class CursorPaster {
                 savedContents,
                 expectedText: lastPreparedChunk ?? text,
                 sessionID: sessionID,
+                readTracker: lastReadTracker,
                 on: pasteboard,
                 force: clipboardPreparationFailed
             )
@@ -234,6 +257,7 @@ class CursorPaster {
         _ savedContents: ClipboardSnapshot,
         expectedText: String,
         sessionID: String,
+        readTracker: PasteReadTracker?,
         on pasteboard: NSPasteboard,
         force: Bool = false
     ) {
@@ -244,6 +268,15 @@ class CursorPaster {
 
         Task { @MainActor in
             await wait(delay)
+            // A slow app may still hold the Cmd+V in its queue: restoring before it reads would
+            // paste the user's old clipboard (possibly a password) instead of the transcription.
+            if !force, let readTracker {
+                var waited: TimeInterval = 0
+                while !readTracker.didRead && waited < maximumUnreadRestoreWait {
+                    await wait(0.05)
+                    waited += 0.05
+                }
+            }
             // `force` covers a failed setClipboard: the preparation already cleared the
             // session marker, so the ownership guard would decline and the user's
             // pre-paste clipboard would be lost forever.
