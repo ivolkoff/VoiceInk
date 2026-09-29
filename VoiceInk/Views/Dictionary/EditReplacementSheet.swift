@@ -157,7 +157,8 @@ struct EditReplacementSheet: View {
             }
         }
 
-        // Update the replacement
+        let previousOriginal = replacement.originalText
+        let previousReplacement = replacement.replacementText
         replacement.originalText = newOriginal
         replacement.replacementText = trimmedReplacement
 
@@ -165,6 +166,9 @@ struct EditReplacementSheet: View {
             try modelContext.save()
             dismiss()
         } catch {
+            // Otherwise the unsaved edit stays live in the shared context after Cancel.
+            replacement.originalText = previousOriginal
+            replacement.replacementText = previousReplacement
             alertMessage = "Failed to save changes: \(error.localizedDescription)"
             showAlert = true
         }
