@@ -84,8 +84,11 @@ struct ConfigurationView: View {
         if let current, languages[current] != nil {
             return
         }
-        if rememberedIncompatibleLanguage == nil, let current {
-            rememberedIncompatibleLanguage = current
+        // Remember only an explicit per-config choice: a nil selectedLanguage means
+        // "inherit the global language", and restoring that as a pinned value would
+        // stop the config from following later global changes.
+        if rememberedIncompatibleLanguage == nil, selectedLanguage != nil {
+            rememberedIncompatibleLanguage = selectedLanguage
         }
         selectedLanguage = TranscriptionLanguageSupport.validLanguageOrFallback(current, for: model)
     }
