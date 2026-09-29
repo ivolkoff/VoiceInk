@@ -9781,6 +9781,16 @@
           }
         }
       }
+    },
+    "Couldn't paste: the focused field is secure": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Не удалось вставить: поле ввода защищено"
+          }
+        }
+      }
     }
   },
   "version": "1.0"

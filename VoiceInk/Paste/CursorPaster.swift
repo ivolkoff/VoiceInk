@@ -45,12 +45,25 @@ class CursorPaster {
         }
     }
 
+    // Sessions are serialized end-to-end: two of them posting Cmd+V concurrently
+    // (dictation landing while "paste last transcription" fires, QuickHistory re-paste)
+    // interleave their chunks into the target field. The clipboard-restore timer is
+    // fire-and-forget and stays outside the queue; its ownership guard sorts overlaps.
+    @MainActor
+    private static var queuedPasteSession: Task<PasteOutcome, Never>?
+
     @MainActor
     @discardableResult
     static func startPasteAtCursor(_ text: String) -> Task<PasteOutcome, Never> {
-        Task { @MainActor in
-            await performPasteSession(text)
+        let previous = queuedPasteSession
+        let task = Task { @MainActor in
+            if let previous {
+                _ = await previous.value
+            }
+            return await performPasteSession(text)
         }
+        queuedPasteSession = task
+        return task
     }
 
     @MainActor
@@ -60,6 +73,17 @@ class CursorPaster {
 
     @MainActor
     private static func performPasteSession(_ text: String) async -> PasteOutcome {
+        // Synthetic keystrokes are not delivered while secure input is active (a password
+        // field holds focus): the paste would silently no-op while reporting success.
+        if IsSecureEventInputEnabled() {
+            logger.error("Paste skipped: secure keyboard input is active (password field?)")
+            NotificationManager.shared.showNotification(
+                title: String(localized: "Couldn't paste: the focused field is secure"),
+                type: .error
+            )
+            return PasteOutcome(result: .commandNotPosted, autoLearnGeneration: nil)
+        }
+
         let pasteboard = NSPasteboard.general
         let shouldRestoreClipboard = UserDefaults.standard.bool(forKey: "restoreClipboardAfterPaste")
         let savedContents: ClipboardSnapshot
@@ -86,6 +110,7 @@ class CursorPaster {
         let chunks = chunksForPaste(text)
         var allChunksPosted = true
         var lastPreparedChunk: String?
+        var clipboardPreparationFailed = false
 
         for (index, chunk) in chunks.enumerated() {
             guard ClipboardManager.setClipboard(
@@ -95,6 +120,7 @@ class CursorPaster {
             ) else {
                 logger.error("Failed to prepare clipboard for paste")
                 allChunksPosted = false
+                clipboardPreparationFailed = true
                 break
             }
             lastPreparedChunk = chunk
@@ -122,7 +148,8 @@ class CursorPaster {
                 savedContents,
                 expectedText: lastPreparedChunk ?? text,
                 sessionID: sessionID,
-                on: pasteboard
+                on: pasteboard,
+                force: clipboardPreparationFailed
             )
         }
 
@@ -207,7 +234,8 @@ class CursorPaster {
         _ savedContents: ClipboardSnapshot,
         expectedText: String,
         sessionID: String,
-        on pasteboard: NSPasteboard
+        on pasteboard: NSPasteboard,
+        force: Bool = false
     ) {
         let delay = max(
             UserDefaults.standard.double(forKey: "clipboardRestoreDelay"),
@@ -216,7 +244,10 @@ class CursorPaster {
 
         Task { @MainActor in
             await wait(delay)
-            guard pasteboardStillOwnedByPasteSession(pasteboard, expectedText: expectedText, sessionID: sessionID) else {
+            // `force` covers a failed setClipboard: the preparation already cleared the
+            // session marker, so the ownership guard would decline and the user's
+            // pre-paste clipboard would be lost forever.
+            guard force || pasteboardStillOwnedByPasteSession(pasteboard, expectedText: expectedText, sessionID: sessionID) else {
                 // A later paste session owns the clipboard now; it will restore and clear.
                 return
             }
