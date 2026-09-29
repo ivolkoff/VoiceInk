@@ -10,8 +10,8 @@ struct AssemblyAIProvider: CloudProvider {
 
     var models: [CloudModel] {[
         CloudModel(
-            name: "universal-3-pro",
-            displayName: "Universal-3 Pro (AssemblyAI)",
+            name: "universal-3-5-pro",
+            displayName: "Universal-3.5 Pro (AssemblyAI)",
             description: "Highest-accuracy multilingual transcription with realtime support.",
             provider: .assemblyAI,
             speed: 0.94,
@@ -21,14 +21,16 @@ struct AssemblyAIProvider: CloudProvider {
             supportedLanguages: LanguageDictionary.forProvider(isMultilingual: true, provider: .assemblyAI)
         ),
         CloudModel(
-            name: "universal-streaming",
+            name: "universal-2",
             displayName: "Universal-2 (AssemblyAI)",
             description: "Balanced multilingual transcription with auto-detect.",
             provider: .assemblyAI,
             speed: 0.96,
             accuracy: 0.92,
             isMultilingual: true,
-            supportsStreaming: true,
+            // The pinned LLMkit streaming client only accepts "universal-3-5-pro" —
+            // mark this one batch-only instead of failing every streaming connect.
+            supportsStreaming: false,
             supportedLanguages: LanguageDictionary.forProvider(isMultilingual: true, provider: .assemblyAI)
         )
     ]}

@@ -169,8 +169,11 @@ struct CustomCloudModel: TranscriptionModel, Codable {
         description = try container.decode(String.self, forKey: .description)
         apiEndpoint = try container.decode(String.self, forKey: .apiEndpoint)
         modelName = try container.decode(String.self, forKey: .modelName)
-        isMultilingualModel = try container.decode(Bool.self, forKey: .isMultilingualModel)
-        supportedLanguages = try container.decode([String: String].self, forKey: .supportedLanguages)
+        // Tolerant defaults: a strict decode here fails the WHOLE saved list on a
+        // single element's schema drift, which then erases it on the next save.
+        isMultilingualModel = try container.decodeIfPresent(Bool.self, forKey: .isMultilingualModel) ?? true
+        supportedLanguages = try container.decodeIfPresent([String: String].self, forKey: .supportedLanguages)
+            ?? LanguageDictionary.forProvider(isMultilingual: true)
 
         if let legacyApiKey = try container.decodeIfPresent(String.self, forKey: .apiKey), !legacyApiKey.isEmpty {
             APIKeyManager.shared.saveCustomModelAPIKey(legacyApiKey, forModelId: id)

@@ -9791,6 +9791,16 @@
           }
         }
       }
+    },
+    "This model only supports live dictation; it can't transcribe files or re-transcribe.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Эта модель поддерживает только живую диктовку; расшифровка файлов и перезапись для неё недоступны."
+          }
+        }
+      }
     }
   },
   "version": "1.0"

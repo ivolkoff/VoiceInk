@@ -45,6 +45,11 @@ class CustomCloudModelManager: ObservableObject {
             customModels = try JSONDecoder().decode([CustomCloudModel].self, from: data)
         } catch {
             logger.error("Failed to decode custom models: \(error.localizedDescription, privacy: .public)")
+            // Preserve the undecodable blob: any later add/update would otherwise save
+            // the now-empty list over it, losing every custom model (and orphaning their
+            // keychain keys) for good.
+            userDefaults.set(data, forKey: customModelsKey + ".corrupt")
+            userDefaults.removeObject(forKey: customModelsKey)
             customModels = []
         }
     }

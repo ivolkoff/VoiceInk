@@ -42,10 +42,11 @@ class OpenAICompatibleTranscriptionService {
         }
 
         let modelName = model.modelName
-        let selectedLanguage = languageOverride
+        let selected = UserDefaults.standard.string(forKey: "SelectedLanguage") ?? "auto"
+        let resolvedLanguage = languageOverride
             ?? TranscriptionLanguagePreference.layoutOverride(for: model)
-            ?? (UserDefaults.standard.string(forKey: "SelectedLanguage") ?? "auto")
-        let prompt = UserDefaults.standard.string(forKey: "TranscriptionPrompt") ?? ""
+            ?? selected
+        let languageField = (resolvedLanguage == "auto" || resolvedLanguage.isEmpty) ? nil : resolvedLanguage
         let crlf = "\r\n"
         var body = Data()
 
@@ -67,11 +68,17 @@ class OpenAICompatibleTranscriptionService {
         field("response_format", "json")
         field("temperature", "0")
 
-        if selectedLanguage != "auto" && !selectedLanguage.isEmpty {
-            field("language", selectedLanguage)
+        if let languageField {
+            field("language", languageField)
         }
-        if !prompt.isEmpty {
-            field("prompt", prompt)
+        // The stored "TranscriptionPrompt" is a Whisper bootstrap sentence derived from
+        // SelectedLanguage; sending it with a request pinned to a different language
+        // corrupts the output — same guard as WhisperTranscriptionService.
+        if resolvedLanguage == selected {
+            let prompt = UserDefaults.standard.string(forKey: "TranscriptionPrompt") ?? ""
+            if !prompt.isEmpty {
+                field("prompt", prompt)
+            }
         }
 
         append("--\(boundary)--\(crlf)")

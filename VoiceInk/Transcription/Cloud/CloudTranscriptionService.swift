@@ -4,6 +4,7 @@ import LLMkit
 
 enum CloudTranscriptionError: Error, LocalizedError {
     case unsupportedProvider
+    case streamingOnlyProvider
     case missingAPIKey
     case invalidAPIKey
     case audioFileNotFound
@@ -16,6 +17,8 @@ enum CloudTranscriptionError: Error, LocalizedError {
         switch self {
         case .unsupportedProvider:
             return String(localized: "The model provider is not supported by this service.")
+        case .streamingOnlyProvider:
+            return String(localized: "This model only supports live dictation; it can't transcribe files or re-transcribe.")
         case .missingAPIKey:
             return String(localized: "API key for this service is missing. Please configure it in the settings.")
         case .invalidAPIKey:
@@ -45,7 +48,7 @@ class CloudTranscriptionService: TranscriptionService {
     func transcribe(audioURL: URL, model: any TranscriptionModel, language languageOverride: String?) async throws -> String {
         let audioData = try loadAudioData(from: audioURL)
         let fileName = audioURL.lastPathComponent
-        let language = selectedLanguage(for: model, override: languageOverride)
+        let (language, languageMatchesSelected) = selectedLanguage(for: model, override: languageOverride)
 
         do {
             if model.provider == .custom {
@@ -58,6 +61,9 @@ class CloudTranscriptionService: TranscriptionService {
             guard let cloudProvider = CloudProviderRegistry.provider(for: model.provider) else {
                 throw CloudTranscriptionError.unsupportedProvider
             }
+            if cloudProvider.isStreamingOnly {
+                throw CloudTranscriptionError.streamingOnlyProvider
+            }
             let apiKey = try requireAPIKey(forProvider: cloudProvider.providerKey)
             return try await cloudProvider.transcribe(
                 audioData: audioData,
@@ -65,7 +71,7 @@ class CloudTranscriptionService: TranscriptionService {
                 apiKey: apiKey,
                 model: model.name,
                 language: language,
-                prompt: transcriptionPrompt(),
+                prompt: transcriptionPrompt(languageMatchesSelected: languageMatchesSelected),
                 customVocabulary: getCustomDictionaryTerms()
             )
         } catch let error as CloudTranscriptionError {
@@ -93,14 +99,21 @@ class CloudTranscriptionService: TranscriptionService {
         return apiKey
     }
 
-    private func selectedLanguage(for model: any TranscriptionModel, override: String? = nil) -> String? {
-        let lang = override
+    private func selectedLanguage(for model: any TranscriptionModel, override: String? = nil) -> (language: String?, matchesSelected: Bool) {
+        let selected = UserDefaults.standard.string(forKey: "SelectedLanguage") ?? "auto"
+        let resolved = override
             ?? TranscriptionLanguagePreference.layoutOverride(for: model)
-            ?? (UserDefaults.standard.string(forKey: "SelectedLanguage") ?? "auto")
-        return (lang == "auto" || lang.isEmpty) ? nil : lang
+            ?? selected
+        let language = (resolved == "auto" || resolved.isEmpty) ? nil : resolved
+        return (language, resolved == selected)
     }
 
-    private func transcriptionPrompt() -> String? {
+    private func transcriptionPrompt(languageMatchesSelected: Bool) -> String? {
+        // The stored "TranscriptionPrompt" is a Whisper bootstrap sentence derived from
+        // SelectedLanguage; feeding it into a request pinned to a different language
+        // (explicit or keyboard-layout override) corrupts the output — same guard as
+        // WhisperTranscriptionService.
+        guard languageMatchesSelected else { return nil }
         let prompt = UserDefaults.standard.string(forKey: "TranscriptionPrompt") ?? ""
         return prompt.isEmpty ? nil : prompt
     }

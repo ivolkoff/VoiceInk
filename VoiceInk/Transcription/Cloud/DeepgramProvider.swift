@@ -44,7 +44,8 @@ struct DeepgramProvider: CloudProvider {
             audioData: audioData,
             apiKey: apiKey,
             model: model,
-            language: language
+            language: language,
+            customVocabulary: customVocabulary
         )
     }
 
