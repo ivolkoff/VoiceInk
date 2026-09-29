@@ -71,6 +71,19 @@ class VoiceInkEngine: NSObject, ObservableObject {
 
         setupNotifications()
         createRecordingsDirectoryIfNeeded()
+
+        recorder.onRecordingFailed = { [weak self] _ in
+            // The recorder already stopped itself and notified the user; the engine
+            // must leave .recording or the next stop transcribes the truncated WAV
+            // as if it were complete, over a dead capture the whole time.
+            Task { @MainActor in
+                guard let self, self.recordingState == .recording || self.recordingState == .starting else { return }
+                self.logger.error("Recording failed mid-flight (hardware); cancelling session")
+                await self.cancelRecording()
+                // cancelRecording does not own the recorder panels.
+                self.recorderUIManager?.isMiniRecorderVisible = false
+            }
+        }
     }
 
     private func createRecordingsDirectoryIfNeeded() {

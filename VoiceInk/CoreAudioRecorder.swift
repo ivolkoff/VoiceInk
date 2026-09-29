@@ -118,6 +118,7 @@ final class CoreAudioRecorder: @unchecked Sendable {
         try startAudioUnit()
 
         isRecording = true
+        didLogDroppedCallbacks = false
     }
 
     /// Stops the current recording
@@ -169,6 +170,9 @@ final class CoreAudioRecorder: @unchecked Sendable {
     var isCurrentlyRecording: Bool { isRecording }
     var currentRecordingURL: URL? { recordingURL }
     var currentDevice: AudioDeviceID { currentDeviceID }
+
+    /// One-shot flag so the callback-drop backstop logs once, not per IO cycle.
+    private var didLogDroppedCallbacks = false
 
     /// Switches to a new input device mid-recording without stopping the file write
     func switchDevice(to newDeviceID: AudioDeviceID) throws {
@@ -258,7 +262,10 @@ final class CoreAudioRecorder: @unchecked Sendable {
         }
 
         // Step 6: Reallocate buffers if needed
-        let maxFrames: UInt32 = 4096
+        var maxFrames: UInt32 = 4096
+        if let deviceFrames = getBufferFrameSize(deviceID: newDeviceID) {
+            maxFrames = max(maxFrames, min(deviceFrames, 65536))
+        }
         let bufferSamples = maxFrames * newDeviceFormat.mChannelsPerFrame
         if bufferSamples > renderBufferSize {
             renderBuffer?.deallocate()
@@ -445,8 +452,14 @@ final class CoreAudioRecorder: @unchecked Sendable {
             logger.notice("🎙️ Converting: \(Int(devSampleRate), privacy: .public)Hz → \(Int(outSampleRate), privacy: .public)Hz")
         }
 
-        // Pre-allocate buffers for real-time callback (avoid malloc in callback)
-        let maxFrames: UInt32 = 4096
+        // Pre-allocate buffers for real-time callback (avoid malloc in callback).
+        // Size from the device's actual IO cycle: DAW-set or driver buffer sizes can
+        // exceed 4096 frames, and an undersized buffer silently dropped EVERY callback
+        // (zero audio written, no log). 65536 caps pathological device values.
+        var maxFrames: UInt32 = 4096
+        if let deviceFrames = getBufferFrameSize(deviceID: currentDeviceID) {
+            maxFrames = max(maxFrames, min(deviceFrames, 65536))
+        }
         let bufferSamples = maxFrames * deviceFormat.mChannelsPerFrame
         renderBuffer = UnsafeMutablePointer<Float32>.allocate(capacity: Int(bufferSamples))
         renderBufferSize = bufferSamples
@@ -573,8 +586,13 @@ final class CoreAudioRecorder: @unchecked Sendable {
         let channelCount = deviceFormat.mChannelsPerFrame
         let requiredSamples = inNumberFrames * channelCount
 
-        // Safety check - shouldn't happen with 4096 max frames
+        // Safety check — buffers are sized from the device's IO cycle, so this only
+        // fires on pathological devices; log it once instead of dropping silently.
         guard requiredSamples <= renderBufferSize else {
+            if !didLogDroppedCallbacks {
+                didLogDroppedCallbacks = true
+                logger.error("Dropping audio callbacks: \(inNumberFrames, privacy: .public) frames exceed the allocated \(self.renderBufferSize / channelCount, privacy: .public)-frame buffer")
+            }
             return noErr
         }
 

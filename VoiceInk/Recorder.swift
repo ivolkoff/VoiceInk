@@ -25,6 +25,12 @@ class Recorder: NSObject, ObservableObject {
     var onAudioChunk: ((_ data: Data) -> Void)? {
         didSet { recorder?.onAudioChunk = onAudioChunk }
     }
+
+    /// Set by the engine. A mid-recording hardware failure (e.g. a failed device
+    /// switch) tears the capture down here; without this callback the engine keeps
+    /// recordingState == .recording over a dead recorder and the next stop pastes
+    /// the truncated WAV as if it were complete.
+    var onRecordingFailed: ((_ error: Error) -> Void)?
     
     enum RecorderError: Error {
         case couldNotStartRecording
@@ -193,6 +199,7 @@ class Recorder: NSObject, ObservableObject {
                 title: String.localizedStringWithFormat(String(localized: "Recording Failed: %@"), error.localizedDescription),
                 type: .error
             )
+            onRecordingFailed?(error)
         }
     }
 
