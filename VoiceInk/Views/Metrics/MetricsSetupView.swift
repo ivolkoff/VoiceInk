@@ -59,6 +59,18 @@ struct MetricsSetupView: View {
         }
         .frame(minWidth: 500, minHeight: 600)
         .background(Color(NSColor.controlBackgroundColor))
+        // The step checkmarks read cached @State; without a refresh the checklist stays
+        // incomplete after the user grants a permission and returns (the action button
+        // titles already re-check live, so the two disagreed).
+        .onAppear(perform: refreshPermissionStates)
+        .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in
+            refreshPermissionStates()
+        }
+    }
+
+    private func refreshPermissionStates() {
+        isAccessibilityEnabled = AXIsProcessTrusted()
+        isScreenRecordingEnabled = CGPreflightScreenCaptureAccess()
     }
     
     private func setupStep(for index: Int) -> some View {
