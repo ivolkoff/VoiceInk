@@ -249,12 +249,14 @@ struct AudioTranscribeView: View {
                     enhancementService.isEnhancementEnabled = newValue
                 }
 
-            if isEnhancementEnabled && !enhancementService.allPrompts.isEmpty {
+            // Enabled prompts only: picking a disabled one here bypasses
+            // setActivePrompt and silently yields "Prompt: None" → Default fallback.
+            if isEnhancementEnabled && !enhancementService.enabledPrompts.isEmpty {
                 Divider().frame(height: 16)
 
                 let promptBinding = Binding<UUID>(
                     get: {
-                        selectedPromptId ?? enhancementService.allPrompts.first?.id ?? UUID()
+                        selectedPromptId ?? enhancementService.enabledPrompts.first?.id ?? UUID()
                     },
                     set: { newValue in
                         selectedPromptId = newValue
@@ -263,7 +265,7 @@ struct AudioTranscribeView: View {
                 )
 
                 Picker("Prompt", selection: promptBinding) {
-                    ForEach(enhancementService.allPrompts) { prompt in
+                    ForEach(enhancementService.enabledPrompts) { prompt in
                         Text(prompt.title).tag(prompt.id)
                     }
                 }
