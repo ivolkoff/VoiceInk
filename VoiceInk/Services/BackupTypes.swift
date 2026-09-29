@@ -161,4 +161,20 @@ struct BackupFile: Codable {
         customEmojis = try container.decodeIfPresent([String].self, forKey: .customEmojis)
         customCloudModels = try container.decodeIfPresent([CustomModelBackup].self, forKey: .customCloudModels)
     }
+
+    // Mirrors BackupImporter's guards: a category without data here is skipped on import.
+    func hasContent(for category: BackupCategory) -> Bool {
+        switch category {
+        case .general:
+            return generalSettings != nil
+        case .prompts:
+            return !customPrompts.isEmpty
+        case .powerMode:
+            return !powerModeConfigs.isEmpty || !(customEmojis ?? []).isEmpty
+        case .dictionary:
+            return !(vocabularyWords ?? []).isEmpty || !(wordReplacements ?? [:]).isEmpty
+        case .customModels:
+            return !(customCloudModels ?? []).isEmpty
+        }
+    }
 }

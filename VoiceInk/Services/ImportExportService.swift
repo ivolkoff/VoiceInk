@@ -300,9 +300,15 @@ class ImportExportService {
                 transcriptionModelManager: transcriptionModelManager
             )
 
+            let importedCategories = selectedCategories.filter { backup.hasContent(for: $0) }
+            guard !importedCategories.isEmpty else {
+                showAlert(title: String(localized: "Nothing Imported"), message: String(localized: "The selected categories have no data in \(url.lastPathComponent)."))
+                return
+            }
+
             showImportSuccessAlert(
-                message: String(localized: "Settings imported successfully from \(url.lastPathComponent).\n\nImported: \(categorySummary(for: selectedCategories))."),
-                needsAPIKeyReminder: needsAPIKeyReminder(for: selectedCategories)
+                message: String(localized: "Settings imported successfully from \(url.lastPathComponent).\n\nImported: \(categorySummary(for: importedCategories))."),
+                needsAPIKeyReminder: needsAPIKeyReminder(for: importedCategories)
             )
         } catch {
             showAlert(title: String(localized: "Import Error"), message: String(localized: "Error importing settings: \(error.localizedDescription). The file might be corrupted or not in the correct format."))

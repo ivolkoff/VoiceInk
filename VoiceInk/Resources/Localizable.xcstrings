@@ -9901,6 +9901,26 @@
           }
         }
       }
+    },
+    "Nothing Imported": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ничего не импортировано"
+          }
+        }
+      }
+    },
+    "The selected categories have no data in %@.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "В файле %@ нет данных для выбранных категорий."
+          }
+        }
+      }
     }
   },
   "version": "1.0"
