@@ -114,6 +114,14 @@ class AudioTranscriptionService: ObservableObject {
 
             do {
                 try modelContext.save()
+                // The re-transcription changed text/durations/model: sync the metric
+                // row so the dashboard doesn't keep the pre-retranscription numbers.
+                SessionMetricRecorder.syncAfterRetranscribe(
+                    transcription: transcription,
+                    model: model,
+                    in: modelContext
+                )
+                try modelContext.save()
             } catch {
                 transcription.text = old.text
                 transcription.enhancedText = old.enhancedText
