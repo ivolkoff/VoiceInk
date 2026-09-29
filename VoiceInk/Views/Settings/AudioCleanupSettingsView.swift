@@ -15,6 +15,7 @@ struct AudioCleanupSettingsView: View {
     @State private var showResultAlert = false
     @State private var cleanupResult: (deletedCount: Int, errorCount: Int) = (0, 0)
     @State private var showTranscriptCleanupResult = false
+    @State private var transcriptCleanupDeleted: Int?
 
     // Expansion states - collapsed by default
     @State private var isTranscriptExpanded = false
@@ -64,8 +65,9 @@ struct AudioCleanupSettingsView: View {
 
                         Button("Run Cleanup Now") {
                             Task {
-                                await TranscriptionAutoCleanupService.shared.runManualCleanup(modelContext: modelContext)
+                                let deleted = await TranscriptionAutoCleanupService.shared.runManualCleanup(modelContext: modelContext)
                                 await MainActor.run {
+                                    transcriptCleanupDeleted = deleted
                                     showTranscriptCleanupResult = true
                                 }
                             }
@@ -80,7 +82,11 @@ struct AudioCleanupSettingsView: View {
             .alert("Transcript Cleanup", isPresented: $showTranscriptCleanupResult) {
                 Button("OK", role: .cancel) { }
             } message: {
-                Text("Cleanup complete.")
+                if let transcriptCleanupDeleted {
+                    Text("Cleaned up \(transcriptCleanupDeleted) transcription(s).")
+                } else {
+                    Text("Cleanup failed. Try again or check the logs.")
+                }
             }
             .onChange(of: isTranscriptionCleanupEnabled) { _, newValue in
                 isHandlingTranscriptToggle = true

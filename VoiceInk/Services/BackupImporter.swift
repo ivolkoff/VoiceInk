@@ -86,6 +86,13 @@ enum BackupImporter {
                 }
 
                 powerModeManager.saveConfigurations()
+
+                // The flag gates hotkey registration and the Power Mode sidebar item;
+                // importing enabled configurations onto a machine where Power Mode was
+                // off otherwise leaves the imported hotkeys dead and the UI hidden.
+                if !powerModeManager.enabledConfigurations.isEmpty {
+                    UserDefaults.standard.set(true, forKey: "powerModeUIFlag")
+                }
             }
 
             if let customEmojis = backup.customEmojis {

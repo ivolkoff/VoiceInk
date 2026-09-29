@@ -130,6 +130,14 @@ struct ShortcutRecorder: View {
 
     private func restoreShortcutAfterFailedRecording() {
         guard let previousShortcut else { return }
+        // Restore only while our pause is still intact (cleared flag + stored definition):
+        // an external removal during capture (the row's minus button) erased the stored
+        // definition — resurrecting the old binding there would silently undo the removal.
+        guard ShortcutStore.isShortcutCleared(for: action),
+              ShortcutStore.rawShortcut(for: action) != nil else {
+            self.previousShortcut = nil
+            return
+        }
         // A rejected restore keeps the pause; showing the old binding as active would
         // display a hotkey that no longer fires. recoverInterruptedRecording sorts the
         // pause out once the conflicting binding is gone.

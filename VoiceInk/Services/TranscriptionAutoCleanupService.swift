@@ -34,7 +34,7 @@ class TranscriptionAutoCleanupService {
         if UserDefaults.standard.bool(forKey: keyIsEnabled) {
             Task { [weak self] in
                 guard let self = self, let modelContext = self.modelContext else { return }
-                await self.sweepOldTranscriptions(modelContext: modelContext)
+                _ = await self.sweepOldTranscriptions(modelContext: modelContext)
                 await self.cleanupOrphanAudioFiles(modelContext: modelContext)
             }
         }
@@ -44,7 +44,10 @@ class TranscriptionAutoCleanupService {
         NotificationCenter.default.removeObserver(self, name: .transcriptionCompleted, object: nil)
     }
 
-    func runManualCleanup(modelContext: ModelContext) async {
+    /// Returns the number of deleted transcriptions, or nil when the sweep failed
+    /// (the caller must not report success on nil).
+    @discardableResult
+    func runManualCleanup(modelContext: ModelContext) async -> Int? {
         await sweepOldTranscriptions(modelContext: modelContext)
     }
 
@@ -57,7 +60,7 @@ class TranscriptionAutoCleanupService {
             if let modelContext = self.modelContext {
                 Task { [weak self] in
                     guard let self = self else { return }
-                    await self.sweepOldTranscriptions(modelContext: modelContext)
+                    _ = await self.sweepOldTranscriptions(modelContext: modelContext)
                 }
             }
             return
@@ -92,9 +95,10 @@ class TranscriptionAutoCleanupService {
         }
     }
 
-    private func sweepOldTranscriptions(modelContext: ModelContext) async {
+    /// Deleted count on success, nil on failure (store error).
+    private func sweepOldTranscriptions(modelContext: ModelContext) async -> Int? {
         guard UserDefaults.standard.bool(forKey: keyIsEnabled) else {
-            return
+            return nil
         }
 
         let retentionMinutes = UserDefaults.standard.integer(forKey: keyRetentionMinutes)
@@ -140,8 +144,10 @@ class TranscriptionAutoCleanupService {
                     NotificationCenter.default.post(name: .transcriptionDeleted, object: nil)
                 }
             }
+            return deletedCount
         } catch {
             logger.error("Failed during transcription cleanup: \(error.localizedDescription, privacy: .public)")
+            return nil
         }
     }
 

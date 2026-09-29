@@ -9881,6 +9881,26 @@
           }
         }
       }
+    },
+    "Cleaned up %lld transcription(s).": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Удалено записей: %lld."
+          }
+        }
+      }
+    },
+    "Cleanup failed. Try again or check the logs.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Очистка не удалась. Попробуйте ещё раз или проверьте логи."
+          }
+        }
+      }
     }
   },
   "version": "1.0"

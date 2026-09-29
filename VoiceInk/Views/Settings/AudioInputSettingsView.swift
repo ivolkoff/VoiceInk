@@ -118,10 +118,12 @@ struct AudioInputSettingsView: View {
     
     private var prioritizedDevicesSection: some View {
         VStack(alignment: .leading, spacing: 20) {
+            prioritizedDevicesContent
             if audioDeviceManager.availableDevices.isEmpty {
+                // Still render the prioritized list above: with every device unplugged
+                // is exactly when the user needs the remove buttons for stale entries.
                 emptyDevicesState
             } else {
-                prioritizedDevicesContent
                 Divider().padding(.vertical, 8)
                 availableDevicesContent
             }
