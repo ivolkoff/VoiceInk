@@ -192,9 +192,16 @@ class PowerModeManager: ObservableObject {
     }
 
     private func loadConfigurations() {
-        if let data = UserDefaults.standard.data(forKey: configKey),
-           let configs = try? JSONDecoder().decode([PowerModeConfig].self, from: data) {
-            configurations = configs
+        guard let data = UserDefaults.standard.data(forKey: configKey) else { return }
+        do {
+            configurations = try JSONDecoder().decode([PowerModeConfig].self, from: data)
+        } catch {
+            // Preserve the undecodable blob: the next saveConfigurations() (any edit,
+            // toggle, or settings import) would otherwise overwrite it with the empty
+            // list and erase every power mode for good.
+            UserDefaults.standard.set(data, forKey: configKey + ".corrupt")
+            UserDefaults.standard.removeObject(forKey: configKey)
+            configurations = []
         }
     }
 
