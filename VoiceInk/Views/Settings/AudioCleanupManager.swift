@@ -113,25 +113,7 @@ class AudioCleanupManager {
                 )
 
                 let transcriptions = try modelContext.fetch(descriptor)
-                var deletedCount = 0
-
-                for transcription in transcriptions {
-                    if let urlString = transcription.audioFileURL,
-                       let url = URL(string: urlString),
-                       FileManager.default.fileExists(atPath: url.path) {
-                        do {
-                            try FileManager.default.removeItem(at: url)
-                            transcription.audioFileURL = nil
-                            deletedCount += 1
-                        } catch {
-                            // Skip this file - don't update audioFileURL if deletion failed
-                        }
-                    }
-                }
-
-                if deletedCount > 0 {
-                    try modelContext.save()
-                }
+                _ = removeAudio(of: transcriptions, in: modelContext)
             }
         } catch {
             // Silently fail - cleanup is non-critical
@@ -145,35 +127,41 @@ class AudioCleanupManager {
     
     /// Run cleanup on the specified transcriptions
     func runCleanupForTranscriptions(modelContext: ModelContext, transcriptions: [Transcription]) async -> (deletedCount: Int, errorCount: Int) {
-        do {
-            // Execute SwiftData operations on the main thread
-            return try await MainActor.run {
-                var deletedCount = 0
-                var errorCount = 0
-
-                for transcription in transcriptions {
-                    if let urlString = transcription.audioFileURL,
-                       let url = URL(string: urlString),
-                       FileManager.default.fileExists(atPath: url.path) {
-                        do {
-                            try FileManager.default.removeItem(at: url)
-                            transcription.audioFileURL = nil
-                            deletedCount += 1
-                        } catch {
-                            errorCount += 1
-                        }
-                    }
-                }
-
-                if deletedCount > 0 || errorCount > 0 {
-                    try? modelContext.save()
-                }
-
-                return (deletedCount, errorCount)
-            }
-        } catch {
-            return (0, 0)
+        await MainActor.run {
+            removeAudio(of: transcriptions, in: modelContext)
         }
+    }
+
+    // The rows are unlinked and saved before any file goes: a failed save leaves rows and audio
+    // intact instead of rows pointing at deleted files. A file that won't delete is relinked.
+    @MainActor
+    private func removeAudio(of transcriptions: [Transcription], in modelContext: ModelContext) -> (deletedCount: Int, errorCount: Int) {
+        var unlinked: [(transcription: Transcription, urlString: String, url: URL)] = []
+        for transcription in transcriptions {
+            guard let urlString = transcription.audioFileURL,
+                  let url = URL(string: urlString),
+                  FileManager.default.fileExists(atPath: url.path) else { continue }
+            transcription.audioFileURL = nil
+            unlinked.append((transcription, urlString, url))
+        }
+        guard !unlinked.isEmpty else { return (0, 0) }
+
+        do {
+            try modelContext.save()
+        } catch {
+            for entry in unlinked { entry.transcription.audioFileURL = entry.urlString }
+            return (0, unlinked.count)
+        }
+
+        var failed = 0
+        for entry in unlinked where (try? FileManager.default.removeItem(at: entry.url)) == nil {
+            entry.transcription.audioFileURL = entry.urlString
+            failed += 1
+        }
+        if failed > 0 {
+            try? modelContext.save()
+        }
+        return (unlinked.count - failed, failed)
     }
     
     /// Format file size in human-readable form
