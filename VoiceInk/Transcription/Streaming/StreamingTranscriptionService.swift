@@ -276,13 +276,25 @@ class StreamingTranscriptionService {
 
         sendTask = Task.detached { [weak self] in
             for await chunk in source.stream {
-                do {
-                    try await provider?.sendAudioChunk(chunk)
-                    metrics.recordSent(chunk.count)
-                } catch {
-                    let desc = error.localizedDescription
-                    await MainActor.run {
-                        self?.logger.error("Failed to send audio chunk: \(desc, privacy: .public)")
+                // A transient send hiccup must not silently cut audio out of the middle
+                // of the transcript: a throw means the chunk was not delivered, so retry
+                // in place (order preserved) a few times before giving up on it.
+                var attempt = 0
+                while true {
+                    do {
+                        try await provider?.sendAudioChunk(chunk)
+                        metrics.recordSent(chunk.count)
+                        break
+                    } catch {
+                        attempt += 1
+                        if Task.isCancelled || attempt >= 3 {
+                            let desc = error.localizedDescription
+                            await MainActor.run {
+                                self?.logger.error("Failed to send audio chunk after \(attempt) attempt(s): \(desc, privacy: .public)")
+                            }
+                            break
+                        }
+                        try? await Task.sleep(nanoseconds: 50_000_000)
                     }
                 }
             }
