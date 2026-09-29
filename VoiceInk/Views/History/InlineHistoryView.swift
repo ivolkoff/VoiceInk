@@ -39,11 +39,11 @@ struct InlineHistoryView: View {
                 descriptor.predicate = #Predicate<Transcription> { transcription in
                     (transcription.text.localizedStandardContains(searchText) ||
                     (transcription.enhancedText?.localizedStandardContains(searchText) ?? false)) &&
-                    transcription.timestamp < timestamp
+                    transcription.timestamp <= timestamp
                 }
             } else {
                 descriptor.predicate = #Predicate<Transcription> { transcription in
-                    transcription.timestamp < timestamp
+                    transcription.timestamp <= timestamp
                 }
             }
         } else if !searchText.isEmpty {
@@ -392,10 +392,16 @@ struct InlineHistoryView: View {
         defer { isLoading = false }
 
         do {
-            let newItems = try modelContext.fetch(cursorQueryDescriptor(after: lastTimestamp))
-            displayedTranscriptions.append(contentsOf: newItems)
-            self.lastTimestamp = newItems.last?.timestamp
-            hasMoreContent = newItems.count == pageSize
+            // The cursor is inclusive so rows sharing the boundary timestamp aren't skipped; the
+            // limit grows by the rows already shown at that timestamp, which are filtered back out.
+            let shownAtCursor = displayedTranscriptions.reversed().prefix { $0.timestamp == lastTimestamp }.map(\.id)
+            var descriptor = cursorQueryDescriptor(after: lastTimestamp)
+            descriptor.fetchLimit = pageSize + shownAtCursor.count
+            let fetched = try modelContext.fetch(descriptor)
+            let shownIDs = Set(shownAtCursor)
+            displayedTranscriptions.append(contentsOf: fetched.filter { !shownIDs.contains($0.id) })
+            self.lastTimestamp = fetched.last?.timestamp
+            hasMoreContent = fetched.count == descriptor.fetchLimit
         } catch {
             print("Error loading more transcriptions: \(error)")
         }
