@@ -30,6 +30,17 @@ enum TranscriptionModelRegistry {
                 supportedLanguages: LanguageDictionary.forProvider(isMultilingual: false, provider: .fluidAudio)
             ),
             FluidAudioModel(
+                name: "parakeet-ultra",
+                displayName: "Parakeet Ultra",
+                description: "Parakeet V3 post-trained by Moondream: same 25 languages and speed, lower error rate in every one",
+                size: "640 MB",
+                speed: 0.99,
+                accuracy: 0.95,
+                ramUsage: 0.8,
+                supportsStreaming: true,
+                supportedLanguages: LanguageDictionary.forProvider(isMultilingual: true, provider: .fluidAudio)
+            ),
+            FluidAudioModel(
                 name: "parakeet-tdt-0.6b-v3",
                 displayName: "Parakeet V3",
                 description: "Parakeet V3 with English and 25 European language support",
