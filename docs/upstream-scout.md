@@ -1,15 +1,34 @@
 # upstream-scout: Beingpax/VoiceInk
 
-Проверено до: `d7b528aa` (upstream/main, 2026-09-22, после v2.20) · 2026-09-23
-История: v2.0 (2026-07-16) → v2.1 (2026-07-27) → v2.11 (2026-08-12) → v2.13 (2026-08-27) → `8f089cb` (2026-09-03) → v2.20 (2026-09-19) → `d7b528aa` (2026-09-22)
-
-Проход 2026-09-23: 95 коммитов после `8f089cb`. Поведение — 9 находок, из них три крупные фичи
-v2.20. Остальное — обвязка: французская локализация (`Localizable.xcstrings` +14791/-3786),
-changelog-окно, дашборд-календарь активности, рефакторинги UI, релизные коммиты.
+Проверено до: v2.22 (`c09cc1f6`, 2026-10-01) · 2026-10-03
+История: v2.0 (2026-07-16) → v2.1 (2026-07-27) → v2.11 (2026-08-12) → v2.13 (2026-08-27) → `8f089cb` (2026-09-03) → v2.20 (2026-09-19) → `d7b528aa` (2026-09-22) → v2.22 (2026-10-01)
 
 Раскладка исходников апстрима (`16b61ac`, 2026-08-31, `Services/*` → `Infrastructure/*`,
 `Views/*` → `Features/<Feature>/Views/*`) по-прежнему расходится с форком: портировать руками по
 содержимому, не cherry-pick.
+
+## Находки (проход 2026-10-03)
+
+21 коммит после `d7b528aa`, релизы v2.21 и v2.22 (диагностическая сборка под зависания Parakeet).
+Поведение — 7 находок, крупных фич нет. Большая часть пунктов release notes v2.21 (double tap,
+Auto Send, дублирование режимов, local CLI в Auto Learn, custom model IDs, OpenRouter-транскрипция)
+вошла в прошлый проход до `d7b528aa`. Остальное — обвязка: редизайн Insights и удаление графика
+продуктивности, объединение UI History/Quick History, пропуск онбординга, диагностические логи
+(`e8f4dd0c`, `c09cc1f6`), `ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES` (`0206b606`), дефолты моделей
+улучшения (`ba16d143`), appcast.
+
+| # | Фича | Что даёт | Польза | Порт | Связность | Куда ляжет |
+|---|------|----------|:---:|:---:|---|---|
+| 1 | **Текст ошибки улучшения не выдаётся за результат** (`44d3013a`) | Апстрим фильтрует `enhancedText` с префиксом «Enhancement failed:» в истории. В форке тот же класс бага шире: `TranscriptionPipeline.swift:163` и `AudioFileTranscriptionManager.swift:208` пишут ошибку в `enhancedText`, после чего ↵ в Quick History (`QuickHistoryController.swift:118` → `preferredHistoryText`), «скопировать последнюю» (`LastTranscriptionService.swift:34`) и «вставить последнее улучшение» (`:89`) отдают в чужое приложение строку «Enhancement failed: …» вместо транскрипта | 3 | S | низкая | чинить у себя в корне (не хранить ошибку в `enhancedText` или один фильтр в общем аксессоре), префикс-фильтр апстрима не копировать |
+| 2 | **Возобновление медиа после записи** (`af772a81`) | Владение паузой по сессии записи: вторая запись, начатая до возобновления, не теряет «мы поставили на паузу»; перед play ждёт до 2 с, пока адаптер пришлёт событие паузы, и перечитывает живое состояние. В форке `PlaybackController.pauseMedia()` отменяет ожидающий `resumeTask` и сбрасывает `wasPlayingWhenRecordingStarted` — музыка остаётся на паузе, но только при `audioResumptionDelay` > 0 (дефолт 0). Второй сценарий (короткая запись, событие паузы ещё не пришло → resume пропущен) — гипотеза, не воспроизводил. Mute-часть коммита форк уже закрывает (`mutedDeviceID`, `muteGeneration`) | 2 | M (~190) | низкая | `VoiceInk/PlaybackController.swift`, `VoiceInk/Recorder.swift` |
+| 3 | **Parakeet Ultra** (`593fadbe`, `7fdc5c39`) | Parakeet V3, дообученный Moondream, 640 МБ, мультиязычный | 2 | S + bump FluidAudio `50aa0719` → `762baf67` (`AsrModelVersion.ultra`) | низкая | `Transcription/FluidAudio/FluidAudioModelManager.swift`, реестр моделей. Брать только с замером на русском против текущей модели |
+| 4 | **VAD для FluidAudio везде** (`6985c4b5`) | VAD на любой длине батча и в стриминге (сегменты со смещением таймстампов). В форке VAD только в батче от 20 с (`FluidAudioTranscriptionService.swift:131`) | 1 | M | средняя — стриминг форка | `Transcription/FluidAudio/`, `Transcription/Streaming/FluidAudioStreamingProvider.swift` |
+| 5 | **AssemblyAI Universal 3.6 Pro, ElevenLabs Scribe V2 Medical** (`4798ce0e`, `f657a783`) | Новые облачные модели | 1 | S | bump LLMkit `bbfbf5c4` → `37100b22` — вместе с #5/#8 прошлого прохода | `Transcription/Cloud/AssemblyAIProvider.swift`, `ElevenLabsProvider.swift` |
+| 6 | **Свои звуки записи на полной громкости** (`880502b3`) | `volume: 1.0` вместо 0.3 (в форке 0.4) | 1 | S (1 строка) | нет | `VoiceInk/SoundPlaybackEngine.swift:64-65` |
+| 7 | **Слияние правил замены с одной целью** (`d217463a`) | «a → X» и «b → X» сводятся в одну строку «a, b → X» при старте и импорте; удаление одного источника из пилюли | 1 | M | низкая | `Services/Dictionary*`, `Views/Dictionary/` |
+
+Не нужно: case-only циклы (`82bbaede`) и local CLI в Auto Learn (`57c12c9a`) — в форке уже есть;
+Return-to-send после custom command (`d4d718bc`) — в форке нет доставки через команду.
 
 ## Находки (проход 2026-09-23)
 
@@ -27,6 +46,8 @@ changelog-окно, дашборд-календарь активности, ре
 
 ## Решения
 
+- **Проход 2026-10-03:** порт не запускался. Рекомендую #1 — фикс в форке, не порт. #3 и #5 —
+  только вместе с bump FluidAudio/LLMkit и, для #3, с замером. Остальное — по желанию.
 - **Взято (2026-09-24, план `docs/superpowers/plans/2026-09-23-upstream-v2.20-port.md`):**
   #1 Auto Learn (`1045870c` + фиксы `8b0cd3c2`, `38fd9caf`, `8ef9d9d8`), #2 импорт/экспорт словаря
   (`7a308543`, `0ab2c43b`), #3 Quick History (`67f1e89c`, `b1c73c1b`), #4 блокировка экрана
@@ -67,7 +88,8 @@ changelog-окно, дашборд-календарь активности, ре
 
 | Пакет | Апстрим | Форк |
 |---|---|---|
-| llmkit | `f35a17ad` (Deepgram opt-out, Gemini/OpenRouter клиенты) | `bbfbf5c4` |
+| llmkit | `37100b22` (Deepgram opt-out, Gemini/OpenRouter клиенты, Universal 3.6 Pro) | `bbfbf5c4` |
+| fluidaudio | `762baf67` (Parakeet Ultra) | `50aa0719` |
 | transcribe-cpp-swift | есть | нет |
 | mlx-swift / mlx-swift-lm / swift-transformers / swift-huggingface / swift-jinja | есть | нет |
 | launchatlogin-modern | нет (свой `LaunchAtLoginManager.swift`) | есть |
