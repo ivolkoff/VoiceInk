@@ -46,8 +46,11 @@ Return-to-send после custom command (`d4d718bc`) — в форке нет �
 
 ## Решения
 
-- **Проход 2026-10-03:** порт не запускался. Рекомендую #1 — фикс в форке, не порт. #3 и #5 —
-  только вместе с bump FluidAudio/LLMkit и, для #3, с замером. Остальное — по желанию.
+- **Взято (2026-10-03):** #1 — фикс в корне форка (`f2cc27b4`, аксессор
+  `Transcription.successfulEnhancedText`). #3 Parakeet Ultra (`d634d6d7`, FluidAudio → `762baf67`)
+  — по замеру FluidAudio (FLEURS ru −1,3 п.п. WER, `Documentation/ASR/ParakeetUltra.md`), первая в
+  рекомендуемых, V3 оставлена запасной; VAD-файлы из `7fdc5c39` не нужны — VAD форка качается сам.
+- **Открыто:** #2, #4–#7. #5 — вместе с bump LLMkit.
 - **Взято (2026-09-24, план `docs/superpowers/plans/2026-09-23-upstream-v2.20-port.md`):**
   #1 Auto Learn (`1045870c` + фиксы `8b0cd3c2`, `38fd9caf`, `8ef9d9d8`), #2 импорт/экспорт словаря
   (`7a308543`, `0ab2c43b`), #3 Quick History (`67f1e89c`, `b1c73c1b`), #4 блокировка экрана
@@ -89,7 +92,7 @@ Return-to-send после custom command (`d4d718bc`) — в форке нет �
 | Пакет | Апстрим | Форк |
 |---|---|---|
 | llmkit | `37100b22` (Deepgram opt-out, Gemini/OpenRouter клиенты, Universal 3.6 Pro) | `bbfbf5c4` |
-| fluidaudio | `762baf67` (Parakeet Ultra) | `50aa0719` |
+| fluidaudio | `762baf67` | `762baf67` (с 2026-10-03) |
 | transcribe-cpp-swift | есть | нет |
 | mlx-swift / mlx-swift-lm / swift-transformers / swift-huggingface / swift-jinja | есть | нет |
 | launchatlogin-modern | нет (свой `LaunchAtLoginManager.swift`) | есть |
