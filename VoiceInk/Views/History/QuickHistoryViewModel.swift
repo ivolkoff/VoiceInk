@@ -136,11 +136,10 @@ final class QuickHistoryViewModel: ObservableObject {
 
 extension Transcription {
     var preferredHistoryText: String {
-        guard let enhancedText, !enhancedText.isEmpty else { return text }
-        return enhancedText
+        successfulEnhancedText ?? text
     }
 
     var hasEnhancedHistoryText: Bool {
-        enhancedText?.isEmpty == false
+        successfulEnhancedText != nil
     }
 }

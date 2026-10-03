@@ -57,6 +57,17 @@ struct QuickHistoryTests {
         #expect(Transcription(text: "raw", duration: 1).preferredHistoryText == "raw")
     }
 
+    @Test func enhancementErrorIsNeverPastedAsText() {
+        let failed = Transcription(
+            text: "raw",
+            duration: 1,
+            enhancedText: Transcription.enhancementFailurePrefix + "timeout"
+        )
+        #expect(failed.successfulEnhancedText == nil)
+        #expect(failed.preferredHistoryText == "raw")
+        #expect(!failed.hasEnhancedHistoryText)
+    }
+
     @Test func selectionClampsAtListEdges() throws {
         let context = try makeContext([("a", nil), ("b", nil), ("c", nil)])
         let viewModel = QuickHistoryViewModel(modelContext: context)

@@ -89,3 +89,15 @@ final class Transcription {
         powerModeEmoji = nil
     }
 }
+
+extension Transcription {
+    static let enhancementFailurePrefix = "Enhancement failed: "
+
+    // enhancedText also stores the enhancement error so history can show it;
+    // anything that pastes or copies must not hand that error to another app.
+    var successfulEnhancedText: String? {
+        guard let enhancedText, !enhancedText.isEmpty,
+              !enhancedText.hasPrefix(Self.enhancementFailurePrefix) else { return nil }
+        return enhancedText
+    }
+}

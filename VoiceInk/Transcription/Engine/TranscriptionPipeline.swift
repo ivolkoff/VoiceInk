@@ -160,7 +160,7 @@ class TranscriptionPipeline {
                     finalPastedText = enhancedText
                 } catch {
                     let errorDescription = (error as? LocalizedError)?.errorDescription ?? error.localizedDescription
-                    transcription.enhancedText = "Enhancement failed: \(errorDescription)"
+                    transcription.enhancedText = Transcription.enhancementFailurePrefix + errorDescription
                     let shortReason = String(errorDescription.prefix(80))
                     await MainActor.run {
                         NotificationManager.shared.showNotification(

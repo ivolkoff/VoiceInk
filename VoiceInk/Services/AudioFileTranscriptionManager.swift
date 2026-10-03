@@ -205,7 +205,7 @@ class AudioTranscriptionManager: ObservableObject {
                     transcription = Transcription(
                         text: cleanedText,
                         duration: duration,
-                        enhancedText: "Enhancement failed: \(error.localizedDescription)",
+                        enhancedText: Transcription.enhancementFailurePrefix + error.localizedDescription,
                         audioFileURL: permanentURL.absoluteString,
                         transcriptionModelName: currentModel.displayName,
                         promptName: nil,
