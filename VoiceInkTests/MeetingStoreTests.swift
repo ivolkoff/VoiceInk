@@ -59,5 +59,6 @@ struct MeetingStoreTests {
         #expect(renamedA.lastPathComponent == "2026-10-07 09.05 Weekly sync")
         #expect(renamedB.lastPathComponent == "2026-10-07 09.05 Weekly sync 2")
         #expect(try store.rename(renamedA, to: "Weekly sync") == renamedA)
+        #expect(try store.rename(renamedB, to: "Weekly sync") == renamedB)
     }
 }

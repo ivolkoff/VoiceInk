@@ -123,7 +123,7 @@ private struct MeetingRow: View {
     @State private var duration: TimeInterval?
 
     var body: some View {
-        let step = recorder.steps[recording.folder]
+        let step = recorder.step(for: recording)
         HStack(spacing: 8) {
             VStack(alignment: .leading, spacing: 2) {
                 Text(recording.name).lineLimit(1).truncationMode(.middle)
@@ -154,6 +154,12 @@ private struct MeetingRow: View {
         }
         .contextMenu {
             Button("Show in Finder") { NSWorkspace.shared.activateFileViewerSelecting([recording.folder]) }
+            if recorder.step(for: recording) == nil {
+                Button("Transcribe Again") { recorder.enqueueTranscription(recording.folder) }
+                if recording.hasTranscript, recorder.canSummarize {
+                    Button("Summarize Again") { recorder.createSummary(recording) }
+                }
+            }
         }
         .task(id: recording.folder) {
             duration = await AudioFileMetadata.duration(for: recording.audioURL)

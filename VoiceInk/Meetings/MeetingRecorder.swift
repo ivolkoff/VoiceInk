@@ -27,7 +27,7 @@ final class MeetingRecorder: ObservableObject {
     @Published var languageChoice: String { didSet { UserDefaults.standard.set(languageChoice, forKey: Keys.language) } }
     @Published private(set) var state: State = .idle
     @Published private(set) var recordings: [MeetingRecording] = []
-    @Published private(set) var steps: [URL: Step] = [:]
+    @Published private(set) var steps: [String: Step] = [:]
     @Published private(set) var status: String?
     @Published var error: String?
     @Published private(set) var needsScreenPermission = false
@@ -100,6 +100,10 @@ final class MeetingRecorder: ObservableObject {
     }
 
     func stop() async {
+        if state == .saving {
+            await saveTask?.value
+            return
+        }
         guard case let .recording(startedAt, appName) = state else { return }
         state = .saving
         let task = Task { await self.save(startedAt: startedAt, appName: appName) }
@@ -109,27 +113,33 @@ final class MeetingRecorder: ObservableObject {
         state = .idle
     }
 
+    // Keyed by folder name: URLs of the same folder from different APIs differ (trailing slash, /private).
+    func step(for recording: MeetingRecording) -> Step? {
+        steps[recording.name]
+    }
+
     func enqueueTranscription(_ folder: URL) {
-        guard steps[folder] == nil else { return }
-        steps[folder] = .queued
+        guard steps[folder.lastPathComponent] == nil else { return }
+        steps[folder.lastPathComponent] = .queued
         queue.append(folder)
         processQueue()
     }
 
     func createSummary(_ recording: MeetingRecording) {
-        guard steps[recording.folder] == nil else { return }
+        guard step(for: recording) == nil else { return }
         guard let transcript = try? String(contentsOf: recording.transcriptURL, encoding: .utf8),
               !transcript.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
             error = String(localized: "The transcript is empty.")
             return
         }
+        steps[recording.name] = .summarizing
         Task { await summarize(recording.folder, transcript: transcript, languageCode: nil) }
     }
 
     func trash(_ recording: MeetingRecording) {
-        guard steps[recording.folder] == nil || steps[recording.folder] == .queued else { return }
-        queue.removeAll { $0 == recording.folder }
-        steps[recording.folder] = nil
+        guard step(for: recording) == nil || step(for: recording) == .queued else { return }
+        queue.removeAll { $0.lastPathComponent == recording.name }
+        steps[recording.name] = nil
         do {
             try store.trash(recording)
         } catch {
@@ -140,21 +150,11 @@ final class MeetingRecorder: ObservableObject {
 
     // Returns true when quitting must wait; `completion` then fires once the recording is on disk.
     func prepareForTermination(completion: @escaping () -> Void) -> Bool {
-        switch state {
-        case .idle:
-            return false
-        case .recording:
-            isTerminating = true
-            Task {
-                await stop()
-                completion()
-            }
-        case .saving:
-            isTerminating = true
-            Task {
-                await saveTask?.value
-                completion()
-            }
+        guard state != .idle else { return false }
+        isTerminating = true
+        Task {
+            await stop()
+            completion()
         }
         return true
     }
@@ -166,27 +166,39 @@ final class MeetingRecorder: ObservableObject {
     }
 
     private func save(startedAt: Date, appName: String) async {
+        let tempURL: URL
         do {
-            guard let tempURL = try await capture.stop() else { return }
-            let folder = try store.makeFolder(appName: appName, startedAt: startedAt)
-            do {
-                try await MeetingCapture.mixdown(tempURL, to: folder.appendingPathComponent(MeetingRecording.audioName))
-                try? FileManager.default.removeItem(at: tempURL)
-            } catch {
-                // Never lose a call: keep the raw two-track capture next to where the m4a should be.
-                try? FileManager.default.moveItem(at: tempURL, to: folder.appendingPathComponent(MeetingRecording.rawCaptureName))
-                logger.error("Mixdown failed: \(error.localizedDescription, privacy: .public)")
-                self.error = String(localized: "Could not convert the recording to m4a: \(error.localizedDescription). The raw capture is kept in \(folder.path).")
-                return
-            }
-            try? store.setStartDate(startedAt, of: folder)
-            refreshRecordings()
-            if !isTerminating {
-                enqueueTranscription(folder)
-            }
+            guard let url = try await capture.stop() else { return }
+            tempURL = url
         } catch {
-            logger.error("Saving the recording failed: \(error.localizedDescription, privacy: .public)")
+            logger.error("Finishing the capture failed: \(error.localizedDescription, privacy: .public)")
             self.error = error.localizedDescription
+            return
+        }
+        let folder: URL
+        do {
+            folder = try store.makeFolder(appName: appName, startedAt: startedAt)
+        } catch {
+            logger.error("Creating the recording folder failed: \(error.localizedDescription, privacy: .public)")
+            self.error = String(localized: "Could not save the recording: \(error.localizedDescription). The raw capture is kept at \(tempURL.path).")
+            return
+        }
+        let audioURL = folder.appendingPathComponent(MeetingRecording.audioName)
+        do {
+            try await MeetingCapture.mixdown(tempURL, to: audioURL)
+            try? FileManager.default.removeItem(at: tempURL)
+        } catch {
+            // Never lose a call: keep the raw two-track capture where the m4a should have been.
+            try? FileManager.default.removeItem(at: audioURL)
+            try? FileManager.default.moveItem(at: tempURL, to: folder.appendingPathComponent(MeetingRecording.rawCaptureName))
+            logger.error("Mixdown failed: \(error.localizedDescription, privacy: .public)")
+            self.error = String(localized: "Could not convert the recording to m4a: \(error.localizedDescription). The raw capture is kept in \(folder.path).")
+            return
+        }
+        try? store.setStartDate(startedAt, of: folder)
+        refreshRecordings()
+        if !isTerminating {
+            enqueueTranscription(folder)
         }
     }
 
@@ -202,7 +214,8 @@ final class MeetingRecorder: ObservableObject {
     }
 
     private func transcribe(_ folder: URL) async {
-        steps[folder] = .transcribing
+        let name = folder.lastPathComponent
+        steps[name] = .transcribing
         var result: MeetingTranscriber.Result?
         do {
             let transcription = try await transcriber.transcribe(
@@ -215,17 +228,24 @@ final class MeetingRecorder: ObservableObject {
             logger.error("Transcription failed: \(error.localizedDescription, privacy: .public)")
             self.error = String(localized: "Transcription failed: \(error.localizedDescription)")
         }
-        status = nil
-        steps[folder] = nil
+        steps[name] = nil
         refreshRecordings()
-        guard let result, !result.transcript.isEmpty, summarizer.shouldAutoSummarize else { return }
+        guard let result else {
+            status = nil
+            return
+        }
+        status = result.language.map { String(localized: "Transcript ready · \(MeetingTranscriber.displayName($0))") }
+            ?? String(localized: "Transcript ready")
+        guard !result.transcript.isEmpty, summarizer.shouldAutoSummarize else { return }
+        steps[name] = .summarizing
         Task { await summarize(folder, transcript: result.transcript, languageCode: result.language) }
     }
 
     private func summarize(_ folder: URL, transcript: String, languageCode: String?) async {
-        steps[folder] = .summarizing
+        let name = folder.lastPathComponent
+        steps[name] = .summarizing
         defer {
-            steps[folder] = nil
+            steps[name] = nil
             refreshRecordings()
         }
         do {

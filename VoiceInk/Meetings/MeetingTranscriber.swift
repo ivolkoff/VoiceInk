@@ -78,7 +78,8 @@ final class MeetingTranscriber {
     // nil means Auto with detect-then-correct; models without "auto" get a concrete language up front.
     private static func fixedLanguage(choice: String, model: any TranscriptionModel, supported: [String: String]) -> String? {
         if choice != MeetingLanguage.auto {
-            return TranscriptionLanguageSupport.validLanguageOrFallback(choice, for: model)
+            let valid = TranscriptionLanguageSupport.validLanguageOrFallback(choice, for: model)
+            if valid != MeetingLanguage.auto { return valid }
         }
         if supported[MeetingLanguage.auto] != nil { return nil }
         if let selected = UserDefaults.standard.string(forKey: "SelectedLanguage"), supported[selected] != nil {
@@ -147,7 +148,7 @@ final class MeetingTranscriber {
         }
     }
 
-    private static func displayName(_ code: String) -> String {
+    static func displayName(_ code: String) -> String {
         Locale.current.localizedString(forIdentifier: code) ?? code
     }
 

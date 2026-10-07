@@ -61,8 +61,8 @@ struct MeetingStore {
     func rename(_ folder: URL, to title: String) throws -> URL {
         let created = Self.creationDate(of: folder) ?? Date()
         let name = "\(Self.formatter("yyyy-MM-dd HH.mm").string(from: created)) \(title)"
-        guard name != folder.lastPathComponent else { return folder }
-        let target = uniqueFolder(named: name)
+        let target = uniqueFolder(named: name, allowing: folder.lastPathComponent)
+        guard target.lastPathComponent != folder.lastPathComponent else { return folder }
         try FileManager.default.moveItem(at: folder, to: target)
         return target
     }
@@ -71,10 +71,11 @@ struct MeetingStore {
         try FileManager.default.trashItem(at: recording.folder, resultingItemURL: nil)
     }
 
-    private func uniqueFolder(named name: String) -> URL {
+    // `allowing` is the folder being renamed: its own current name is not a collision.
+    private func uniqueFolder(named name: String, allowing current: String? = nil) -> URL {
         var candidate = root.appendingPathComponent(name, isDirectory: true)
         var suffix = 2
-        while FileManager.default.fileExists(atPath: candidate.path) {
+        while candidate.lastPathComponent != current, FileManager.default.fileExists(atPath: candidate.path) {
             candidate = root.appendingPathComponent("\(name) \(suffix)", isDirectory: true)
             suffix += 1
         }

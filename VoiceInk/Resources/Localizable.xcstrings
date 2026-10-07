@@ -10301,6 +10301,56 @@
           }
         }
       }
+    },
+    "Could not save the recording: %@. The raw capture is kept at %@.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Не удалось сохранить запись: %@. Исходный захват лежит в %@."
+          }
+        }
+      }
+    },
+    "Transcript ready · %@": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Транскрипт готов · %@"
+          }
+        }
+      }
+    },
+    "Transcript ready": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Транскрипт готов"
+          }
+        }
+      }
+    },
+    "Transcribe Again": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Транскрибировать заново"
+          }
+        }
+      }
+    },
+    "Summarize Again": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Сделать саммари заново"
+          }
+        }
+      }
     }
   },
   "version": "1.0"

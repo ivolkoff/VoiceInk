@@ -82,7 +82,7 @@ final class MeetingCapture: NSObject, SCStreamDelegate {
 
         self.stream = stream
         self.writer = writer
-        appName = targets.first?.applicationName ?? bundleID
+        appName = (targets.first { $0.bundleIdentifier == bundleID } ?? targets.first)?.applicationName ?? bundleID
     }
 
     func stop() async throws -> URL? {
@@ -150,7 +150,7 @@ final class MeetingTrackWriter: NSObject, SCStreamOutput, @unchecked Sendable {
         guard let input else { return }
 
         if !started {
-            writer.startWriting()
+            guard writer.startWriting() else { return }
             writer.startSession(atSourceTime: sampleBuffer.presentationTimeStamp)
             started = true
         }
@@ -164,6 +164,11 @@ final class MeetingTrackWriter: NSObject, SCStreamOutput, @unchecked Sendable {
             queue.async { [self] in
                 guard started else {
                     continuation.resume(throwing: MeetingCaptureError.noAudio)
+                    return
+                }
+                // finishWriting raises an exception on a failed writer instead of reporting an error.
+                guard writer.status == .writing else {
+                    continuation.resume(throwing: writer.error ?? MeetingCaptureError.noAudio)
                     return
                 }
                 appInput.markAsFinished()
