@@ -320,3 +320,10 @@ New UI strings get Russian translations in `Localizable.xcstrings`.
   pass 1 of a Russian call is English garbage and `L` becomes `en`. If
   confirmed, Deepgram on Auto sends `detect_language=true`, or the Meetings
   screen asks for a fixed language with Deepgram.
+
+## Later additions (1.83.0)
+
+- **All System Audio** source, the default: `SCContentFilter(display:excludingApplications: [])`, pseudo bundle ID `*`, folder named "System Audio <date>" (localized).
+- **Shortcut** `ShortcutAction.toggleCallRecording`, a global utility action configured in the Meetings section only; `RecordingShortcutManager` posts `.toggleCallRecording`, `MeetingRecorder.toggleFromShortcut` starts the selected source or stops, and reports through `NotificationManager`. Not included in settings backup/export.
+- **Auto-delete**: toggle and period (1 h, 1 day, 3 days, 7 days; no "Immediately", which would delete before the recording is read) in the Meetings section. A folder holding `audio.m4a` or `capture.mov` whose newest file is older than the period goes to the Trash; folders with a running step are skipped. Sweeps at launch, every 10 minutes, on setting changes and by button.
+
