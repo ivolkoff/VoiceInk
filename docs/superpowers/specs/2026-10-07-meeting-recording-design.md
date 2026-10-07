@@ -30,9 +30,10 @@ app's audio and the microphone, and a place to list the recordings.
   `@available(macOS 15, *)`; the rest compiles on 14.4 and the UI is hidden
   behind `if #available(macOS 15, *)`. Core Audio process taps were rejected:
   no code to port, 2–3× the code.
-- **Transcription: the current VoiceInk model**, not WhisperKit, in a
-  **language picked on the Meetings screen** (default `auto`, persisted). Model
-  and language are captured once at the start of the step and passed
+- **Transcription: the current VoiceInk model**, not WhisperKit. Language from
+  a **picker on the Meetings screen**: Auto (default) or a fixed language,
+  persisted. Auto means *detect, then lock* (see `MeetingTranscriber`). Model
+  and language choice are captured once at the start of the step and passed
   explicitly, so the keyboard-layout override, `SelectedLanguage` and a Power
   Mode switch during the run do not apply. Timestamps are model-agnostic: VAD
   segments merged into chunks of up to 30 s, each transcribed separately,
@@ -87,8 +88,25 @@ New folder `VoiceInk/Meetings/`.
      which would give hundreds of 2–10 s pieces per hour.
   3. Each chunk → temp WAV (`AudioProcessor.saveSamplesAsWav`) → one
      `TranscriptionServiceRegistry` for the whole run →
-     `transcribe(audioURL:model:language:)` with the captured model and
-     language → temp WAV deleted at once.
+     `transcribe(audioURL:model:language:)` with the captured model and the
+     current language (below) → temp WAV deleted at once.
+     - **Fixed language:** passed for every chunk.
+     - **Auto, detect then lock:** chunks go with `auto` until their text
+       reaches 300 characters. `NLLanguageRecognizer` on that text gives the
+       dominant language. If its probability is ≥ 0.8 and the language is in
+       the model's list (`TranscriptionLanguageSupport.languages(for:)`), it is locked for
+       the remaining chunks, and the chunks already done are transcribed again
+       with it. Otherwise every chunk stays on `auto`. Engines already accept
+       `auto`: whisper.cpp detects the language itself (`LibWhisper.swift:39-46`),
+       Parakeet V3/Ultra decode without a hint (the hint only replaces
+       wrong-language tokens, `TdtDecoderV3.tokenLanguageFilter`), cloud
+       providers get no language field (`CloudTranscriptionService.swift:103-107`).
+       Per-chunk `auto` alone lets short or noisy chunks flip language, and
+       Parakeet without a hint can emit a neighbouring language's tokens.
+     - **Models without `auto`** (Apple Native, English-only): Auto falls back
+       to the model's default from `TranscriptionLanguageSupport.validLanguageOrFallback`.
+     - The locked or fixed language is the run's language; with no lock it is
+       `NLLanguageRecognizer` on the whole transcript.
   4. Text per chunk: `TranscriptionOutputFilter.filter`, then
      `WordReplacementService.applyReplacements` (needs a `ModelContext`), then
      newlines collapsed to spaces and trimmed. `WhisperTextFormatter` and
@@ -114,8 +132,9 @@ New folder `VoiceInk/Meetings/`.
 - **`MeetingSummarizer`** — skipped when the transcript is empty. System prompt
   ported from AppRec (`apprec/Sources/Ollama.swift:108-120`): title line
   `# <3–6 words>`, then `## TL;DR`, `## Key points` (each bullet starts with the
-  `[mm:ss]` of its transcript line), `## Action items`; everything in the
-  transcript's language (detected with `NLLanguageRecognizer`). Provider and
+  `[mm:ss]` of its transcript line), `## Action items`; everything in the run's
+  language from `MeetingTranscriber`; for a transcript made earlier (manual
+  Create), `NLLanguageRecognizer` on `transcript.txt`. Provider and
   model are captured at the start of the step. Transport:
   - **Ollama:** direct `POST <AIProvider.ollama.baseURL>/api/chat` with model
     `aiService.currentModel` (as `editSelection` does), `"think": false`,
@@ -194,6 +213,10 @@ Unit tests in `VoiceInkTests`, no ScreenCaptureKit, VAD or models:
 - timestamp format: `[00:05]`, `[59:59]`, `[1:02:03]`;
 - chunk merging: segments `[(start, end)]` → chunks ≤ 30 s, chunk start = first
   segment start, a single segment longer than 30 s stays alone;
+- language lock decision as a pure function (accumulated text, model's
+  language list → locked language or `nil`): under 300 characters → `nil`;
+  Russian text → `ru`; mixed Russian/English text below 0.8 → `nil`; a
+  language the model lacks → `nil`;
 - transcript assembly as a pure function `[(start, text)] → String`: empty
   texts dropped, newlines collapsed, lines ordered by start;
 - title from summary: first `# ` line, forbidden characters, 60-character cap,
@@ -210,8 +233,10 @@ tested):
 - microphone off → only app audio; a non-default microphone selected in
   VoiceInk → that microphone is recorded;
 - dictation during a recording still works;
-- a Russian call after an English dictation → transcribed in the language set
-  on the Meetings screen;
+- language on Auto: a Russian call after an English dictation → locked to
+  Russian; an English call → English; a call switching between Russian and
+  English → stays on per-chunk `auto`;
+- language fixed to Russian → every chunk in Russian;
 - target app quits mid-recording → recording saved;
 - VoiceInk quits mid-recording, and right after Stop → `audio.m4a` present;
 - recording longer than 30 minutes with Parakeet and with a local Whisper model
@@ -236,3 +261,5 @@ New UI strings get Russian translations in `Localizable.xcstrings`.
 - What `SCStream` does when the captured app quits (error vs. silence).
 - Peak memory for a one-hour recording (estimate ~1.1 GB during sample
   conversion).
+- Language lock thresholds (300 characters, probability 0.8): tuned on real
+  calls.
