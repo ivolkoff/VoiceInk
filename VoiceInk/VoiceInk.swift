@@ -35,6 +35,7 @@ struct VoiceInkApp: App {
 
     // Model prewarm service for optimizing model on wake from sleep
     @StateObject private var prewarmService: ModelPrewarmService
+    @StateObject private var meetingRecorder: MeetingRecorder
 
     init() {
         // Disable HTTP response caching — prevents API responses from being stored in Cache.db
@@ -171,7 +172,11 @@ struct VoiceInkApp: App {
         )
         _prewarmService = StateObject(wrappedValue: prewarmService)
 
+        let meetingRecorder = MeetingRecorder(engine: engine, aiService: aiService, enhancementService: enhancementService)
+        _meetingRecorder = StateObject(wrappedValue: meetingRecorder)
+
         appDelegate.menuBarManager = menuBarManager
+        appDelegate.meetingRecorder = meetingRecorder
 
         // Ensure no lingering recording state from previous runs
         Task {
@@ -303,6 +308,7 @@ struct VoiceInkApp: App {
                     .environmentObject(menuBarManager)
                     .environmentObject(aiService)
                     .environmentObject(enhancementService)
+                    .environmentObject(meetingRecorder)
                     .modelContainer(container)
                     .onAppear {
                         // Check if container initialization failed
@@ -380,6 +386,7 @@ struct VoiceInkApp: App {
                 // .environmentObject(updaterViewModel)  // Auto-update disabled
                 .environmentObject(aiService)
                 .environmentObject(enhancementService)
+                .environmentObject(meetingRecorder)
         } label: {
             let image: NSImage = {
                 let ratio = $0.size.height / $0.size.width
