@@ -305,6 +305,13 @@ New UI strings get Russian translations in `Localizable.xcstrings`.
 - What `SCStream` does when the captured app quits (error vs. silence).
 - Peak memory for a one-hour recording (estimate ~1.1 GB during sample
   conversion).
+- Memory: the meeting registry loads its own copy of the model (FluidAudio
+  caches `AsrModels` per service instance), so transcription during a
+  dictation holds two copies (≈ +0.6–1 GB for Parakeet).
+- Language switch without a clear pause: a chunk holds both languages and
+  Parakeet keeps the first one's script for the rest of the chunk (seen live:
+  an English question after Russian came out transliterated). The 1 s turn
+  gap only helps when the pause survives mic noise and echo.
 - Language thresholds (200 characters and 0.8 for `L`; 40 characters and 0.8
   for a confident other chunk) and the 1 s turn gap: checked on one synthetic
   mixed call, still to tune on real calls.

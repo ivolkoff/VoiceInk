@@ -49,7 +49,7 @@
   - `MeetingText.assembleTranscript(_ lines: [(start: TimeInterval, text: String)]) -> String`
   - `MeetingText.title(fromSummary:) -> String?`
 
-- [ ] **Step 1: Write the failing tests** — `VoiceInkTests/MeetingTextTests.swift`:
+- [x] **Step 1: Write the failing tests** — `VoiceInkTests/MeetingTextTests.swift`:
 
 ```swift
 import Foundation
@@ -99,9 +99,9 @@ struct MeetingTextTests {
 }
 ```
 
-- [ ] **Step 2: Run, expect FAIL** — `zsh vt.sh MeetingTextTests` → build error "cannot find 'MeetingText'".
+- [x] **Step 2: Run, expect FAIL** — `zsh vt.sh MeetingTextTests` → build error "cannot find 'MeetingText'".
 
-- [ ] **Step 3: Implement** — `VoiceInk/Meetings/MeetingText.swift`:
+- [x] **Step 3: Implement** — `VoiceInk/Meetings/MeetingText.swift`:
 
 ```swift
 import Foundation
@@ -161,8 +161,8 @@ enum MeetingText {
 }
 ```
 
-- [ ] **Step 4: Run, expect PASS** — `zsh vt.sh MeetingTextTests` → "Test run with 7 tests … passed".
-- [ ] **Step 5: Commit** — `git add VoiceInk/Meetings/MeetingText.swift VoiceInkTests/MeetingTextTests.swift && git commit -m "feat(meetings): transcript text helpers"`
+- [x] **Step 4: Run, expect PASS** — `zsh vt.sh MeetingTextTests` → "Test run with 7 tests … passed".
+- [x] **Step 5: Commit** — `git add VoiceInk/Meetings/MeetingText.swift VoiceInkTests/MeetingTextTests.swift && git commit -m "feat(meetings): transcript text helpers"`
 
 ---
 
@@ -181,7 +181,7 @@ enum MeetingText {
   - `MeetingLanguage.dominantLanguage(detection:characterCount:supported:) -> String?`
   - `MeetingLanguage.pass2Indices(chunkTexts:language:retranscribeAll:detect:) -> [Int]`
 
-- [ ] **Step 1: Write the failing tests** — `VoiceInkTests/MeetingLanguageTests.swift`:
+- [x] **Step 1: Write the failing tests** — `VoiceInkTests/MeetingLanguageTests.swift`:
 
 ```swift
 import Foundation
@@ -230,9 +230,9 @@ struct MeetingLanguageTests {
 }
 ```
 
-- [ ] **Step 2: Run, expect FAIL** — `zsh vt.sh MeetingLanguageTests` → "cannot find 'MeetingLanguage'".
+- [x] **Step 2: Run, expect FAIL** — `zsh vt.sh MeetingLanguageTests` → "cannot find 'MeetingLanguage'".
 
-- [ ] **Step 3: Implement** — `VoiceInk/Meetings/MeetingLanguage.swift`:
+- [x] **Step 3: Implement** — `VoiceInk/Meetings/MeetingLanguage.swift`:
 
 ```swift
 import Foundation
@@ -294,8 +294,8 @@ enum MeetingLanguage {
 }
 ```
 
-- [ ] **Step 4: Run, expect PASS** — `zsh vt.sh MeetingLanguageTests` → 4 tests passed.
-- [ ] **Step 5: Commit** — `git add VoiceInk/Meetings/MeetingLanguage.swift VoiceInkTests/MeetingLanguageTests.swift && git commit -m "feat(meetings): language detect-then-correct decisions"`
+- [x] **Step 4: Run, expect PASS** — `zsh vt.sh MeetingLanguageTests` → 4 tests passed.
+- [x] **Step 5: Commit** — `git add VoiceInk/Meetings/MeetingLanguage.swift VoiceInkTests/MeetingLanguageTests.swift && git commit -m "feat(meetings): language detect-then-correct decisions"`
 
 ---
 
@@ -310,7 +310,7 @@ enum MeetingLanguage {
   - `struct MeetingRecording: Identifiable, Hashable { folder, date, hasTranscript, hasSummary; id, name, audioURL, transcriptURL, summaryURL }` with static `audioName`, `transcriptName`, `summaryName`, `rawCaptureName`
   - `struct MeetingStore { let root: URL; static let defaultRoot: URL; list() throws -> [MeetingRecording]; makeFolder(appName:startedAt:) throws -> URL; setStartDate(_:of:) throws; rename(_:to:) throws -> URL; trash(_:) throws }`
 
-- [ ] **Step 1: Write the failing tests** — `VoiceInkTests/MeetingStoreTests.swift`:
+- [x] **Step 1: Write the failing tests** — `VoiceInkTests/MeetingStoreTests.swift`:
 
 ```swift
 import Foundation
@@ -378,9 +378,9 @@ struct MeetingStoreTests {
 }
 ```
 
-- [ ] **Step 2: Run, expect FAIL** — `zsh vt.sh MeetingStoreTests` → "cannot find 'MeetingStore'".
+- [x] **Step 2: Run, expect FAIL** — `zsh vt.sh MeetingStoreTests` → "cannot find 'MeetingStore'".
 
-- [ ] **Step 3: Implement** — `VoiceInk/Meetings/MeetingStore.swift`:
+- [x] **Step 3: Implement** — `VoiceInk/Meetings/MeetingStore.swift`:
 
 ```swift
 import Foundation
@@ -479,8 +479,8 @@ struct MeetingStore {
 }
 ```
 
-- [ ] **Step 4: Run, expect PASS** — `zsh vt.sh MeetingStoreTests` → 4 tests passed.
-- [ ] **Step 5: Commit** — `git add VoiceInk/Meetings/MeetingStore.swift VoiceInkTests/MeetingStoreTests.swift && git commit -m "feat(meetings): recordings folder store"`
+- [x] **Step 4: Run, expect PASS** — `zsh vt.sh MeetingStoreTests` → 4 tests passed.
+- [x] **Step 5: Commit** — `git add VoiceInk/Meetings/MeetingStore.swift VoiceInkTests/MeetingStoreTests.swift && git commit -m "feat(meetings): recordings folder store"`
 
 ---
 
@@ -493,7 +493,7 @@ struct MeetingStore {
 **Interfaces:**
 - Produces: `WhisperTranscriptionService.retainsOwnContext: Bool` (default `false`), `WhisperTranscriptionService.releaseRetainedContext() async`; `TranscriptionServiceRegistry.cleanup()` also releases it.
 
-- [ ] **Step 1: Add the flag and retained context** — after `private weak var modelProvider` (line 10):
+- [x] **Step 1: Add the flag and retained context** — after `private weak var modelProvider` (line 10):
 
 ```swift
     // Meeting transcription calls this hundreds of times; reloading the model per call is the bottleneck.
@@ -501,7 +501,7 @@ struct MeetingStore {
     private var retainedContext: (context: WhisperContext, modelName: String)?
 ```
 
-- [ ] **Step 2: Reuse it in the load branch** — replace the `} else {` branch that loads the model (lines 42-57) with:
+- [x] **Step 2: Reuse it in the load branch** — replace the `} else {` branch that loads the model (lines 42-57) with:
 
 ```swift
         } else if retainsOwnContext, let retained = retainedContext, retained.modelName == model.name {
@@ -530,7 +530,7 @@ struct MeetingStore {
         }
 ```
 
-- [ ] **Step 3: Skip release for the retained context** — replace lines 92-96:
+- [x] **Step 3: Skip release for the retained context** — replace lines 92-96:
 
 ```swift
         // Only release resources if we created a new context (not the shared or the retained one)
@@ -554,7 +554,7 @@ and add before `private func readAudioSamples`:
     }
 ```
 
-- [ ] **Step 4: Registry cleanup** — `TranscriptionServiceRegistry.cleanup()`:
+- [x] **Step 4: Registry cleanup** — `TranscriptionServiceRegistry.cleanup()`:
 
 ```swift
     func cleanup() async {
@@ -563,8 +563,8 @@ and add before `private func readAudioSamples`:
     }
 ```
 
-- [ ] **Step 5: Build + regression suites** — `zsh vt.sh RetranscribeHotkeyTests QuickHistoryTests` → passed (no model-backed tests exist; the flag defaults to `false`, so existing paths are unchanged).
-- [ ] **Step 6: Commit** — `git commit -am "feat(whisper): optionally keep a self-loaded context across calls"`
+- [x] **Step 5: Build + regression suites** — `zsh vt.sh RetranscribeHotkeyTests QuickHistoryTests` → passed (no model-backed tests exist; the flag defaults to `false`, so existing paths are unchanged).
+- [x] **Step 6: Commit** — `git commit -am "feat(whisper): optionally keep a self-loaded context across calls"`
 
 ---
 
@@ -582,7 +582,7 @@ and add before `private func readAudioSamples`:
   - `transcribe(audioURL:languageChoice:onStatus:) async throws -> Result`
   - `static func isRetryable(_ error: Error) -> Bool`
 
-- [ ] **Step 1: Write the failing test** — `VoiceInkTests/MeetingTranscriberTests.swift`:
+- [x] **Step 1: Write the failing test** — `VoiceInkTests/MeetingTranscriberTests.swift`:
 
 ```swift
 import Foundation
@@ -601,9 +601,9 @@ struct MeetingTranscriberTests {
 }
 ```
 
-- [ ] **Step 2: Run, expect FAIL** — `zsh vt.sh MeetingTranscriberTests` → "cannot find 'MeetingTranscriber'".
+- [x] **Step 2: Run, expect FAIL** — `zsh vt.sh MeetingTranscriberTests` → "cannot find 'MeetingTranscriber'".
 
-- [ ] **Step 3: Implement** — `VoiceInk/Meetings/MeetingTranscriber.swift`:
+- [x] **Step 3: Implement** — `VoiceInk/Meetings/MeetingTranscriber.swift`:
 
 ```swift
 import Foundation
@@ -774,8 +774,8 @@ final class MeetingTranscriber {
 }
 ```
 
-- [ ] **Step 4: Run, expect PASS** — `zsh vt.sh MeetingTranscriberTests` → 1 test passed.
-- [ ] **Step 5: Commit** — `git add VoiceInk/Meetings/MeetingTranscriber.swift VoiceInkTests/MeetingTranscriberTests.swift && git commit -m "feat(meetings): chunked transcription with language correction"`
+- [x] **Step 4: Run, expect PASS** — `zsh vt.sh MeetingTranscriberTests` → 1 test passed.
+- [x] **Step 5: Commit** — `git add VoiceInk/Meetings/MeetingTranscriber.swift VoiceInkTests/MeetingTranscriberTests.swift && git commit -m "feat(meetings): chunked transcription with language correction"`
 
 ---
 
@@ -789,7 +789,7 @@ final class MeetingTranscriber {
 - Consumes: `AIService.selectedProvider/currentModel`, `AIEnhancementService.isEnhancementEnabled/isConfigured/chatCompletion`, `AIProvider.ollama.baseURL`, `AIEnhancementOutputFilter.filter`, `MeetingLanguage.detect`.
 - Produces: `MeetingSummarizer(aiService:enhancementService:)` (`@MainActor`); `canSummarize: Bool`; `shouldAutoSummarize: Bool`; `summarize(_:languageCode:) async throws -> String`; `static languageName(_:) -> String`; `static ollamaContextSize(characters:) -> Int`.
 
-- [ ] **Step 1: Write the failing tests** — `VoiceInkTests/MeetingSummarizerTests.swift`:
+- [x] **Step 1: Write the failing tests** — `VoiceInkTests/MeetingSummarizerTests.swift`:
 
 ```swift
 import Foundation
@@ -812,9 +812,9 @@ struct MeetingSummarizerTests {
 }
 ```
 
-- [ ] **Step 2: Run, expect FAIL** — `zsh vt.sh MeetingSummarizerTests`.
+- [x] **Step 2: Run, expect FAIL** — `zsh vt.sh MeetingSummarizerTests`.
 
-- [ ] **Step 3: Implement** — `VoiceInk/Meetings/MeetingSummarizer.swift`:
+- [x] **Step 3: Implement** — `VoiceInk/Meetings/MeetingSummarizer.swift`:
 
 ```swift
 import Foundation
@@ -928,8 +928,8 @@ final class MeetingSummarizer {
 }
 ```
 
-- [ ] **Step 4: Run, expect PASS** — `zsh vt.sh MeetingSummarizerTests` → 2 tests passed.
-- [ ] **Step 5: Commit** — `git add VoiceInk/Meetings/MeetingSummarizer.swift VoiceInkTests/MeetingSummarizerTests.swift && git commit -m "feat(meetings): summaries via Ollama or the enhancement provider"`
+- [x] **Step 4: Run, expect PASS** — `zsh vt.sh MeetingSummarizerTests` → 2 tests passed.
+- [x] **Step 5: Commit** — `git add VoiceInk/Meetings/MeetingSummarizer.swift VoiceInkTests/MeetingSummarizerTests.swift && git commit -m "feat(meetings): summaries via Ollama or the enhancement provider"`
 
 ---
 
@@ -944,7 +944,7 @@ final class MeetingSummarizer {
   - `enum MeetingCaptureError: LocalizedError { unsupportedOS, appNotRunning, noDisplay, noAudio, exportFailed }`
   - `final class MeetingCapture: NSObject, SCStreamDelegate` — `static runningApps() -> [RecordableApp]`; `onStreamError: ((Error) -> Void)?`; `appName: String`; `start(bundleID:includeMicrophone:microphoneUID:) async throws`; `stop() async throws -> URL?`; `static mixdown(_:to:) async throws`
 
-- [ ] **Step 1: Implement** — `VoiceInk/Meetings/MeetingCapture.swift` (ported from `apprec/Sources/Recorder.swift:73-123, 282-361`):
+- [x] **Step 1: Implement** — `VoiceInk/Meetings/MeetingCapture.swift` (ported from `apprec/Sources/Recorder.swift:73-123, 282-361`):
 
 ```swift
 import AppKit
@@ -1130,8 +1130,8 @@ final class MeetingTrackWriter: NSObject, SCStreamOutput, @unchecked Sendable {
 }
 ```
 
-- [ ] **Step 2: Build** — `zsh vt.sh` → `BUILD SUCCEEDED`.
-- [ ] **Step 3: Commit** — `git add VoiceInk/Meetings/MeetingCapture.swift && git commit -m "feat(meetings): app audio and microphone capture"`
+- [x] **Step 2: Build** — `zsh vt.sh` → `BUILD SUCCEEDED`.
+- [x] **Step 3: Commit** — `git add VoiceInk/Meetings/MeetingCapture.swift && git commit -m "feat(meetings): app audio and microphone capture"`
 
 ---
 
@@ -1146,7 +1146,7 @@ final class MeetingTrackWriter: NSObject, SCStreamOutput, @unchecked Sendable {
 - Consumes: Tasks 3, 5, 6, 7; `AudioDeviceManager.shared`.
 - Produces (for Task 9): `MeetingRecorder` with `@Published apps, selectedBundleID, includeMicrophone, languageChoice, state, recordings, steps, status, error, needsScreenPermission`; `enum State { idle, recording(startedAt: Date, appName: String), saving }`; `enum Step { queued, transcribing, summarizing }`; `isRecording`, `canSummarize`; `refreshApps()`, `refreshRecordings()`, `start(bundleID:) async`, `stop() async`, `enqueueTranscription(_:)`, `createSummary(_:)`, `trash(_:)`, `prepareForTermination(completion:) -> Bool`.
 
-- [ ] **Step 1: Implement** — `VoiceInk/Meetings/MeetingRecorder.swift`:
+- [x] **Step 1: Implement** — `VoiceInk/Meetings/MeetingRecorder.swift`:
 
 ```swift
 import AppKit
@@ -1400,7 +1400,7 @@ final class MeetingRecorder: ObservableObject {
 }
 ```
 
-- [ ] **Step 2: Wire into `VoiceInkApp`** (`VoiceInk/VoiceInk.swift`):
+- [x] **Step 2: Wire into `VoiceInkApp`** (`VoiceInk/VoiceInk.swift`):
   - after `@StateObject private var prewarmService: ModelPrewarmService` add `@StateObject private var meetingRecorder: MeetingRecorder`;
   - after `_prewarmService = StateObject(wrappedValue: prewarmService)` add:
 
@@ -1412,7 +1412,7 @@ final class MeetingRecorder: ObservableObject {
 
   - add `.environmentObject(meetingRecorder)` after `.environmentObject(enhancementService)` in the `ContentView()` chain and in the `MenuBarView()` chain.
 
-- [ ] **Step 3: Quit handling** (`VoiceInk/AppDelegate.swift`): after `weak var menuBarManager: MenuBarManager?` add `weak var meetingRecorder: MeetingRecorder?`, and after `applicationShouldTerminateAfterLastWindowClosed`:
+- [x] **Step 3: Quit handling** (`VoiceInk/AppDelegate.swift`): after `weak var menuBarManager: MenuBarManager?` add `weak var meetingRecorder: MeetingRecorder?`, and after `applicationShouldTerminateAfterLastWindowClosed`:
 
 ```swift
     func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
@@ -1424,8 +1424,8 @@ final class MeetingRecorder: ObservableObject {
     }
 ```
 
-- [ ] **Step 4: Build** — `zsh vt.sh` → `BUILD SUCCEEDED`.
-- [ ] **Step 5: Commit** — `git add VoiceInk/Meetings/MeetingRecorder.swift VoiceInk/VoiceInk.swift VoiceInk/AppDelegate.swift && git commit -m "feat(meetings): recorder state, queue and quit handling"`
+- [x] **Step 4: Build** — `zsh vt.sh` → `BUILD SUCCEEDED`.
+- [x] **Step 5: Commit** — `git add VoiceInk/Meetings/MeetingRecorder.swift VoiceInk/VoiceInk.swift VoiceInk/AppDelegate.swift && git commit -m "feat(meetings): recorder state, queue and quit handling"`
 
 ---
 
@@ -1440,7 +1440,7 @@ final class MeetingRecorder: ObservableObject {
 **Interfaces:**
 - Consumes: Task 8 `MeetingRecorder` API; `TranscriptionModelManager.currentTranscriptionModel`; `TranscriptionLanguageSupport.languages(for:)`; `AudioFileMetadata.duration(for:)`; `MenuBarManager.openMainWindowAndNavigate(to:)`.
 
-- [ ] **Step 1: Meetings view** — `VoiceInk/Views/Meetings/MeetingsView.swift`:
+- [x] **Step 1: Meetings view** — `VoiceInk/Views/Meetings/MeetingsView.swift`:
 
 ```swift
 import SwiftUI
@@ -1619,7 +1619,7 @@ private struct MeetingRow: View {
 }
 ```
 
-- [ ] **Step 2: ContentView** (`VoiceInk/Views/ContentView.swift`):
+- [x] **Step 2: ContentView** (`VoiceInk/Views/ContentView.swift`):
   - enum: after `case transcribeAudio = "Transcribe Audio"` add `case meetings = "Meetings"`; icon: `case .meetings: return "record.circle"`;
   - `visibleViewTypes` — add as the first statement inside the filter closure:
 
@@ -1633,7 +1633,7 @@ private struct MeetingRow: View {
   - `navigateToDestination` switch: `case "Meetings": selectedView = .meetings`;
   - `detailView`: `case .meetings: MeetingsView()`.
 
-- [ ] **Step 3: MenuBarView** (`VoiceInk/Views/MenuBarView.swift`): add `@EnvironmentObject var meetingRecorder: MeetingRecorder` after `@EnvironmentObject var aiService: AIService`, and after the "Enhance Selected Text" button (before its `Divider()`):
+- [x] **Step 3: MenuBarView** (`VoiceInk/Views/MenuBarView.swift`): add `@EnvironmentObject var meetingRecorder: MeetingRecorder` after `@EnvironmentObject var aiService: AIService`, and after the "Enhance Selected Text" button (before its `Divider()`):
 
 ```swift
             if #available(macOS 15, *) {
@@ -1661,7 +1661,7 @@ private struct MeetingRow: View {
             }
 ```
 
-- [ ] **Step 4: Localization** — run from repo root (adds only missing keys, preserves order):
+- [x] **Step 4: Localization** — run from repo root (adds only missing keys, preserves order):
 
 ```bash
 python3 - <<'PY'
@@ -1716,8 +1716,8 @@ print("added", len(added), added)
 PY
 ```
 
-- [ ] **Step 5: Build + unit suites** — `zsh vt.sh` → `BUILD SUCCEEDED`; then `zsh vt.sh MeetingTextTests MeetingLanguageTests MeetingStoreTests MeetingTranscriberTests MeetingSummarizerTests QuickHistoryTests` → all passed.
-- [ ] **Step 6: Commit** — `git add VoiceInk/Views/Meetings VoiceInk/Views/ContentView.swift VoiceInk/Views/MenuBarView.swift VoiceInk/Resources/Localizable.xcstrings && git commit -m "feat(meetings): Meetings section and menu bar items"`
+- [x] **Step 5: Build + unit suites** — `zsh vt.sh` → `BUILD SUCCEEDED`; then `zsh vt.sh MeetingTextTests MeetingLanguageTests MeetingStoreTests MeetingTranscriberTests MeetingSummarizerTests QuickHistoryTests` → all passed.
+- [x] **Step 6: Commit** — `git add VoiceInk/Views/Meetings VoiceInk/Views/ContentView.swift VoiceInk/Views/MenuBarView.swift VoiceInk/Resources/Localizable.xcstrings && git commit -m "feat(meetings): Meetings section and menu bar items"`
 
 ---
 
@@ -1727,7 +1727,7 @@ PY
 - Modify: `CHANGELOG.md` (new top entry)
 - Modify: `VoiceInk.xcodeproj/project.pbxproj` (`MARKETING_VERSION = 1.81.0;` → `1.82.0;`, both occurrences)
 
-- [ ] **Step 1: CHANGELOG** — insert after the header paragraph:
+- [x] **Step 1: CHANGELOG** — insert after the header paragraph:
 
 ```markdown
 ## [1.82.0] - 2026-10-07
@@ -1736,6 +1736,27 @@ PY
 - Запись созвонов: раздел «Созвоны» и пункт «Записать созвон» в меню-баре пишут звук выбранного приложения (Zoom, Google Meet в браузере, Discord и др.) вместе с микрофоном в `~/Music/Recordings`. После остановки запись транскрибируется текущей моделью с таймкодами `[мм:сс]` (язык — автоопределение с исправлением ошибочно распознанных кусков или заданный вручную), а при включённом AI-улучшении получает саммари и имя папки по его заголовку. Нужна macOS 15+; папки AppRec в том же каталоге видны в списке.
 ```
 
-- [ ] **Step 2: Version bump** — `sed -i '' 's/MARKETING_VERSION = 1.81.0;/MARKETING_VERSION = 1.82.0;/' VoiceInk.xcodeproj/project.pbxproj` and check 2 replacements with `grep -c 'MARKETING_VERSION = 1.82.0;'`.
-- [ ] **Step 3: Smoke run** — `make local`, launch the built app; open «Созвоны»; play an audio file in QuickTime Player; record QuickTime for ~40 s with the microphone; Stop → `audio.m4a` appears, transcript gets written with `[mm:ss]` lines; with Ollama configured and enhancement on, `summary.md` appears and the folder is renamed. Record what was and was not verified (permission dialogs may need the user).
-- [ ] **Step 4: Commit** — `git commit -am "chore(release): 1.82.0 changelog and version bump"`
+- [x] **Step 2: Version bump** — `sed -i '' 's/MARKETING_VERSION = 1.81.0;/MARKETING_VERSION = 1.82.0;/' VoiceInk.xcodeproj/project.pbxproj` and check 2 replacements with `grep -c 'MARKETING_VERSION = 1.82.0;'`.
+- [x] **Step 3: Smoke run** — `make local`, launch the built app; open «Созвоны»; play an audio file in QuickTime Player; record QuickTime for ~40 s with the microphone; Stop → `audio.m4a` appears, transcript gets written with `[mm:ss]` lines; with Ollama configured and enhancement on, `summary.md` appears and the folder is renamed. Record what was and was not verified (permission dialogs may need the user).
+- [x] **Step 4: Commit** — `git commit -am "chore(release): 1.82.0 changelog and version bump"`
+
+---
+
+### Task 11: Manual verification (needs the user)
+
+Done during implementation (signed local build, `VoiceInk Local` identity, QuickTime playing a mixed ru/en TTS file):
+- [x] Capture of an app plus microphone → `audio.m4a` 31.7 s, 2 ch, 48 kHz; transcript with `[mm:ss]` lines written automatically.
+- [x] Quit VoiceInk mid-recording → 11.7 s `audio.m4a` saved, app exited after the save, transcription deferred.
+- [x] Enhancement off → no automatic summary.
+- [x] No screen-recording permission (ad-hoc build) → SCStream error -3801 surfaced; `needsScreenPermission` path.
+
+Still to check by hand (spec "Testing → Manual"):
+- [ ] Discord call: other participants and the microphone audible; folder named "Discord …", not a helper.
+- [ ] Google Meet in Chrome and in Safari. If Safari records silence → add `com.apple.WebKit.GPU` processes to the filter for Safari.
+- [ ] Microphone off → only app audio; a non-default microphone in VoiceInk → that one is recorded.
+- [ ] Dictation during a recording still works.
+- [ ] Language fixed to Russian; saved language unsupported by a newly selected model → fallback shown in the status line.
+- [ ] Recording > 30 min with Parakeet and with a local Whisper model; summary on Ollama timed → set `MeetingSummarizer.timeout`.
+- [ ] Enhancement on → summary written, folder renamed `yyyy-MM-dd HH.mm <title>`.
+- [ ] Deepgram on Auto with a Russian call. If it comes out English → send `detect_language=true` for Deepgram on Auto.
+
