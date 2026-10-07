@@ -88,10 +88,15 @@ New folder `VoiceInk/Meetings/`.
   FIFO queue.
   1. `m4a` → 16 kHz samples (`AudioProcessor.processAudioToSamples`).
   2. `VadManager.segmentSpeech` with threshold 0.7 (as
-     `FluidAudioTranscriptionService`) and `minSpeechDuration` 0.5 s; adjacent
-     segments merged while the merged span stays ≤ 30 s; the chunk keeps the
-     first segment's start. VAD alone closes a segment on every 0.75 s pause,
-     which would give hundreds of 2–10 s pieces per hour.
+     `FluidAudioTranscriptionService`), `minSpeechDuration` 0.5 s and
+     `maxSpeechDuration` 28 s (the default 14 s force-splits continuous speech
+     mid-word); adjacent segments merged while the merged span stays ≤ 30 s and
+     the pause between them is ≤ 1 s; the chunk keeps the first segment's
+     start. VAD alone closes a segment on every 0.75 s pause, which would give
+     hundreds of 2–10 s pieces per hour. A longer pause usually means a turn
+     change, so a chunk keeps one speaker's language: measured on a mixed
+     TTS call, merging across a 2 s pause made Parakeet drop an English
+     greeting that preceded Russian speech.
   3. Each chunk → temp WAV (`AudioProcessor.saveSamplesAsWav`) → one
      `TranscriptionServiceRegistry` for the whole run →
      `transcribe(audioURL:model:language:)` with the captured model and the
@@ -114,11 +119,12 @@ New folder `VoiceInk/Meetings/`.
           over the whole filtered pass-1 text. Needs ≥ 200 characters,
           probability ≥ 0.8, and `L` in the model's list; otherwise pass 1 is
           final (short or bilingual call).
-       3. Pass 2 with `L`: chunks whose own detected language is not `L`; for
-          Parakeet every chunk, since stray wrong-script tokens do not change
-          a chunk's detected language and a pass is cheap. A chunk that is
-          *confidently another language* (≥ 100 characters, probability ≥ 0.8)
-          is kept: a real switch, e.g. a guest speaking English.
+       3. Pass 2 with `L`: chunks whose own detected language is not `L`. A
+          chunk that is *confidently another language* (≥ 40 characters,
+          probability ≥ 0.8) is kept: a real switch, e.g. a guest speaking
+          English. Parakeet gets no blanket re-run: measured, forcing `ru` on
+          every chunk turned an English question into transliterated garbage
+          and brand names (Safari) into Cyrillic.
        Deciding on the whole pass rather than the first chunks keeps an
        English greeting or music at the start from setting the language of
        the whole call.
@@ -299,8 +305,9 @@ New UI strings get Russian translations in `Localizable.xcstrings`.
 - What `SCStream` does when the captured app quits (error vs. silence).
 - Peak memory for a one-hour recording (estimate ~1.1 GB during sample
   conversion).
-- Language thresholds (200 characters and 0.8 for `L`; 100 characters and 0.8
-  for a confident other chunk): tuned on real calls.
+- Language thresholds (200 characters and 0.8 for `L`; 40 characters and 0.8
+  for a confident other chunk) and the 1 s turn gap: checked on one synthetic
+  mixed call, still to tune on real calls.
 - Deepgram on Auto: VoiceInk sends no `language` and no `detect_language`
   (LLMkit `DeepgramClient.swift:42-44`); if Deepgram then assumes English,
   pass 1 of a Russian call is English garbage and `L` becomes `en`. If

@@ -11,8 +11,13 @@ struct MeetingTextTests {
     }
 
     @Test func mergeKeepsChunksWithinMaxSpan() {
-        let segments: [MeetingText.Chunk] = [.init(start: 0, end: 10), .init(start: 11, end: 25), .init(start: 26, end: 31), .init(start: 32, end: 40)]
-        #expect(MeetingText.mergeSegments(segments) == [.init(start: 0, end: 25), .init(start: 26, end: 40)])
+        let segments: [MeetingText.Chunk] = [.init(start: 0, end: 10), .init(start: 10.8, end: 25), .init(start: 25.9, end: 31), .init(start: 32, end: 40)]
+        #expect(MeetingText.mergeSegments(segments) == [.init(start: 0, end: 25), .init(start: 25.9, end: 40)])
+    }
+
+    @Test func longPauseStartsNewChunk() {
+        let segments: [MeetingText.Chunk] = [.init(start: 0, end: 3), .init(start: 5, end: 12), .init(start: 12.5, end: 20)]
+        #expect(MeetingText.mergeSegments(segments) == [.init(start: 0, end: 3), .init(start: 5, end: 20)])
     }
 
     @Test func mergeLeavesLongSegmentAlone() {
@@ -22,7 +27,7 @@ struct MeetingTextTests {
 
     @Test func mergeSortsAndHandlesEmpty() {
         #expect(MeetingText.mergeSegments([]).isEmpty)
-        #expect(MeetingText.mergeSegments([.init(start: 12, end: 14), .init(start: 0, end: 5)]) == [.init(start: 0, end: 14)])
+        #expect(MeetingText.mergeSegments([.init(start: 5.5, end: 14), .init(start: 0, end: 5)]) == [.init(start: 0, end: 14)])
     }
 
     @Test func fixedChunksCoverDuration() {

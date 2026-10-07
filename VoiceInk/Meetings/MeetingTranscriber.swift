@@ -106,7 +106,7 @@ final class MeetingTranscriber {
             let detection = MeetingLanguage.detect(allText)
             if let dominant = MeetingLanguage.dominantLanguage(detection: detection, characterCount: allText.count, supported: Set(supported.keys)) {
                 language = dominant
-                let redo = MeetingLanguage.pass2Indices(chunkTexts: texts, language: dominant, retranscribeAll: model.provider == .fluidAudio)
+                let redo = MeetingLanguage.pass2Indices(chunkTexts: texts, language: dominant)
                 for (step, index) in redo.enumerated() {
                     try Task.checkCancellation()
                     onStatus(String(localized: "Correcting to \(Self.displayName(dominant)): \(step + 1) of \(redo.count)…"))
@@ -156,6 +156,8 @@ final class MeetingTranscriber {
             let vad = try await VadManager(config: VadConfig(defaultThreshold: 0.7))
             var config = VadSegmentationConfig.default
             config.minSpeechDuration = 0.5
+            // The default 14 s cap force-splits continuous speech mid-word; the engines window long input themselves.
+            config.maxSpeechDuration = 28
             let segments = try await vad.segmentSpeech(samples, config: config)
             return MeetingText.mergeSegments(segments.map { MeetingText.Chunk(start: $0.startTime, end: $0.endTime) })
         } catch {

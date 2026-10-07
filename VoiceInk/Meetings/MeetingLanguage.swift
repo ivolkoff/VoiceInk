@@ -4,7 +4,7 @@ import NaturalLanguage
 enum MeetingLanguage {
     static let auto = "auto"
     static let dominantMinCharacters = 200
-    static let confidentOtherMinCharacters = 100
+    static let confidentOtherMinCharacters = 40
     static let minProbability = 0.8
 
     struct Detection: Equatable {
@@ -40,7 +40,6 @@ enum MeetingLanguage {
     static func pass2Indices(
         chunkTexts: [String],
         language: String,
-        retranscribeAll: Bool,
         detect: (String) -> Detection? = MeetingLanguage.detect
     ) -> [Int] {
         chunkTexts.indices.filter { index in
@@ -51,7 +50,7 @@ enum MeetingLanguage {
                detection.probability >= minProbability, text.count >= confidentOtherMinCharacters {
                 return false
             }
-            return retranscribeAll || detection?.code != language
+            return detection?.code != language
         }
     }
 }

@@ -13,10 +13,11 @@ enum MeetingText {
     }
 
     // VAD closes a segment on every short pause; merging keeps enough context per model call.
-    static func mergeSegments(_ segments: [Chunk], maxSpan: TimeInterval = 30) -> [Chunk] {
+    // A longer pause usually means a turn change, so it starts a new chunk: one language per chunk.
+    static func mergeSegments(_ segments: [Chunk], maxSpan: TimeInterval = 30, maxGap: TimeInterval = 1) -> [Chunk] {
         var chunks: [Chunk] = []
         for segment in segments.sorted(by: { $0.start < $1.start }) {
-            if var last = chunks.last, segment.end - last.start <= maxSpan {
+            if var last = chunks.last, segment.end - last.start <= maxSpan, segment.start - last.end <= maxGap {
                 last.end = max(last.end, segment.end)
                 chunks[chunks.count - 1] = last
             } else {

@@ -30,7 +30,7 @@ struct MeetingLanguageTests {
     }
 
     @Test func pass2SelectsMisdetectedChunks() {
-        let long = String(repeating: "x", count: 120)
+        let long = String(repeating: "x", count: 50)
         let detections: [String: MeetingLanguage.Detection] = [
             "Okay.": .init(code: "en", probability: 0.9),
             long: .init(code: "en", probability: 0.95),
@@ -38,7 +38,6 @@ struct MeetingLanguageTests {
         ]
         let texts = ["Okay.", long, "Привет всем", " "]
         let detect: (String) -> MeetingLanguage.Detection? = { detections[$0] }
-        #expect(MeetingLanguage.pass2Indices(chunkTexts: texts, language: "ru", retranscribeAll: false, detect: detect) == [0])
-        #expect(MeetingLanguage.pass2Indices(chunkTexts: texts, language: "ru", retranscribeAll: true, detect: detect) == [0, 2])
+        #expect(MeetingLanguage.pass2Indices(chunkTexts: texts, language: "ru", detect: detect) == [0])
     }
 }

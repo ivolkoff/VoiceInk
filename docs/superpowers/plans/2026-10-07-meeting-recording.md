@@ -14,8 +14,9 @@
 
 - App target macOS 14.4; no type carries `@available(macOS 15, *)`; macOS 15 APIs (`captureMicrophone`, `microphoneCaptureDeviceID`, `.microphone`, `export(to:as:)`) only inside `if/guard #available(macOS 15, *)`; the Meetings UI is hidden below macOS 15.
 - Storage: `~/Music/Recordings/<name>/` with `audio.m4a`, `transcript.txt`, `summary.md`; new folder `<App> yyyy-MM-dd HH.mm.ss` (start time), renamed `yyyy-MM-dd HH.mm <title>`, suffix ` 2`, ` 3`… on collision; `DateFormatter` with `en_US_POSIX`.
-- Chunks: VAD threshold 0.7, `minSpeechDuration` 0.5 s, merged while span ≤ 30 s; transcript line `[mm:ss] text` (`[h:mm:ss]` ≥ 1 h).
-- Language: Auto = detect then correct (dominant needs ≥ 200 chars and p ≥ 0.8 and support by model; confident-other chunk ≥ 100 chars and p ≥ 0.8; Parakeet re-runs all non-confident-other chunks). Fixed language goes through `validLanguageOrFallback`.
+- Chunks: VAD threshold 0.7, `minSpeechDuration` 0.5 s, `maxSpeechDuration` 28 s, merged while span ≤ 30 s and gap ≤ 1 s; transcript line `[mm:ss] text` (`[h:mm:ss]` ≥ 1 h).
+- Language: Auto = detect then correct (dominant needs ≥ 200 chars and p ≥ 0.8 and support by model; pass 2 re-runs chunks detected as another language unless confidently other: ≥ 40 chars and p ≥ 0.8). Fixed language goes through `validLanguageOrFallback`.
+- Execution note: after Task 9 a throwaway smoke test on Parakeet Ultra with a mixed TTS file changed the merge gap, `maxSpeechDuration`, the 40-char threshold and dropped Parakeet's blanket pass 2; code blocks below are the pre-measurement version, the repo is the source of truth.
 - Retries: `apiRequestFailed` 429/5xx and `networkError`, delays 5, 20, 60 s.
 - Summary: auto only if `isEnhancementEnabled && isConfigured`; manual if `isConfigured`; Ollama `num_ctx = min(max(chars/3 + 2048, 4096), 32768)`, `think: false`; timeout 300 s.
 - Build/test helper (repo root, ad-hoc signing): `zsh <scratchpad>/vt.sh <Suite…>` runs `xcodebuild test … -only-testing:VoiceInkTests/<Suite>`; with no args it builds the app. Never run the whole VoiceInkTests target (`RetranscribeInPlaceTests` crashes, known).
