@@ -11,6 +11,7 @@ struct MenuBarView: View {
     // @EnvironmentObject var updaterViewModel: UpdaterViewModel  // Auto-update disabled
     @EnvironmentObject var enhancementService: AIEnhancementService
     @EnvironmentObject var aiService: AIService
+    @EnvironmentObject var meetingRecorder: MeetingRecorder
     @ObservedObject var audioDeviceManager = AudioDeviceManager.shared
     @State private var launchAtLoginEnabled = LaunchAtLogin.isEnabled
     @State private var menuRefreshTrigger = false
@@ -29,6 +30,30 @@ struct MenuBarView: View {
                 Task { await recordingShortcutManager.enhanceSelectedText(focusSettleDelay: 0.4) }
             } label: {
                 menuItemLabel("Enhance Selected Text", shortcut: ShortcutStore.shortcut(for: .enhanceSelectedText))
+            }
+
+            if #available(macOS 15, *) {
+                if case let .recording(_, appName) = meetingRecorder.state {
+                    Button("Stop Recording — \(appName)") {
+                        Task { await meetingRecorder.stop() }
+                    }
+                } else {
+                    Menu("Record Call") {
+                        ForEach(meetingRecorder.apps) { app in
+                            Button(app.name) {
+                                Task { await meetingRecorder.start(bundleID: app.id) }
+                            }
+                        }
+                        if meetingRecorder.apps.isEmpty {
+                            Text("No apps running")
+                        }
+                        Divider()
+                        Button("Open Meetings") {
+                            menuBarManager.openMainWindowAndNavigate(to: "Meetings")
+                        }
+                    }
+                    .disabled(meetingRecorder.state != .idle)
+                }
             }
 
             Divider()

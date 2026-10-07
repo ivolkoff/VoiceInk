@@ -6,6 +6,7 @@ import OSLog
 enum ViewType: String, CaseIterable, Identifiable {
     case metrics = "Dashboard"
     case transcribeAudio = "Transcribe Audio"
+    case meetings = "Meetings"
     case history = "History"
     case models = "AI Models"
     case enhancement = "Enhancement"
@@ -23,6 +24,7 @@ enum ViewType: String, CaseIterable, Identifiable {
         switch self {
         case .metrics: return "gauge.medium"
         case .transcribeAudio: return "waveform.circle.fill"
+        case .meetings: return "record.circle"
         case .history: return "doc.text.fill"
         case .models: return "brain.head.profile"
         case .enhancement: return "wand.and.stars"
@@ -70,6 +72,10 @@ struct ContentView: View {
 
     private var visibleViewTypes: [ViewType] {
         ViewType.allCases.filter { viewType in
+            if viewType == .meetings {
+                if #available(macOS 15, *) { return true }
+                return false
+            }
             if viewType == .powerMode {
                 return powerModeUIFlag
             }
@@ -159,6 +165,8 @@ struct ContentView: View {
                     selectedView = .enhancement
                 case "Transcribe Audio":
                     selectedView = .transcribeAudio
+                case "Meetings":
+                    selectedView = .meetings
                 case "Power Mode":
                     selectedView = .powerMode
                 default:
@@ -179,6 +187,8 @@ struct ContentView: View {
             EnhancementSettingsView()
         case .transcribeAudio:
             AudioTranscribeView()
+        case .meetings:
+            MeetingsView()
         case .history:
             InlineHistoryView()
         case .audioInput:

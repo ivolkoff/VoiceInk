@@ -9921,6 +9921,386 @@
           }
         }
       }
+    },
+    "Meetings": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Созвоны"
+          }
+        }
+      }
+    },
+    "Recording": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Запись"
+          }
+        }
+      }
+    },
+    "Recordings": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Записи"
+          }
+        }
+      }
+    },
+    "App": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Приложение"
+          }
+        }
+      }
+    },
+    "Choose an app": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Выберите приложение"
+          }
+        }
+      }
+    },
+    "Include microphone": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Записывать микрофон"
+          }
+        }
+      }
+    },
+    "Auto-detect": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Автоопределение"
+          }
+        }
+      }
+    },
+    "Stop": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Остановить"
+          }
+        }
+      }
+    },
+    "Recording %@ · %@": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Запись %@ · %@"
+          }
+        }
+      }
+    },
+    "Saving…": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Сохранение…"
+          }
+        }
+      }
+    },
+    "Open Privacy Settings": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Открыть настройки конфиденциальности"
+          }
+        }
+      }
+    },
+    "No recordings yet. They're saved in ~/Music/Recordings.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Записей пока нет. Они сохраняются в ~/Music/Recordings."
+          }
+        }
+      }
+    },
+    "Queued": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "В очереди"
+          }
+        }
+      }
+    },
+    "Transcribe": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Транскрибировать"
+          }
+        }
+      }
+    },
+    "Summarize": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Сделать саммари"
+          }
+        }
+      }
+    },
+    "Transcript": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Транскрипт"
+          }
+        }
+      }
+    },
+    "Summary": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Саммари"
+          }
+        }
+      }
+    },
+    "Play": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Воспроизвести"
+          }
+        }
+      }
+    },
+    "Move to Trash": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Переместить в корзину"
+          }
+        }
+      }
+    },
+    "Record Call": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Записать созвон"
+          }
+        }
+      }
+    },
+    "Stop Recording — %@": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Остановить запись — %@"
+          }
+        }
+      }
+    },
+    "No apps running": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Нет запущенных приложений"
+          }
+        }
+      }
+    },
+    "Open Meetings": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Открыть созвоны"
+          }
+        }
+      }
+    },
+    "Preparing audio…": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Подготовка аудио…"
+          }
+        }
+      }
+    },
+    "Transcribing %lld of %lld · %@…": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Транскрибация: %lld из %lld · %@…"
+          }
+        }
+      }
+    },
+    "Correcting to %@: %lld of %lld…": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Исправление на %@: %lld из %lld…"
+          }
+        }
+      }
+    },
+    "Could not convert the recording to m4a: %@. The raw capture is kept in %@.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Не удалось сохранить запись в m4a: %@. Исходный захват лежит в %@."
+          }
+        }
+      }
+    },
+    "Transcription failed: %@": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Не удалось транскрибировать: %@"
+          }
+        }
+      }
+    },
+    "Summary failed: %@": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Не удалось сделать саммари: %@"
+          }
+        }
+      }
+    },
+    "The transcript is empty.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Транскрипт пуст."
+          }
+        }
+      }
+    },
+    "%@ works only in streaming mode and can't transcribe recordings. Pick another model.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ работает только в потоковом режиме и не умеет транскрибировать записи. Выберите другую модель."
+          }
+        }
+      }
+    },
+    "Ollama returned %lld: %@": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ollama вернула %lld: %@"
+          }
+        }
+      }
+    },
+    "The model returned an empty summary.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Модель вернула пустое саммари."
+          }
+        }
+      }
+    },
+    "Recording calls needs macOS 15 or later.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Для записи созвонов нужна macOS 15 или новее."
+          }
+        }
+      }
+    },
+    "The selected app is not running.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Выбранное приложение не запущено."
+          }
+        }
+      }
+    },
+    "No display available for capture.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Нет дисплея для захвата."
+          }
+        }
+      }
+    },
+    "No audio was captured.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Звук не записан."
+          }
+        }
+      }
+    },
+    "Could not convert the recording to m4a.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Не удалось сохранить запись в m4a."
+          }
+        }
+      }
     }
   },
   "version": "1.0"
