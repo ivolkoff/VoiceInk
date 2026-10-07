@@ -98,6 +98,7 @@ enum ShortcutStore {
         case "enhanceSelectedText": recoverInterruptedRecording(for: .enhanceSelectedText)
         case "convertLayout": recoverInterruptedRecording(for: .convertLayout)
         case "openQuickHistory": recoverInterruptedRecording(for: .openQuickHistory)
+        case "toggleCallRecording": recoverInterruptedRecording(for: .toggleCallRecording)
         default: break
         }
     }

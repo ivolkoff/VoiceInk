@@ -10351,6 +10351,126 @@
           }
         }
       }
+    },
+    "All System Audio": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Весь системный звук"
+          }
+        }
+      }
+    },
+    "System Audio": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Системный звук"
+          }
+        }
+      }
+    },
+    "%@ (not running)": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ (не запущено)"
+          }
+        }
+      }
+    },
+    "Shortcut": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Горячая клавиша"
+          }
+        }
+      }
+    },
+    "Start/Stop Call Recording": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Начать/остановить запись созвона"
+          }
+        }
+      }
+    },
+    "Starts recording the app selected above, or stops the current recording. Works while VoiceInk is in the background.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Начинает запись приложения, выбранного выше, или останавливает текущую запись. Работает, даже когда VoiceInk в фоне."
+          }
+        }
+      }
+    },
+    "Auto-delete": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Автоудаление"
+          }
+        }
+      }
+    },
+    "Auto-delete Recordings": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Автоудаление записей"
+          }
+        }
+      }
+    },
+    "Moves call recording folders in ~/Music/Recordings to the Trash once nothing in them has changed for the chosen period. AppRec recordings in the same folder are included.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Перемещает папки записей созвонов из ~/Music/Recordings в корзину, если в них ничего не менялось дольше выбранного срока. Записи AppRec в той же папке тоже попадают под удаление."
+          }
+        }
+      }
+    },
+    "Moved %lld recording(s) to the Trash.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "В корзину перемещено записей: %lld."
+          }
+        }
+      }
+    },
+    "Recording %@…": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Идёт запись: %@…"
+          }
+        }
+      }
+    },
+    "Call recording saved": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Запись созвона сохранена"
+          }
+        }
+      }
     }
   },
   "version": "1.0"

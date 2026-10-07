@@ -27,6 +27,9 @@ enum MeetingCaptureError: LocalizedError {
 }
 
 final class MeetingCapture: NSObject, SCStreamDelegate {
+    // Pseudo bundle ID for "every app's audio" (VoiceInk's own sounds stay excluded).
+    static let systemAudioID = "*"
+
     var onStreamError: ((Error) -> Void)?
     private(set) var appName = ""
     private var stream: SCStream?
@@ -48,12 +51,21 @@ final class MeetingCapture: NSObject, SCStreamDelegate {
     func start(bundleID: String, includeMicrophone: Bool, microphoneUID: String?) async throws {
         guard #available(macOS 15, *) else { throw MeetingCaptureError.unsupportedOS }
         let content = try await SCShareableContent.excludingDesktopWindows(false, onScreenWindowsOnly: false)
-        // Electron apps (Discord, Chrome…) play audio from helper processes with "<id>." bundle IDs.
-        let targets = content.applications.filter {
-            $0.bundleIdentifier == bundleID || $0.bundleIdentifier.hasPrefix(bundleID + ".")
-        }
-        guard !targets.isEmpty else { throw MeetingCaptureError.appNotRunning }
         guard let display = content.displays.first else { throw MeetingCaptureError.noDisplay }
+        let filter: SCContentFilter
+        let name: String
+        if bundleID == Self.systemAudioID {
+            filter = SCContentFilter(display: display, excludingApplications: [], exceptingWindows: [])
+            name = String(localized: "System Audio")
+        } else {
+            // Electron apps (Discord, Chrome…) play audio from helper processes with "<id>." bundle IDs.
+            let targets = content.applications.filter {
+                $0.bundleIdentifier == bundleID || $0.bundleIdentifier.hasPrefix(bundleID + ".")
+            }
+            guard !targets.isEmpty else { throw MeetingCaptureError.appNotRunning }
+            filter = SCContentFilter(display: display, including: targets, exceptingWindows: [])
+            name = (targets.first { $0.bundleIdentifier == bundleID } ?? targets.first)?.applicationName ?? bundleID
+        }
 
         let config = SCStreamConfiguration()
         config.capturesAudio = true
@@ -72,8 +84,7 @@ final class MeetingCapture: NSObject, SCStreamDelegate {
             .appendingPathComponent(UUID().uuidString)
             .appendingPathExtension("mov")
         let writer = try MeetingTrackWriter(url: tempURL, includeMicrophone: includeMicrophone)
-        let stream = SCStream(filter: SCContentFilter(display: display, including: targets, exceptingWindows: []),
-                              configuration: config, delegate: self)
+        let stream = SCStream(filter: filter, configuration: config, delegate: self)
         try stream.addStreamOutput(writer, type: .audio, sampleHandlerQueue: writer.queue)
         if includeMicrophone {
             try stream.addStreamOutput(writer, type: .microphone, sampleHandlerQueue: writer.queue)
@@ -82,7 +93,7 @@ final class MeetingCapture: NSObject, SCStreamDelegate {
 
         self.stream = stream
         self.writer = writer
-        appName = (targets.first { $0.bundleIdentifier == bundleID } ?? targets.first)?.applicationName ?? bundleID
+        appName = name
     }
 
     func stop() async throws -> URL? {

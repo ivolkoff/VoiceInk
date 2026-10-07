@@ -340,6 +340,8 @@ class RecordingShortcutManager: ObservableObject {
             DictionaryQuickAddManager.shared.toggle(modelContainer: engine.modelContext.container)
         case .enhanceSelectedText:
             await enhanceSelectedText()
+        case .toggleCallRecording:
+            NotificationCenter.default.post(name: .toggleCallRecording, object: nil)
         default:
             break
         }

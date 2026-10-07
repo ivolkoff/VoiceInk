@@ -3,12 +3,19 @@ import SwiftUI
 struct MeetingsView: View {
     @EnvironmentObject private var recorder: MeetingRecorder
     @EnvironmentObject private var transcriptionModelManager: TranscriptionModelManager
+    @EnvironmentObject private var recordingShortcutManager: RecordingShortcutManager
+    @State private var cleanupMessage: String?
 
     var body: some View {
         Form {
             Section("Recording") {
                 Picker("App", selection: $recorder.selectedBundleID) {
-                    Text("Choose an app").tag(String?.none)
+                    Text("All System Audio").tag(Optional(MeetingCapture.systemAudioID))
+                    if let selected = recorder.selectedBundleID, selected != MeetingCapture.systemAudioID,
+                       !recorder.apps.contains(where: { $0.id == selected }) {
+                        Text("\(selected) (not running)").tag(Optional(selected))
+                    }
+                    Divider()
                     ForEach(recorder.apps) { app in
                         Label { Text(app.name) } icon: { Image(nsImage: app.icon) }
                             .tag(Optional(app.id))
@@ -47,6 +54,49 @@ struct MeetingsView: View {
                             }
                         }
                         Button("Dismiss") { recorder.error = nil }
+                    }
+                }
+            }
+
+            Section("Shortcut") {
+                LabeledContent {
+                    ShortcutRecorder(action: .toggleCallRecording) {
+                        recordingShortcutManager.updateShortcutStatus()
+                    }
+                    .controlSize(.small)
+                } label: {
+                    HStack(spacing: 4) {
+                        Text("Start/Stop Call Recording")
+                        InfoTip("Starts recording the app selected above, or stops the current recording. Works while VoiceInk is in the background.")
+                    }
+                }
+            }
+
+            Section("Auto-delete") {
+                Toggle(isOn: $recorder.isAutoDeleteEnabled) {
+                    HStack(spacing: 4) {
+                        Text("Auto-delete Recordings")
+                        InfoTip("Moves call recording folders in ~/Music/Recordings to the Trash once nothing in them has changed for the chosen period. AppRec recordings in the same folder are included.")
+                    }
+                }
+                if recorder.isAutoDeleteEnabled {
+                    Picker("Delete After", selection: $recorder.retentionMinutes) {
+                        Text("1 hour").tag(60)
+                        Text("1 day").tag(24 * 60)
+                        Text("3 days").tag(3 * 24 * 60)
+                        Text("7 days").tag(7 * 24 * 60)
+                    }
+                    HStack {
+                        Button("Run Cleanup Now") {
+                            if let count = recorder.sweepExpired() {
+                                cleanupMessage = String(localized: "Moved \(count) recording(s) to the Trash.")
+                            } else {
+                                cleanupMessage = String(localized: "Cleanup failed. Try again or check the logs.")
+                            }
+                        }
+                        if let cleanupMessage {
+                            Text(cleanupMessage).foregroundStyle(.secondary)
+                        }
                     }
                 }
             }

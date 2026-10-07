@@ -14,6 +14,7 @@ enum ShortcutAction: Hashable {
     case enhanceSelectedText
     case convertLayout
     case openQuickHistory
+    case toggleCallRecording
     case powerMode(UUID)
     case miniRecorderEscape
     case miniRecorderPrompt(Int)
@@ -60,6 +61,8 @@ enum ShortcutAction: Hashable {
             return "convertLayout"
         case .openQuickHistory:
             return "openQuickHistory"
+        case .toggleCallRecording:
+            return "toggleCallRecording"
         case .powerMode(let id):
             return "powerMode_\(id.uuidString)"
         case .miniRecorderEscape:
@@ -99,6 +102,8 @@ enum ShortcutAction: Hashable {
             return String(localized: "Convert Last Word Layout")
         case .openQuickHistory:
             return String(localized: "Open Quick History")
+        case .toggleCallRecording:
+            return String(localized: "Start/Stop Call Recording")
         case .powerMode(let id):
             if let config = PowerModeManager.shared.getConfiguration(with: id) {
                 return String.localizedStringWithFormat(
@@ -126,7 +131,8 @@ enum ShortcutAction: Hashable {
         .quickAddToDictionary,
         .enhanceSelectedText,
         .convertLayout,
-        .openQuickHistory
+        .openQuickHistory,
+        .toggleCallRecording
     ]
 
     static let miniRecorderStoredActions: [Self] = [

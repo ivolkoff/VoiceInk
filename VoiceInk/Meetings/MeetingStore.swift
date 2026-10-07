@@ -67,6 +67,27 @@ struct MeetingStore {
         return target
     }
 
+    // Age counts from the newest file, so a long call or a fresh re-transcription is not swept
+    // right after it is written. Only recording folders are touched, never other folders in root.
+    func expiredFolders(before cutoff: Date) throws -> [URL] {
+        let fileManager = FileManager.default
+        let folders: [URL]
+        do {
+            folders = try fileManager.contentsOfDirectory(at: root, includingPropertiesForKeys: nil, options: [.skipsHiddenFiles])
+        } catch CocoaError.fileReadNoSuchFile {
+            return []
+        }
+        return folders.filter { folder in
+            let files = (try? fileManager.contentsOfDirectory(at: folder, includingPropertiesForKeys: [.contentModificationDateKey], options: [.skipsHiddenFiles])) ?? []
+            let isRecording = files.contains {
+                [MeetingRecording.audioName, MeetingRecording.rawCaptureName].contains($0.lastPathComponent)
+            }
+            guard isRecording else { return false }
+            let newest = files.compactMap { try? $0.resourceValues(forKeys: [.contentModificationDateKey]).contentModificationDate }.max()
+            return newest.map { $0 < cutoff } ?? false
+        }
+    }
+
     func trash(_ recording: MeetingRecording) throws {
         try FileManager.default.trashItem(at: recording.folder, resultingItemURL: nil)
     }

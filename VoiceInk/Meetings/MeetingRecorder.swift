@@ -19,6 +19,8 @@ final class MeetingRecorder: ObservableObject {
         static let app = "MeetingsSelectedApp"
         static let microphone = "MeetingsIncludeMicrophone"
         static let language = "MeetingsLanguage"
+        static let autoDelete = "MeetingsAutoDeleteEnabled"
+        static let retention = "MeetingsRetentionMinutes"
     }
 
     @Published private(set) var apps: [RecordableApp] = []
@@ -31,6 +33,18 @@ final class MeetingRecorder: ObservableObject {
     @Published private(set) var status: String?
     @Published var error: String?
     @Published private(set) var needsScreenPermission = false
+    @Published var isAutoDeleteEnabled: Bool {
+        didSet {
+            UserDefaults.standard.set(isAutoDeleteEnabled, forKey: Keys.autoDelete)
+            sweepExpired()
+        }
+    }
+    @Published var retentionMinutes: Int {
+        didSet {
+            UserDefaults.standard.set(retentionMinutes, forKey: Keys.retention)
+            sweepExpired()
+        }
+    }
 
     let store = MeetingStore(root: MeetingStore.defaultRoot)
     private let capture = MeetingCapture()
@@ -42,26 +56,37 @@ final class MeetingRecorder: ObservableObject {
     private var isStarting = false
     private var isTerminating = false
     private var saveTask: Task<Void, Never>?
-    private var workspaceObservers: [NSObjectProtocol] = []
+    private var observers: [NSObjectProtocol] = []
+    private var sweepTimer: Timer?
 
     init(engine: VoiceInkEngine, aiService: AIService, enhancementService: AIEnhancementService) {
         transcriber = MeetingTranscriber(engine: engine)
         summarizer = MeetingSummarizer(aiService: aiService, enhancementService: enhancementService)
         let defaults = UserDefaults.standard
-        selectedBundleID = defaults.string(forKey: Keys.app)
+        selectedBundleID = defaults.string(forKey: Keys.app) ?? MeetingCapture.systemAudioID
         includeMicrophone = defaults.object(forKey: Keys.microphone) as? Bool ?? true
         languageChoice = defaults.string(forKey: Keys.language) ?? MeetingLanguage.auto
+        isAutoDeleteEnabled = defaults.bool(forKey: Keys.autoDelete)
+        retentionMinutes = defaults.object(forKey: Keys.retention) as? Int ?? 24 * 60
 
         capture.onStreamError = { [weak self] error in
             Task { @MainActor in await self?.handleStreamError(error) }
         }
         let center = NSWorkspace.shared.notificationCenter
         for name in [NSWorkspace.didLaunchApplicationNotification, NSWorkspace.didTerminateApplicationNotification] {
-            workspaceObservers.append(center.addObserver(forName: name, object: nil, queue: .main) { [weak self] _ in
+            observers.append(center.addObserver(forName: name, object: nil, queue: .main) { [weak self] _ in
                 Task { @MainActor in self?.refreshApps() }
             })
         }
+        observers.append(NotificationCenter.default.addObserver(forName: .toggleCallRecording, object: nil, queue: .main) { [weak self] _ in
+            Task { @MainActor in await self?.toggleFromShortcut() }
+        })
+        // A 1 hour retention needs a sweep while the app stays open, not only at launch.
+        sweepTimer = Timer.scheduledTimer(withTimeInterval: 10 * 60, repeats: true) { [weak self] _ in
+            Task { @MainActor in self?.sweepExpired() }
+        }
         refreshApps()
+        sweepExpired()
     }
 
     var isRecording: Bool {
@@ -96,6 +121,55 @@ final class MeetingRecorder: ObservableObject {
         } catch {
             self.error = error.localizedDescription
             needsScreenPermission = !CGPreflightScreenCaptureAccess()
+        }
+    }
+
+    // The shortcut fires while VoiceInk is in the background, so the outcome goes to a notification.
+    func toggleFromShortcut() async {
+        switch state {
+        case .idle:
+            await start()
+            if case let .recording(_, appName) = state {
+                NotificationManager.shared.showNotification(title: String(localized: "Recording \(appName)…"), type: .info)
+            } else if let error {
+                NotificationManager.shared.showNotification(title: error, type: .error)
+            }
+        case .recording:
+            error = nil
+            await stop()
+            if let error {
+                NotificationManager.shared.showNotification(title: error, type: .error)
+            } else {
+                NotificationManager.shared.showNotification(title: String(localized: "Call recording saved"), type: .success)
+            }
+        case .saving:
+            break
+        }
+    }
+
+    // Moves expired recordings to the Trash; returns how many, or nil when listing failed.
+    @discardableResult
+    func sweepExpired() -> Int? {
+        guard isAutoDeleteEnabled else { return 0 }
+        let cutoff = Date().addingTimeInterval(-Double(retentionMinutes) * 60)
+        do {
+            var trashed = 0
+            for folder in try store.expiredFolders(before: cutoff) where steps[folder.lastPathComponent] == nil {
+                do {
+                    try FileManager.default.trashItem(at: folder, resultingItemURL: nil)
+                    trashed += 1
+                } catch {
+                    logger.error("Auto-delete failed for \(folder.lastPathComponent, privacy: .public): \(error.localizedDescription, privacy: .public)")
+                }
+            }
+            if trashed > 0 {
+                logger.notice("Auto-delete moved \(trashed) recording(s) to the Trash")
+                refreshRecordings()
+            }
+            return trashed
+        } catch {
+            logger.error("Auto-delete listing failed: \(error.localizedDescription, privacy: .public)")
+            return nil
         }
     }
 

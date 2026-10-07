@@ -61,4 +61,26 @@ struct MeetingStoreTests {
         #expect(try store.rename(renamedA, to: "Weekly sync") == renamedA)
         #expect(try store.rename(renamedB, to: "Weekly sync") == renamedB)
     }
+
+    @Test func expiredFoldersUseNewestFileAndSkipNonRecordings() throws {
+        let store = try makeStore()
+        let now = Date()
+        let old = now.addingTimeInterval(-3 * 3600)
+        let stale = try store.makeFolder(appName: "Zoom", startedAt: old)
+        let reprocessed = try store.makeFolder(appName: "Meet", startedAt: old)
+        let rawOnly = try store.makeFolder(appName: "Discord", startedAt: old)
+        let unrelated = store.root.appendingPathComponent("Notes", isDirectory: true)
+        try FileManager.default.createDirectory(at: unrelated, withIntermediateDirectories: true)
+        for url in [stale.appendingPathComponent(MeetingRecording.audioName),
+                    reprocessed.appendingPathComponent(MeetingRecording.audioName),
+                    rawOnly.appendingPathComponent(MeetingRecording.rawCaptureName),
+                    unrelated.appendingPathComponent("todo.txt")] {
+            try touch(url)
+            try FileManager.default.setAttributes([.modificationDate: old], ofItemAtPath: url.path)
+        }
+        try touch(reprocessed.appendingPathComponent(MeetingRecording.transcriptName))
+
+        let expired = try store.expiredFolders(before: now.addingTimeInterval(-3600)).map(\.lastPathComponent).sorted()
+        #expect(expired == [rawOnly.lastPathComponent, stale.lastPathComponent].sorted())
+    }
 }

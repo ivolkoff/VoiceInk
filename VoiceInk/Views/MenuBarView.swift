@@ -39,6 +39,10 @@ struct MenuBarView: View {
                     }
                 } else {
                     Menu("Record Call") {
+                        Button("All System Audio") {
+                            Task { await meetingRecorder.start(bundleID: MeetingCapture.systemAudioID) }
+                        }
+                        Divider()
                         ForEach(meetingRecorder.apps) { app in
                             Button(app.name) {
                                 Task { await meetingRecorder.start(bundleID: app.id) }
