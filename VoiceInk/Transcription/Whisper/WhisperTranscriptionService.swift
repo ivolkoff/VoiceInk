@@ -8,6 +8,9 @@ class WhisperTranscriptionService: TranscriptionService {
     private let logger = Logger(subsystem: "com.prakashjoshipax.voiceink", category: "WhisperTranscriptionService")
     private let modelsDirectory: URL
     private weak var modelProvider: (any WhisperModelProvider)?
+    // Meeting transcription calls this hundreds of times; reloading the model per call is the bottleneck.
+    var retainsOwnContext = false
+    private var retainedContext: (context: WhisperContext, modelName: String)?
 
     init(modelsDirectory: URL, modelProvider: (any WhisperModelProvider)? = nil) {
         self.modelsDirectory = modelsDirectory
@@ -39,7 +42,12 @@ class WhisperTranscriptionService: TranscriptionService {
             // and free the underlying whisper state under this run.
             await provider.beginModelUse()
             sharedProvider = provider
+        } else if retainsOwnContext, let retained = retainedContext, retained.modelName == model.name {
+            whisperContext = retained.context
         } else {
+            if retainsOwnContext {
+                await releaseRetainedContext()
+            }
             // Resolve the on-disk URL using the provider's availableModels (covers imports)
             let resolvedURL: URL? = await modelProvider?.availableModels.first(where: { $0.name == model.name })?.url
             guard let modelURL = resolvedURL, FileManager.default.fileExists(atPath: modelURL.path) else {
@@ -53,6 +61,9 @@ class WhisperTranscriptionService: TranscriptionService {
             } catch {
                 logger.error("❌ Failed to load model: \(model.name, privacy: .public) - \(error.localizedDescription, privacy: .public)")
                 throw VoiceInkEngineError.modelLoadFailed
+            }
+            if retainsOwnContext, let created = whisperContext {
+                retainedContext = (created, model.name)
             }
         }
 
@@ -89,13 +100,23 @@ class WhisperTranscriptionService: TranscriptionService {
 
         logger.notice("Whisper transcription completed successfully.")
 
-        // Only release resources if we created a new context (not using the shared one)
-        if await modelProvider?.whisperContext !== whisperContext {
+        // Only release resources if we created a new context (not the shared or the retained one)
+        if await modelProvider?.whisperContext !== whisperContext, retainedContext?.context !== whisperContext {
             await whisperContext.releaseResources()
             self.whisperContext = nil
         }
 
         return text
+    }
+
+    // Only ever a context this service created, never the shared one a dictation may be using.
+    func releaseRetainedContext() async {
+        guard let retained = retainedContext else { return }
+        retainedContext = nil
+        if whisperContext === retained.context {
+            whisperContext = nil
+        }
+        await retained.context.releaseResources()
     }
 
     private func readAudioSamples(_ url: URL) throws -> [Float] {
