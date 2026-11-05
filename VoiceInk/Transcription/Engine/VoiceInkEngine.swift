@@ -279,7 +279,16 @@ class VoiceInkEngine: NSObject, ObservableObject {
                             self.recordedFile = nil
                             self.activeRecordingStartID = nil
                             self.pendingSelectionEditTask = nil
-                            NotificationManager.shared.showNotification(title: String(localized: "Recording failed to start"), type: .error)
+                            if (error as? Recorder.RecorderError) == .audioSystemNotRunning {
+                                NotificationManager.shared.showNotification(
+                                    title: String(localized: "macOS audio stopped responding. Restart audio, then try recording again."),
+                                    type: .error,
+                                    duration: 15,
+                                    actionButton: (label: String(localized: "Restart Audio"), action: Recorder.restartCoreAudio)
+                                )
+                            } else {
+                                NotificationManager.shared.showNotification(title: String(localized: "Recording failed to start"), type: .error)
+                            }
                             self.logger.notice("toggleRecord: calling dismissMiniRecorder from error handler")
                             await self.recorderUIManager?.dismissMiniRecorder()
                         }

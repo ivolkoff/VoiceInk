@@ -7347,6 +7347,36 @@
         }
       }
     },
+    "macOS audio stopped responding. Restart audio, then try recording again.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Звук macOS перестал отвечать. Перезапустите звук и попробуйте записать снова."
+          }
+        }
+      }
+    },
+    "Restart Audio": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Перезапустить звук"
+          }
+        }
+      }
+    },
+    "VoiceInk needs to restart macOS audio. Sound in all apps will cut out for a moment.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "VoiceInk нужно перезапустить звук macOS. Звук во всех приложениях ненадолго пропадёт."
+          }
+        }
+      }
+    },
     "Press ESC again to cancel recording": {
       "localizations": {
         "ru": {

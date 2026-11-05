@@ -34,8 +34,37 @@ class Recorder: NSObject, ObservableObject {
     
     enum RecorderError: Error {
         case couldNotStartRecording
+        case audioSystemNotRunning
+
+        init(startFailure error: Error) {
+            let status = (error as? CoreAudioRecorderError)?.status
+            self = status == kAudioHardwareNotRunningError ? .audioSystemNotRunning : .couldNotStartRecording
+        }
     }
-    
+
+    // Relaunching VoiceInk doesn't help: the broken state lives in coreaudiod, and only an admin can restart it.
+    nonisolated static func restartCoreAudio() {
+        let logger = Logger(subsystem: "com.prakashjoshipax.voiceink", category: "Recorder")
+        let prompt = String(localized: "VoiceInk needs to restart macOS audio. Sound in all apps will cut out for a moment.")
+            .replacingOccurrences(of: "\\", with: "\\\\")
+            .replacingOccurrences(of: "\"", with: "\\\"")
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: "/usr/bin/osascript")
+        process.arguments = [
+            "-e", "do shell script \"killall coreaudiod\" with administrator privileges with prompt \"\(prompt)\"",
+        ]
+        process.terminationHandler = { process in
+            guard process.terminationStatus != 0 else { return }
+            logger.error("Restarting coreaudiod failed or was cancelled, osascript exit \(process.terminationStatus, privacy: .public)")
+        }
+        do {
+            try process.run()
+        } catch {
+            logger.error("Could not launch osascript to restart coreaudiod: \(error.localizedDescription, privacy: .public)")
+        }
+    }
+
+
     override init() {
         super.init()
         setupDeviceSwitchObserver()
@@ -153,7 +182,7 @@ class Recorder: NSObject, ObservableObject {
         } catch {
             logger.error("Failed to start recording: \(error.localizedDescription, privacy: .public)")
             await stopRecording()
-            throw RecorderError.couldNotStartRecording
+            throw RecorderError(startFailure: error)
         }
     }
 
