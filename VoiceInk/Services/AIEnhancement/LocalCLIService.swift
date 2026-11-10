@@ -22,7 +22,19 @@ enum LocalCLITemplate: String, CaseIterable, Identifiable {
         case .pi:
             return "pi -ne -ns -p --no-tools --system-prompt \"$VOICEINK_SYSTEM_PROMPT\" \"$VOICEINK_USER_PROMPT\""
         case .claude:
-            return "claude --model sonnet --strict-mcp-config --setting-sources \"\" -p \"$VOICEINK_FULL_PROMPT\""
+            return """
+            printf '%s' "$VOICEINK_USER_PROMPT" | CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC=1 claude -p \\
+              --model claude-sonnet-5-5 \\
+              --effort low \\
+              --system-prompt "$VOICEINK_SYSTEM_PROMPT" \\
+              --tools="" \\
+              --max-turns 1 \\
+              --strict-mcp-config \\
+              --setting-sources "" \\
+              --disable-slash-commands \\
+              --no-session-persistence \\
+              --fallback-model claude-haiku-5-5
+            """
         case .codex:
             return "TMPFILE=$(mktemp) && codex exec --skip-git-repo-check --output-last-message \"$TMPFILE\" \"$VOICEINK_FULL_PROMPT\" > /dev/null 2>&1 && cat \"$TMPFILE\" && rm \"$TMPFILE\""
         case .copilot:
@@ -36,6 +48,7 @@ final class LocalCLIService {
     static let selectedTemplateKey = "localCLISelectedTemplate"
     static let timeoutSecondsKey = "localCLITimeoutSeconds"
     static let defaultTimeoutSeconds: Double = 45
+    private static let legacyClaudeCommand = "claude --model sonnet --strict-mcp-config --setting-sources \"\" -p \"$VOICEINK_FULL_PROMPT\""
     private static let shellPathQueue = DispatchQueue(label: "com.prakashjoshipax.voiceink.localcli.path")
     private static var cachedInteractiveLoginPATH: String?
 
@@ -68,9 +81,15 @@ final class LocalCLIService {
 
     init() {
         let savedTemplateRaw = UserDefaults.standard.string(forKey: Self.selectedTemplateKey) ?? ""
-        selectedTemplate = LocalCLITemplate(rawValue: savedTemplateRaw) ?? .pi
+        selectedTemplate = LocalCLITemplate(rawValue: savedTemplateRaw) ?? .claude
 
-        commandTemplate = UserDefaults.standard.string(forKey: Self.commandTemplateKey) ?? ""
+        let savedCommand = UserDefaults.standard.string(forKey: Self.commandTemplateKey)
+        // An untouched copy of the previous built-in Claude template follows the template forward.
+        if savedCommand == nil || savedCommand == Self.legacyClaudeCommand {
+            commandTemplate = LocalCLITemplate.claude.commandTemplate
+        } else {
+            commandTemplate = savedCommand ?? ""
+        }
 
         let savedTimeout = UserDefaults.standard.double(forKey: Self.timeoutSecondsKey)
         timeoutSeconds = savedTimeout > 0 ? savedTimeout : Self.defaultTimeoutSeconds
