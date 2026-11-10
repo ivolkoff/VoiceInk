@@ -18,8 +18,22 @@ class LastTranscriptionService: ObservableObject {
         }
     }
     
+    /// Newest entry with real text: a failed, canceled or in-flight entry holds a status
+    /// message, which must not be pasted into the user's document.
+    static func getLastPasteableTranscription(from modelContext: ModelContext) -> Transcription? {
+        var descriptor = FetchDescriptor<Transcription>(
+            sortBy: [SortDescriptor(\.timestamp, order: .reverse)]
+        )
+        descriptor.fetchLimit = 50
+
+        let transcriptions = (try? modelContext.fetch(descriptor)) ?? []
+        return transcriptions.first {
+            $0.transcriptionStatus == nil || $0.transcriptionStatus == TranscriptionStatus.completed.rawValue
+        }
+    }
+
     static func copyLastTranscription(from modelContext: ModelContext) {
-        guard let lastTranscription = getLastTranscription(from: modelContext) else {
+        guard let lastTranscription = getLastPasteableTranscription(from: modelContext) else {
             Task { @MainActor in
                 NotificationManager.shared.showNotification(
                     title: String(localized: "No transcription available"),
@@ -49,7 +63,7 @@ class LastTranscriptionService: ObservableObject {
     }
 
     static func pasteLastTranscription(from modelContext: ModelContext) {
-        guard let lastTranscription = getLastTranscription(from: modelContext) else {
+        guard let lastTranscription = getLastPasteableTranscription(from: modelContext) else {
             Task { @MainActor in
                 NotificationManager.shared.showNotification(
                     title: String(localized: "No transcription available"),
@@ -67,7 +81,7 @@ class LastTranscriptionService: ObservableObject {
     }
     
     static func pasteLastEnhancement(from modelContext: ModelContext) {
-        guard let lastTranscription = getLastTranscription(from: modelContext) else {
+        guard let lastTranscription = getLastPasteableTranscription(from: modelContext) else {
             Task { @MainActor in
                 NotificationManager.shared.showNotification(
                     title: String(localized: "No transcription available"),
