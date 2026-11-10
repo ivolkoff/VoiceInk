@@ -42,6 +42,7 @@ class TranscriptionPipeline {
         model: any TranscriptionModel,
         session: TranscriptionSession?,
         selectionEdit: SelectionEditCapture?,
+        targetApp: NSRunningApplication? = nil,
         onStateChange: @escaping (RecordingState) -> Void,
         shouldCancel: () -> Bool,
         onCancel: @escaping () async -> Void,
@@ -328,6 +329,24 @@ class TranscriptionPipeline {
                 }
                 await restorePromptDetectionSettingsAndDismiss()
             } else {
+                if selectionPasteMode == nil,
+                   UserDefaults.standard.bool(forKey: ReturnToApp.userDefaultsKey),
+                   await !returnedToTargetApp(targetApp) {
+                    LastPasteTracker.shared.clear()
+                    await MainActor.run {
+                        NotificationManager.shared.showNotification(
+                            title: String.localizedStringWithFormat(
+                                String(localized: "Couldn't switch back to %@ — the text is in history (Paste Last Transcription)"),
+                                targetApp?.localizedName ?? ""
+                            ),
+                            type: .warning
+                        )
+                    }
+                    await restorePromptDetectionSettingsAndDismiss()
+                    saveTranscriptionAndPostCompletion()
+                    return
+                }
+
                 let appendSpace = selectionPasteMode == nil && UserDefaults.standard.bool(forKey: "AppendTrailingSpace")
                 let pastedText = textToPaste + (appendSpace ? " " : "")
                 let pasteOutcome = await CursorPaster.startPasteAtCursor(pastedText).value
@@ -369,5 +388,23 @@ class TranscriptionPipeline {
         }
 
         saveTranscriptionAndPostCompletion()
+    }
+
+    private func returnedToTargetApp(_ targetApp: NSRunningApplication?) async -> Bool {
+        let decision = ReturnToApp.decision(
+            targetPID: targetApp?.processIdentifier,
+            targetIsTerminated: targetApp?.isTerminated ?? false,
+            frontmostPID: NSWorkspace.shared.frontmostApplication?.processIdentifier,
+            ownPID: ProcessInfo.processInfo.processIdentifier
+        )
+        switch decision {
+        case .paste:
+            return true
+        case .cannotReturn:
+            return false
+        case .returnTo:
+            guard let targetApp else { return false }
+            return await ReturnToApp.bringToFront(targetApp)
+        }
     }
 }

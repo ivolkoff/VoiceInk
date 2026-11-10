@@ -577,9 +577,17 @@ struct ExperimentalSection: View {
     @ObservedObject private var playbackController = PlaybackController.shared
     @ObservedObject private var mediaController = MediaController.shared
     @State private var isPauseMediaExpanded = false
+    @AppStorage(ReturnToApp.userDefaultsKey) private var returnToAppBeforePaste = false
 
     var body: some View {
         Section {
+            Toggle(isOn: $returnToAppBeforePaste) {
+                HStack(spacing: 4) {
+                    Text("Return to Original App Before Pasting")
+                    InfoTip("If another window comes to the front while you dictate, VoiceInk switches back to the app where recording started. If it can't, nothing is pasted and the text stays in history.")
+                }
+            }
+
             ExpandableSettingsRow(
                 isExpanded: $isPauseMediaExpanded,
                 isEnabled: $playbackController.isPauseMediaEnabled,

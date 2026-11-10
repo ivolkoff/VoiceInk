@@ -10501,6 +10501,36 @@
           }
         }
       }
+    },
+    "Return to Original App Before Pasting": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Возвращаться в исходное приложение перед вставкой"
+          }
+        }
+      }
+    },
+    "If another window comes to the front while you dictate, VoiceInk switches back to the app where recording started. If it can't, nothing is pasted and the text stays in history.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Если во время диктовки на передний план вышло другое окно, VoiceInk вернётся в приложение, где началась запись. Не получится — текст не вставится и останется в истории."
+          }
+        }
+      }
+    },
+    "Couldn't switch back to %@ — the text is in history (Paste Last Transcription)": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Не удалось вернуться в %@ — текст в истории (вставить последнюю транскрипцию)"
+          }
+        }
+      }
     }
   },
   "version": "1.0"

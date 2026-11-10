@@ -13,6 +13,7 @@ enum AppDefaults {
             "useAppleScriptPaste": false,
             "pasteInChunks": false,
             "pasteChunkSize": 250,
+            ReturnToApp.userDefaultsKey: false,
 
             // Audio & Media
             "isSystemMuteEnabled": true,

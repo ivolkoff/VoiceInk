@@ -20,6 +20,7 @@ class VoiceInkEngine: NSObject, ObservableObject {
     let recorder = Recorder()
     var recordedFile: URL? = nil
     var pendingSelectionEditTask: Task<SelectionEditCapture?, Never>?
+    private var recordingTargetApp: NSRunningApplication?
     /// Model preload + context capture at recording start; cancelled at session end so a
     /// late capture can't repopulate contexts the teardown just cleared.
     private var sessionPreloadTask: Task<Void, Never>?
@@ -110,6 +111,7 @@ class VoiceInkEngine: NSObject, ObservableObject {
         }
 
         if recordingState == .recording {
+            let targetApp = recordingTargetApp
             activeRecordingStartID = nil
             partialTranscript = ""
             recordingState = .transcribing
@@ -133,7 +135,7 @@ class VoiceInkEngine: NSObject, ObservableObject {
 
                     let selectionEdit = await pendingSelectionEditTask?.value
                     pendingSelectionEditTask = nil
-                    await runPipeline(on: transcription, audioURL: recordedFile, selectionEdit: selectionEdit)
+                    await runPipeline(on: transcription, audioURL: recordedFile, selectionEdit: selectionEdit, targetApp: targetApp)
                 } else {
                     // Cancel landed while stopRecording() was suspended. Mirror the cancelRecording
                     // .recording path: finishActiveRecorderCancellation() alone doesn't restore the
@@ -156,6 +158,7 @@ class VoiceInkEngine: NSObject, ObservableObject {
             // Capture the keyboard layout now, while the target app still owns the input
             // source, so language-matching reflects what the user is typing in.
             KeyboardLayoutLanguageService.captureCurrentLayout()
+            recordingTargetApp = NSWorkspace.shared.frontmostApplication
             guard transcriptionModelManager.currentTranscriptionModel != nil else {
                 NotificationManager.shared.showNotification(title: String(localized: "No AI Model Selected"), type: .error)
                 return
@@ -306,7 +309,7 @@ class VoiceInkEngine: NSObject, ObservableObject {
 
     // MARK: - Pipeline Dispatch
 
-    private func runPipeline(on transcription: Transcription, audioURL: URL, selectionEdit: SelectionEditCapture?) async {
+    private func runPipeline(on transcription: Transcription, audioURL: URL, selectionEdit: SelectionEditCapture?, targetApp: NSRunningApplication?) async {
         guard let model = transcriptionModelManager.currentTranscriptionModel else {
             transcription.text = "Transcription Failed: No model selected"
             transcription.transcriptionStatus = TranscriptionStatus.failed.rawValue
@@ -332,6 +335,7 @@ class VoiceInkEngine: NSObject, ObservableObject {
             model: model,
             session: session,
             selectionEdit: selectionEdit,
+            targetApp: targetApp,
             onStateChange: { [weak self] state in
                 guard let self, self.activePipelineTranscriptionID == transcriptionID else { return }
                 self.recordingState = state
