@@ -12,11 +12,12 @@ enum AudioSilenceGate {
         var errorDescription: String? { String(localized: "No speech detected") }
     }
 
-    /// Loudest DC-removed RMS over 30 ms windows of a 16 kHz PCM16 WAV with a 44-byte header.
-    static func loudestWindowDBFS(pcm16WAV data: Data) -> Float {
-        let headerSize = 44
-        let sampleCount = max(0, (data.count - headerSize) / 2)
-        guard sampleCount >= windowSamples else { return -120 }
+    /// Loudest DC-removed RMS over 30 ms windows of a 16 kHz mono PCM16 WAV, or `nil` when
+    /// the file has no `data` chunk. With `stopAbove`, returns the first window louder than it.
+    static func loudestWindowDBFS(pcm16WAV data: Data, stopAbove: Float? = nil) -> Float? {
+        guard let samples = dataChunkRange(in: data) else { return nil }
+        let sampleCount = samples.count / 2
+        let stopLevel = stopAbove.map { pow(10, Double($0) / 20) }
 
         var loudest = 0.0
         data.withUnsafeBytes { (raw: UnsafeRawBufferPointer) in
@@ -24,13 +25,14 @@ enum AudioSilenceGate {
             var start = 0
             while start + windowSamples <= sampleCount {
                 for i in 0..<windowSamples {
-                    let offset = headerSize + (start + i) * 2
+                    let offset = samples.lowerBound + (start + i) * 2
                     let value = Int16(littleEndian: raw.loadUnaligned(fromByteOffset: offset, as: Int16.self))
                     window[i] = Double(value) / 32767
                 }
                 let mean = window.reduce(0, +) / Double(windowSamples)
                 let variance = window.reduce(0) { $0 + ($1 - mean) * ($1 - mean) } / Double(windowSamples)
                 loudest = max(loudest, variance.squareRoot())
+                if let stopLevel, loudest > stopLevel { return }
                 start += windowSamples
             }
         }
@@ -38,7 +40,27 @@ enum AudioSilenceGate {
     }
 
     static func isSilent(audioURL: URL) -> Bool {
-        guard let data = try? Data(contentsOf: audioURL) else { return false }
-        return loudestWindowDBFS(pcm16WAV: data) < thresholdDBFS
+        guard let data = try? Data(contentsOf: audioURL),
+              let level = loudestWindowDBFS(pcm16WAV: data, stopAbove: thresholdDBFS) else { return false }
+        return level < thresholdDBFS
+    }
+
+    /// ExtAudioFile writes a `FLLR` chunk before `data`, so the samples do not start at byte 44.
+    private static func dataChunkRange(in data: Data) -> Range<Int>? {
+        guard data.count >= 12,
+              data.prefix(4) == Data("RIFF".utf8),
+              data[data.startIndex + 8..<data.startIndex + 12] == Data("WAVE".utf8) else { return nil }
+        var offset = 12
+        while offset + 8 <= data.count {
+            let base = data.startIndex + offset
+            let id = data[base..<base + 4]
+            let size = data[base + 4..<base + 8].enumerated().reduce(0) { $0 | Int($1.element) << (8 * $1.offset) }
+            let body = offset + 8
+            if id == Data("data".utf8) {
+                return body..<min(body + size, data.count)
+            }
+            offset = body + size + (size & 1)
+        }
+        return nil
     }
 }
