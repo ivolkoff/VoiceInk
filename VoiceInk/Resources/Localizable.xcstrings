@@ -10531,6 +10531,16 @@
           }
         }
       }
+    },
+    "No speech detected": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Речь не обнаружена"
+          }
+        }
+      }
     }
   },
   "version": "1.0"

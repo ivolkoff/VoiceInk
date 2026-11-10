@@ -98,6 +98,10 @@ class TranscriptionPipeline {
         do {
             let transcriptionStart = Date()
             var text: String
+            if AudioSilenceGate.isSilent(audioURL: audioURL) {
+                session?.cancel()
+                throw AudioSilenceGate.NoSpeechError.noSpeech
+            }
             if let session {
                 text = try await session.transcribe(audioURL: audioURL)
             } else {
