@@ -115,6 +115,7 @@ class VoiceInkEngine: NSObject, ObservableObject {
             activeRecordingStartID = nil
             partialTranscript = ""
             recordingState = .transcribing
+            await recorder.recordReleaseTail { self.shouldCancelRecording }
             await recorder.stopRecording()
 
             if let recordedFile {

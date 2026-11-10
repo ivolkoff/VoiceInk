@@ -186,6 +186,15 @@ class Recorder: NSObject, ObservableObject {
         }
     }
 
+    func recordReleaseTail(isCancelled: () -> Bool) async {
+        var frames: [Bool] = []
+        while let recorder, !isCancelled(), ReleaseTailPolicy.shouldKeepRecording(frames) {
+            try? await Task.sleep(nanoseconds: UInt64(ReleaseTailPolicy.frameDuration * 1_000_000_000))
+            frames.append(recorder.averagePower > ReleaseTailPolicy.speechThresholdDBFS)
+        }
+        logger.notice("release tail: \(frames.count * 20, privacy: .public) ms")
+    }
+
     func stopRecording() async {
         logger.notice("stopRecording called")
         audioMuteTask?.cancel()
