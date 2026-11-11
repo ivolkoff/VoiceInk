@@ -31,7 +31,7 @@ class MiniRecorderPanel: NSPanel {
     }
     
     static func calculateWindowMetrics() -> NSRect {
-        guard let screen = NSScreen.main else {
+        guard let screen = RecorderScreenResolver.resolve() else {
             return NSRect(x: 0, y: 0, width: 300, height: 120)
         }
 

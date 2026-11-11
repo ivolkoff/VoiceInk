@@ -3,6 +3,7 @@ import SwiftUI
 struct NotchRecorderView<S: RecorderStateProvider & ObservableObject>: View {
     @ObservedObject var stateProvider: S
     @ObservedObject var recorder: Recorder
+    @ObservedObject var screenMetrics: NotchRecorderScreenMetrics
     @EnvironmentObject var windowManager: NotchWindowManager
     @EnvironmentObject private var enhancementService: AIEnhancementService
     @AppStorage("showLiveTextPreview") private var showLiveTextPreview = false
@@ -31,20 +32,9 @@ struct NotchRecorderView<S: RecorderStateProvider & ObservableObject>: View {
 
     // MARK: - Screen Geometry
 
-    private var notchWidth: CGFloat {
-        guard let screen = NSScreen.main else { return 180 }
-        if let left = screen.auxiliaryTopLeftArea?.width,
-           let right = screen.auxiliaryTopRightArea?.width {
-            return screen.frame.width - left - right
-        }
-        return 180
-    }
+    private var notchWidth: CGFloat { screenMetrics.notchSize.width }
 
-    private var notchHeight: CGFloat {
-        guard let screen = NSScreen.main else { return 37 }
-        if screen.safeAreaInsets.top > 0 { return screen.safeAreaInsets.top }
-        return NSApplication.shared.mainMenu?.menuBarHeight ?? NSStatusBar.system.thickness
-    }
+    private var notchHeight: CGFloat { screenMetrics.notchSize.height }
 
     // MARK: - Layout Constants
 

@@ -7,7 +7,7 @@ class NotchWindowManager: ObservableObject {
     private var windowController: NSWindowController?
     private var panel: NotchRecorderPanel?
 
-    private let makeView: (NotchWindowManager) -> AnyView
+    private let makeView: (NotchWindowManager, NotchRecorderScreenMetrics) -> AnyView
     private let enhancementService: AIEnhancementService
 
     init(engine: VoiceInkEngine, recorder: Recorder) {
@@ -15,9 +15,9 @@ class NotchWindowManager: ObservableObject {
             preconditionFailure("VoiceInkEngine.enhancementService must be non-nil when creating NotchWindowManager")
         }
         self.enhancementService = enhancementService
-        self.makeView = { manager in
+        self.makeView = { manager, screenMetrics in
             AnyView(
-                NotchRecorderView(stateProvider: engine, recorder: recorder)
+                NotchRecorderView(stateProvider: engine, recorder: recorder, screenMetrics: screenMetrics)
                     .environmentObject(manager)
                     .environmentObject(enhancementService)
             )
@@ -58,9 +58,9 @@ class NotchWindowManager: ObservableObject {
 
     private func initializeWindow() {
         deinitializeWindow()
-        let metrics = NotchRecorderPanel.calculateWindowMetrics()
+        let metrics = NotchRecorderPanel.calculateWindowMetrics(on: RecorderScreenResolver.resolve())
         let newPanel = NotchRecorderPanel(contentRect: metrics.frame)
-        let view = makeView(self)
+        let view = makeView(self, newPanel.screenMetrics)
         let hostingController = NotchRecorderHostingController(rootView: view)
         newPanel.contentView = hostingController.view
         panel = newPanel

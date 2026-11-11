@@ -1,6 +1,11 @@
 import SwiftUI
 import AppKit
 
+@MainActor
+final class NotchRecorderScreenMetrics: ObservableObject {
+    @Published var notchSize = NSSize(width: 180, height: 37)
+}
+
 class KeyablePanel: NSPanel {
     override var canBecomeKey: Bool { true }
     override var canBecomeMain: Bool { true }
@@ -10,11 +15,12 @@ class NotchRecorderPanel: KeyablePanel {
     override var canBecomeKey: Bool { false }
     override var canBecomeMain: Bool { false }
 
-    init(contentRect: NSRect) {
-        let metrics = NotchRecorderPanel.calculateWindowMetrics()
+    let screenMetrics = NotchRecorderScreenMetrics()
+    private var displayID: CGDirectDisplayID?
 
+    init(contentRect: NSRect) {
         super.init(
-            contentRect: metrics.frame,
+            contentRect: contentRect,
             styleMask: [.nonactivatingPanel, .fullSizeContentView, .hudWindow],
             backing: .buffered,
             defer: false
@@ -44,13 +50,15 @@ class NotchRecorderPanel: KeyablePanel {
         )
     }
 
-    static func calculateWindowMetrics() -> (frame: NSRect, notchWidth: CGFloat, notchHeight: CGFloat) {
-        guard let screen = NSScreen.main else {
-            return (NSRect(x: 0, y: 0, width: 280, height: 24), 280, 24)
+    static func calculateWindowMetrics(on screen: NSScreen?) -> (frame: NSRect, notchWidth: CGFloat, notchHeight: CGFloat) {
+        guard let screen else {
+            return (NSRect(x: 0, y: 0, width: 280, height: 24), 180, 37)
         }
 
         let safeAreaInsets = screen.safeAreaInsets
-        let notchHeight: CGFloat = safeAreaInsets.top > 0 ? safeAreaInsets.top : NSStatusBar.system.thickness
+        let notchHeight: CGFloat = safeAreaInsets.top > 0
+            ? safeAreaInsets.top
+            : NSApplication.shared.mainMenu?.menuBarHeight ?? NSStatusBar.system.thickness
 
         let notchWidth: CGFloat = {
             if let left = screen.auxiliaryTopLeftArea?.width,
@@ -73,9 +81,15 @@ class NotchRecorderPanel: KeyablePanel {
     }
 
     func show() {
-        let metrics = NotchRecorderPanel.calculateWindowMetrics()
-        setFrame(metrics.frame, display: true)
+        place(on: RecorderScreenResolver.resolve())
         orderFrontRegardless()
+    }
+
+    private func place(on screen: NSScreen?) {
+        displayID = screen.flatMap(RecorderScreenResolver.displayID(for:))
+        let metrics = NotchRecorderPanel.calculateWindowMetrics(on: screen)
+        screenMetrics.notchSize = NSSize(width: metrics.notchWidth, height: metrics.notchHeight)
+        setFrame(metrics.frame, display: true)
     }
 
     func hide(completion: @escaping () -> Void) {
@@ -85,8 +99,8 @@ class NotchRecorderPanel: KeyablePanel {
     @objc private func handleScreenParametersChange() {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
             guard let self else { return }
-            let metrics = NotchRecorderPanel.calculateWindowMetrics()
-            self.setFrame(metrics.frame, display: true)
+            // Stay on the display the recorder opened on; the cursor may be elsewhere by now.
+            self.place(on: RecorderScreenResolver.resolve(preferredDisplayID: self.displayID))
         }
     }
 
