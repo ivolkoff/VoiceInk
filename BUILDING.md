@@ -90,8 +90,8 @@ Requirement stays pinned to one cert. Then you grant Accessibility **once** and
 it survives rebuilds.
 
 ```bash
-make local-signed                 # builds, re-signs with "VoiceInk Local", installs to /Applications
-open /Applications/VoiceInk.app   # launch normally
+make local-signed                 # builds, re-signs with "VoiceInk Local", installs to /Applications, relaunches
+make reopen                       # quit and relaunch the installed copy
 ```
 
 One-time certificate setup (named `VoiceInk Local`, must be a **Code Signing**

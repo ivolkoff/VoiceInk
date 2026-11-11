@@ -131,8 +131,9 @@ local-signed:
 		echo "      is under a backup/sync tool, point LOCAL_INSTALL_DIR elsewhere."; \
 	fi
 	@echo ""
-	@echo "Launch: open $(LOCAL_INSTALL_DIR)/VoiceInk.app"
 	@echo "Grant Accessibility once; it then persists across rebuilds (DR pinned to the cert)."
+	@echo "Reopening $(LOCAL_INSTALL_DIR)/VoiceInk.app..."
+	@$(MAKE) --no-print-directory reopen
 
 # Run application
 run:
@@ -175,6 +176,8 @@ run-direct:
 # Quit running app and reopen the installed copy
 reopen:
 	@killall VoiceInk 2>/dev/null || true
+	@# open while the old instance is still terminating fails with LS error -600
+	@n=0; while pgrep -xq VoiceInk && [ $$n -lt 50 ]; do sleep 0.2; n=$$((n+1)); done
 	@open "$(LOCAL_INSTALL_DIR)/VoiceInk.app"
 
 # Cleanup
