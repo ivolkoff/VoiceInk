@@ -12,7 +12,9 @@ struct VoiceInkApp: App {
     let container: ModelContainer
     let containerInitializationFailed: Bool
 
-    @StateObject private var engine: VoiceInkEngine
+    // @State, not @StateObject: the body only forwards the engine into environmentObject, and
+    // observing it here re-evaluated every scene (MenuBarExtra included) on each engine update.
+    @State private var engine: VoiceInkEngine
     @StateObject private var whisperModelManager: WhisperModelManager
     @StateObject private var fluidAudioModelManager: FluidAudioModelManager
     @StateObject private var transcriptionModelManager: TranscriptionModelManager
@@ -151,7 +153,7 @@ struct VoiceInkApp: App {
         _fluidAudioModelManager = StateObject(wrappedValue: fluidAudioModelManager)
         _transcriptionModelManager = StateObject(wrappedValue: transcriptionModelManager)
         _recorderUIManager = StateObject(wrappedValue: recorderUIManager)
-        _engine = StateObject(wrappedValue: engine)
+        _engine = State(initialValue: engine)
 
         // 7. Create other services that depend on engine
         let recordingShortcutManager = RecordingShortcutManager(engine: engine, recorderUIManager: recorderUIManager)
