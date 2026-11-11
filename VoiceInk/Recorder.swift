@@ -160,6 +160,8 @@ class Recorder: NSObject, ObservableObject {
         coreAudioRecorder.onAudioChunk = onAudioChunk
         recorder = coreAudioRecorder
 
+        ScreenSleepPreventer.shared.startPreventingSleep()
+
         do {
             // Offload initialization to avoid shortcut lag.
             try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
@@ -222,6 +224,7 @@ class Recorder: NSObject, ObservableObject {
                 await playbackController.resumeMedia()
             }
         }
+        ScreenSleepPreventer.shared.stopPreventingSleep()
         deviceManager.isRecordingActive = false
     }
 
