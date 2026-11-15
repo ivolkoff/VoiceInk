@@ -45,6 +45,11 @@ struct SmartConvertTests {
         #expect(out == "привет как делапривет как дела")
     }
 
+    @Test func halfSwitchedWordBecomesOneWord() {
+        guard let out = run("привtn ghbdет helдщ, привtn,") else { return }
+        #expect(out == "привет привет hello, привет,")
+    }
+
     @Test func deliberateBilingualTokensStay() {
         guard let out = run("APIключ helloмир C++код ghbdtn") else { return }
         #expect(out == "APIключ helloмир C++код привет")

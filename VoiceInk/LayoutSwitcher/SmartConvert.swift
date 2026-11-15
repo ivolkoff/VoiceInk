@@ -22,7 +22,12 @@ enum SmartConvert {
         for (i, tok) in toks.enumerated() {
             guard tok.isWord else { results[i] = tok.str; continue }
             if dominantScript(letterCore(tok.str)) == .mixed {
-                // Mixed-script token: each run is judged on its own, dictionary-confirmed flips only.
+                if let (s, toScript) = unifyMixed(tok.str, latLang: latLang, cyrLang: cyrLang, map: map) {
+                    results[i] = s
+                    if toScript == .cyr { flippedCyr += 1 } else { flippedLat += 1 }
+                    continue
+                }
+                // Otherwise each run is judged on its own, dictionary-confirmed flips only.
                 var out = ""
                 for run in scriptRuns(tok.str) {
                     if case let .flip(s, toScript) = decideWord(run, latLang: latLang, cyrLang: cyrLang, map: map) {
@@ -51,6 +56,31 @@ enum SmartConvert {
             : (flippedLat > 0 && flippedCyr == 0) ? .lat : nil
         for i in pending { results[i] = signalFlip(toks[i].str, target: target, map: map) }
         return results.map { $0 ?? "" }.joined()
+    }
+
+    /// A word typed half in each layout («привtn»): the whole token in one script, only when the
+    /// dictionary confirms it. Trailing punctuation is tried as a letter key first («хлt,» → «хлеб»).
+    @MainActor
+    private static func unifyMixed(_ tok: String, latLang: String, cyrLang: String,
+                                   map: [Character: Character]) -> (String, Script)? {
+        let startsCyr = tok.first(where: \.isLetter).map { dominantScript(String($0)) == .cyr } ?? false
+        let (body, suffix) = splitTrailingNonLetters(tok)
+        for target in (startsCyr ? [Script.cyr, .lat] : [.lat, .cyr]) {
+            for (word, tail) in [(tok, ""), (body, suffix)] {
+                let whole = String(word.map { ch -> Character in
+                    let isCyr = dominantScript(String(ch)) == .cyr
+                    if target == .lat { return isCyr ? (map[ch] ?? ch) : ch }
+                    if !isCyr, let m = map[ch], dominantScript(String(m)) == .cyr { return m }
+                    return ch
+                })
+                let core = letterCore(whole)
+                if core.count >= 3, core.allSatisfy(\.isLetter), dominantScript(core) == target,
+                   SystemDictionary.isValidWord(core.lowercased(), lang: target == .cyr ? cyrLang : latLang) {
+                    return (whole + tail, target)
+                }
+            }
+        }
+        return nil
     }
 
     /// «делаghbdtn,» → ["дела", "ghbdtn,"]: new run where the letter script changes; non-letters stay with the current run.

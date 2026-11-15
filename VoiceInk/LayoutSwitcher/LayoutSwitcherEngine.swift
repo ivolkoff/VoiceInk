@@ -16,6 +16,8 @@ final class LayoutSwitcherEngine {
         let wasAuto: Bool
         let bundleID: String?
         let restore: TISInputSource?   // layout active before it; nil when it didn't switch
+        /// The other whole-word reading of a mixed-layout word; the next tap types it before undoing.
+        let alternate: (text: String, switchTo: TISInputSource)?
     }
 
     private let settings = LayoutSwitcherSettings.shared
@@ -226,6 +228,13 @@ final class LayoutSwitcherEngine {
         // selection can exist yet — skip the selection read and its clipboard fallback.
         // An undone auto-conversion teaches the never list.
         if let last = lastConversion, last.bundleID == front {
+            if let alternate = last.alternate {
+                logger.notice("manual trigger: other reading")
+                perform(deleteCount: last.produced.count, text: alternate.text, original: last.original,
+                        wasAuto: false, bundleID: front, switchTo: alternate.switchTo, afterSeq: seq,
+                        restoreTo: last.restore)
+                return
+            }
             logger.notice("manual trigger: undo")
             let original = last.original
             perform(deleteCount: last.produced.count, text: last.original, original: last.produced,
@@ -277,12 +286,26 @@ final class LayoutSwitcherEngine {
         }
         let typed = LayoutMapper.reconstruct(target.keys, currentData: LayoutPair.currentLayoutData(),
                                              pairA: both.aData, pairB: both.bData)
+        let spaces = String(repeating: " ", count: target.trailingSpaces)
+        func render(_ data: Data) -> String {
+            String(target.keys.compactMap {
+                LayoutMapper.character(keyCode: $0.keyCode, layout: data, shift: $0.shift, caps: $0.caps)
+            })
+        }
+        if let mixed = LayoutConversion.mixedReadings(typed: typed, inA: render(both.aData), inB: render(both.bData),
+                                                      aLang: both.aLang, bLang: both.bLang) {
+            logger.notice("manual trigger: mixed word")
+            perform(deleteCount: typed.count + target.trailingSpaces, text: mixed.first + spaces,
+                    original: typed + spaces, wasAuto: false, bundleID: front,
+                    switchTo: mixed.firstIsA ? both.aSource : both.bSource, afterSeq: seq,
+                    alternate: (mixed.second + spaces, mixed.firstIsA ? both.bSource : both.aSource))
+            return
+        }
         logger.notice("manual trigger: last word")
         let map = LayoutMapper.bidirectionalMap(both.aData, both.bData)
         let converted = LayoutMapper.convertText(typed, map: map)
         // By the result's script: «'[» has no letters but becomes «эх».
         let switchToB = LayoutConversion.scriptMatchesLang(converted, lang: both.bLang)
-        let spaces = String(repeating: " ", count: target.trailingSpaces)
         perform(deleteCount: typed.count + target.trailingSpaces, text: converted + spaces,
                 original: typed + spaces, wasAuto: false, bundleID: front,
                 switchTo: switchToB ? both.bSource : both.aSource, afterSeq: seq)
@@ -326,6 +349,8 @@ final class LayoutSwitcherEngine {
 
     private func perform(deleteCount: Int, text: String, original: String, wasAuto: Bool,
                          bundleID: String?, switchTo: TISInputSource?, afterSeq: UInt64,
+                         alternate: (text: String, switchTo: TISInputSource)? = nil,
+                         restoreTo: TISInputSource? = nil,
                          onSuccess: (() -> Void)? = nil) {
         guard let tap else { return }
         if deleteCount > 0, let role = FocusedTextAccessibility.focusedRole(), Self.itemListRoles.contains(role) {
@@ -333,7 +358,7 @@ final class LayoutSwitcherEngine {
             return
         }
         inFlight = true
-        let restore = switchTo == nil ? nil : LayoutPair.current()
+        let restore = restoreTo ?? (switchTo == nil ? nil : LayoutPair.current())
         tap.runAtomically(afterSeq: afterSeq, work: {
             DirectTyper.replace(deleteCount: deleteCount, with: text)
         }, done: { [weak self] typed in
@@ -347,7 +372,7 @@ final class LayoutSwitcherEngine {
                 if let switchTo { LayoutPair.select(switchTo) }
                 self.buffer.reset()
                 self.lastConversion = Conversion(original: original, produced: text, wasAuto: wasAuto,
-                                                 bundleID: bundleID, restore: restore)
+                                                 bundleID: bundleID, restore: restore, alternate: alternate)
                 self.logger.notice("\(wasAuto ? "auto" : "manual", privacy: .public): \(original, privacy: .private) -> \(text, privacy: .private)")
                 onSuccess?()
             }

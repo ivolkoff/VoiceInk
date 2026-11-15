@@ -33,6 +33,31 @@ enum LayoutConversion {
                     convertedLength: decision.convertedLength, switchToB: typedIsA)
     }
 
+    /// A word typed partly in each layout of the pair («привtn»): its two whole-word readings,
+    /// the likelier first. `inA`/`inB` are the same keys rendered in each layout. nil when
+    /// `typed` already is one of them.
+    @MainActor
+    static func mixedReadings(typed: String, inA: String, inB: String,
+                              aLang: String, bLang: String) -> (first: String, second: String, firstIsA: Bool)? {
+        guard typed != inA, typed != inB, inA.count == typed.count, inB.count == typed.count else { return nil }
+        let aValid = isDictionaryWord(inA, lang: aLang), bValid = isDictionaryWord(inB, lang: bLang)
+        let firstIsA: Bool
+        if aValid != bValid {
+            firstIsA = aValid
+        } else {
+            // No dictionary verdict: the layout the word was started in.
+            firstIsA = zip(typed, zip(inA, inB)).first { $0.1.0 != $0.1.1 }.map { $0.0 == $0.1.0 } ?? true
+        }
+        return firstIsA ? (inA, inB, true) : (inB, inA, false)
+    }
+
+    @MainActor
+    private static func isDictionaryWord(_ s: String, lang: String) -> Bool {
+        let core = String(s.prefix(LayoutDetector.splitTrailingPunctuation(s).coreLength))
+        return core.count >= 2 && core.allSatisfy(\.isLetter) && SystemDictionary.isAvailable(lang)
+            && SystemDictionary.isValidWord(core.lowercased(), lang: lang)
+    }
+
     /// A selection the smart pass left untouched is flipped whole: selecting and pressing the
     /// hotkey is an explicit request, and pressing it again undoes. nil when nothing flips.
     /// `map` must be the bidirectional character map of the pair.

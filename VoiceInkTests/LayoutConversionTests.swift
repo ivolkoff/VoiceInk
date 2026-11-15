@@ -41,6 +41,33 @@ struct LayoutConversionTests {
         // A smart result that changed something is kept as is.
         #expect(LayoutConversion.selectionResult(smart: "привет iPhone", selection: "ghbdtn iPhone", map: map) == "привет iPhone")
     }
+    private func readings(_ typed: String, _ inA: String, _ inB: String) -> (first: String, second: String, firstIsA: Bool)? {
+        LayoutConversion.mixedReadings(typed: typed, inA: inA, inB: inB, aLang: "en", bLang: "ru")
+    }
+
+    @Test func mixedWordUnifiesToTheDictionaryReading() {
+        guard ready else { return }
+        let tail = readings("привtn", "ghbdtn", "привет")
+        #expect(tail?.first == "привет" && tail?.second == "ghbdtn" && tail?.firstIsA == false)
+        let latin = readings("helдщ", "hello", "руддщ")
+        #expect(latin?.first == "hello" && latin?.firstIsA == true)
+        // Started in the wrong layout: the dictionary outweighs the first part.
+        #expect(readings("ghbdет", "ghbdtn", "привет")?.first == "привет")
+        // Trailing punctuation does not hide the word.
+        #expect(readings("привtn?", "ghbdtn?", "привет,")?.first == "привет,")
+    }
+
+    @Test func mixedWordWithoutDictionaryVerdictFollowsItsStart() {
+        guard ready else { return }
+        #expect(readings("фываzxcv", "asdfzxcv", "фываячсм")?.first == "фываячсм")
+        #expect(readings("asdfячсм", "asdfzxcv", "фываячсм")?.first == "asdfzxcv")
+    }
+
+    @Test func singleLayoutWordIsNotMixed() {
+        #expect(readings("ghbdtn", "ghbdtn", "привет") == nil)
+        #expect(readings("привет", "ghbdtn", "привет") == nil)
+    }
+
     @Test func punctuationSuffixFlipsWithTheWord() {
         // macOS Russian: the comma/period keys render as "^"/"&" in the U.S. layout, so
         // «привет,» typed in the wrong layout arrives as "ghbdtn^". The suffix must come
