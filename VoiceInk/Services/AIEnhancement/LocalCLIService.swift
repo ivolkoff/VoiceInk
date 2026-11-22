@@ -30,7 +30,8 @@ enum LocalCLITemplate: String, CaseIterable, Identifiable {
               --tools="" \\
               --max-turns 1 \\
               --strict-mcp-config \\
-              --setting-sources "" \\
+              --safe-mode \\
+              --setting-sources user \\
               --disable-slash-commands \\
               --no-session-persistence \\
               --fallback-model claude-haiku-5-5
@@ -49,18 +50,32 @@ final class LocalCLIService {
     static let timeoutSecondsKey = "localCLITimeoutSeconds"
     static let defaultTimeoutSeconds: Double = 45
     private static let legacyClaudeCommand = "claude --model sonnet --strict-mcp-config --setting-sources \"\" -p \"$VOICEINK_FULL_PROMPT\""
+    private static let previousClaudeCommand = """
+        printf '%s' "$VOICEINK_USER_PROMPT" | CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC=1 claude -p \\
+          --model claude-sonnet-5-5 \\
+          --effort low \\
+          --system-prompt "$VOICEINK_SYSTEM_PROMPT" \\
+          --tools="" \\
+          --max-turns 1 \\
+          --strict-mcp-config \\
+          --setting-sources "" \\
+          --disable-slash-commands \\
+          --no-session-persistence \\
+          --fallback-model claude-haiku-5-5
+        """
     private static let shellPathQueue = DispatchQueue(label: "com.prakashjoshipax.voiceink.localcli.path")
     private static var cachedInteractiveLoginPATH: String?
+    private let defaults: UserDefaults
 
     var commandTemplate: String {
         didSet {
-            UserDefaults.standard.set(commandTemplate, forKey: Self.commandTemplateKey)
+            defaults.set(commandTemplate, forKey: Self.commandTemplateKey)
         }
     }
 
     var selectedTemplate: LocalCLITemplate {
         didSet {
-            UserDefaults.standard.set(selectedTemplate.rawValue, forKey: Self.selectedTemplateKey)
+            defaults.set(selectedTemplate.rawValue, forKey: Self.selectedTemplateKey)
         }
     }
 
@@ -71,7 +86,7 @@ final class LocalCLIService {
                 timeoutSeconds = clamped
                 return
             }
-            UserDefaults.standard.set(timeoutSeconds, forKey: Self.timeoutSecondsKey)
+            defaults.set(timeoutSeconds, forKey: Self.timeoutSecondsKey)
         }
     }
 
@@ -79,19 +94,20 @@ final class LocalCLIService {
         !commandTemplate.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
     }
 
-    init() {
-        let savedTemplateRaw = UserDefaults.standard.string(forKey: Self.selectedTemplateKey) ?? ""
+    init(defaults: UserDefaults = .standard) {
+        self.defaults = defaults
+        let savedTemplateRaw = defaults.string(forKey: Self.selectedTemplateKey) ?? ""
         selectedTemplate = LocalCLITemplate(rawValue: savedTemplateRaw) ?? .claude
 
-        let savedCommand = UserDefaults.standard.string(forKey: Self.commandTemplateKey)
-        // An untouched copy of the previous built-in Claude template follows the template forward.
-        if savedCommand == nil || savedCommand == Self.legacyClaudeCommand {
+        let savedCommand = defaults.string(forKey: Self.commandTemplateKey)
+        // Update saved copies of the built-in command while preserving custom commands.
+        if savedCommand == nil || savedCommand == Self.legacyClaudeCommand || savedCommand == Self.previousClaudeCommand {
             commandTemplate = LocalCLITemplate.claude.commandTemplate
         } else {
             commandTemplate = savedCommand ?? ""
         }
 
-        let savedTimeout = UserDefaults.standard.double(forKey: Self.timeoutSecondsKey)
+        let savedTimeout = defaults.double(forKey: Self.timeoutSecondsKey)
         timeoutSeconds = savedTimeout > 0 ? savedTimeout : Self.defaultTimeoutSeconds
     }
 
@@ -226,7 +242,9 @@ final class LocalCLIService {
                     if looksLikeCommandNotFound {
                         continuation.resume(throwing: LocalCLIError.commandNotFound(stderr.isEmpty ? commandTemplate : stderr))
                     } else {
-                        continuation.resume(throwing: LocalCLIError.nonZeroExit(status: Int(process.terminationStatus), stderr: stderr))
+                        // Claude can report the fatal error on stdout and send unrelated warnings to stderr.
+                        let details = [stdout, stderr].filter { !$0.isEmpty }.joined(separator: "\n")
+                        continuation.resume(throwing: LocalCLIError.nonZeroExit(status: Int(process.terminationStatus), details: details))
                     }
                     return
                 }
@@ -318,7 +336,7 @@ enum LocalCLIError: Error, LocalizedError {
     case commandNotConfigured
     case commandNotFound(String)
     case timeout(seconds: Double)
-    case nonZeroExit(status: Int, stderr: String)
+    case nonZeroExit(status: Int, details: String)
     case emptyOutput
     case executionFailed(String)
 
@@ -330,11 +348,11 @@ enum LocalCLIError: Error, LocalizedError {
             return "Local CLI command was not found. Use an absolute path or fix your shell PATH. Details: \(details)"
         case .timeout(let seconds):
             return "Local CLI command timed out after \(Int(seconds)) seconds."
-        case .nonZeroExit(let status, let stderr):
-            if stderr.isEmpty {
+        case .nonZeroExit(let status, let details):
+            if details.isEmpty {
                 return "Local CLI command failed with exit code \(status)."
             }
-            return "Local CLI command failed with exit code \(status): \(stderr)"
+            return "Local CLI command failed with exit code \(status): \(details)"
         case .emptyOutput:
             return "Local CLI command returned empty output."
         case .executionFailed(let message):

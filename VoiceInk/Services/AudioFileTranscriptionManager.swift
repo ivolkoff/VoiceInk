@@ -201,7 +201,7 @@ class AudioTranscriptionManager: ObservableObject {
                         transcriptionStatus: .completed
                     )
                 } catch {
-                    logger.error("Enhancement failed: \(error.localizedDescription, privacy: .public)")
+                    logger.error("Enhancement failed: \(error.localizedDescription, privacy: .private)")
                     transcription = Transcription(
                         text: cleanedText,
                         duration: duration,

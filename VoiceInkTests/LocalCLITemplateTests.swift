@@ -3,6 +3,56 @@ import Testing
 @testable import VoiceInk
 
 struct LocalCLITemplateTests {
+    @Test func migratesBuiltInClaudeCommandsAndKeepsCustomCommands() throws {
+        let suiteName = "VoiceInkTests.LocalCLI.\(UUID().uuidString)"
+        let defaults = try #require(UserDefaults(suiteName: suiteName))
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+
+        let legacyCommand = "claude --model sonnet --strict-mcp-config --setting-sources \"\" -p \"$VOICEINK_FULL_PROMPT\""
+        let previousCommand = """
+            printf '%s' "$VOICEINK_USER_PROMPT" | CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC=1 claude -p \\
+              --model claude-sonnet-5-5 \\
+              --effort low \\
+              --system-prompt "$VOICEINK_SYSTEM_PROMPT" \\
+              --tools="" \\
+              --max-turns 1 \\
+              --strict-mcp-config \\
+              --setting-sources "" \\
+              --disable-slash-commands \\
+              --no-session-persistence \\
+              --fallback-model claude-haiku-5-5
+            """
+
+        for command in [legacyCommand, previousCommand] {
+            defaults.set(command, forKey: LocalCLIService.commandTemplateKey)
+            #expect(LocalCLIService(defaults: defaults).commandTemplate == LocalCLITemplate.claude.commandTemplate)
+        }
+
+        let customCommand = previousCommand.replacingOccurrences(of: "--effort low", with: "--effort high")
+        defaults.set(customCommand, forKey: LocalCLIService.commandTemplateKey)
+        #expect(LocalCLIService(defaults: defaults).commandTemplate == customCommand)
+    }
+
+    @Test func failedCommandReportsStdoutBeforeStderr() async throws {
+        let suiteName = "VoiceInkTests.LocalCLI.\(UUID().uuidString)"
+        let defaults = try #require(UserDefaults(suiteName: suiteName))
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+        defaults.set("""
+            printf '%s\\n' 'Claude cannot use your subscription'
+            printf '%s\\n' 'Warning: sign-in expires soon' >&2
+            exit 1
+            """, forKey: LocalCLIService.commandTemplateKey)
+
+        let service = LocalCLIService(defaults: defaults)
+        do {
+            _ = try await service.enhance(systemPrompt: "Improve text", userPrompt: "Sample text")
+            Issue.record("Expected the failing command to produce an error")
+        } catch LocalCLIError.nonZeroExit(let status, let details) {
+            #expect(status == 1)
+            #expect(details == "Claude cannot use your subscription\nWarning: sign-in expires soon")
+        }
+    }
+
     /// Runs the built-in Claude template the way LocalCLIService does (zsh, VOICEINK_* env,
     /// full prompt on stdin) against a fake `claude` that records its argv and stdin.
     @Test func claudeTemplatePassesSystemPromptAsArgumentAndUserPromptOnStdin() throws {
@@ -52,6 +102,8 @@ struct LocalCLITemplateTests {
         #expect(value(after: "--model") == "claude-sonnet-5-5")
         #expect(value(after: "--fallback-model") == "claude-haiku-5-5")
         #expect(args.contains("--tools="))
+        #expect(args.contains("--safe-mode"))
+        #expect(value(after: "--setting-sources") == "user")
         let stdinText = try String(contentsOf: dir.appendingPathComponent("stdin"), encoding: .utf8)
         #expect(stdinText == userPrompt)
         // Without it the CLI spends ~1 s on background requests before answering.

@@ -215,7 +215,7 @@ class AudioTranscriptionService: ObservableObject {
                     let textForAI = promptDetectionResult?.processedText ?? text
                     (enhancedText, enhancementDuration, promptName) = try await enhancementService.enhance(textForAI)
                 } catch {
-                    logger.error("Enhancement failed: \(error.localizedDescription, privacy: .public)")
+                    logger.error("Enhancement failed: \(error.localizedDescription, privacy: .private)")
                 }
             }
 

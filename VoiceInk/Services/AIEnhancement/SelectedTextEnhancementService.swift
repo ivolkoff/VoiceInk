@@ -80,7 +80,7 @@ final class SelectedTextEnhancementService {
             await AutoLearnService.shared.recordingDidStart()
             CursorPaster.startPasteAtCursor(enhanced)
         } catch {
-            logger.error("Enhancement failed: \(error.localizedDescription, privacy: .public)")
+            logger.error("Enhancement failed: \(error.localizedDescription, privacy: .private)")
             notify(String.localizedStringWithFormat(String(localized: "Enhancement failed: %@"), error.localizedDescription), type: .error)
         }
     }
