@@ -33,6 +33,51 @@ enum LayoutConversion {
                     convertedLength: decision.convertedLength, switchToB: typedIsA)
     }
 
+    /// These keys can spell a one-letter word in the other layout. Defer until a later word confirms it.
+    static func pendingLetter(_ plan: Plan, source: String, target: String) -> Character? {
+        guard plan.verdict == .undecided,
+              Set([String(source.prefix(2)), String(target.prefix(2))]) == ["en", "ru"],
+              plan.typed.count == 1, let letter = plan.typed.first, letter.isLowercase,
+              plan.converted.count == 1, let flipped = plan.converted.first,
+              ShortWords.isSingle(flipped, lang: target),
+              !ShortWords.isSingle(letter, lang: source) else { return nil }
+        return letter
+    }
+
+    /// Extend an accepted single-word correction only across a verified, freshly typed suffix.
+    static func phraseReplacement(for plan: Plan, pending: [Character], onScreen: String?,
+                                  source: String, target: String, map: [Character: Character],
+                                  never: Set<String>) -> (original: String, produced: String)? {
+        guard plan.verdict == .switchToConverted, plan.convertedLength >= 3,
+              !pending.isEmpty, let onScreen else { return nil }
+        let prefix = pending.map(String.init).joined(separator: " ")
+        let typed = prefix + " " + plan.typed + " "
+        let original = String(onScreen.suffix(typed.count))
+        // TextEdit can capitalize the first letter after the key was captured. Preserve its case
+        // and require every remaining character (including whitespace) to match exactly.
+        let capitalized = original != typed
+        if capitalized {
+            guard let first = typed.first, original == first.uppercased() + typed.dropFirst() else { return nil }
+        }
+
+        let before = onScreen.dropLast(original.count)
+        if let boundary = before.last, !boundary.isWhitespace { return nil }
+        // A label in the source language ("plan b", "vitamin c") belongs with its left neighbour.
+        let left = before.reversed().drop(while: { $0 == " " }).prefix(while: { $0.isLetter })
+        if !left.isEmpty, scriptMatchesLang(String(left.reversed()), lang: source) { return nil }
+        var converted: [String] = []
+        for letter in pending {
+            guard let flipped = map[letter], ShortWords.isSingle(flipped, lang: target),
+                  !LayoutPolicy.isNeverWord(String(letter), String(flipped), never: never)
+            else { return nil }
+            converted.append(capitalized && converted.isEmpty ? flipped.uppercased() : String(flipped))
+        }
+        let produced = converted.joined(separator: " ") + " " + plan.converted + " "
+        guard !LayoutPolicy.isNeverWord(String(original.dropLast()), String(produced.dropLast()), never: never)
+        else { return nil }
+        return (original, produced)
+    }
+
     /// A word typed partly in each layout of the pair («привtn»): its two whole-word readings,
     /// the likelier first. `inA`/`inB` are the same keys rendered in each layout. nil when
     /// `typed` already is one of them.

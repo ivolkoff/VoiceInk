@@ -18,6 +18,14 @@ enum ShortWords {
         "vs", "dj", "kb", "jr", "bp", "ye", "ds",
     ]
 
+    static func isSingle(_ ch: Character, lang: String) -> Bool {
+        switch lang.prefix(2) {
+        case "ru": return "явскоуаи".contains(ch.lowercased())
+        case "en": return "ai".contains(ch.lowercased())
+        default: return false
+        }
+    }
+
     static func common(_ lang: String) -> Set<String>? {
         switch String(lang.prefix(2)) {
         case "ru": return ru

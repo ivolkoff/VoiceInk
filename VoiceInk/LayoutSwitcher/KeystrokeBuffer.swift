@@ -24,6 +24,9 @@ struct KeystrokeBuffer: Equatable {
     /// The current word holds something the model can't track (a dead key); ignore it to the next space.
     private(set) var skipping = false
 
+    /// Eligible one-letter words immediately before the word being typed, separated by single spaces.
+    var pendingLetters: [Character] = []
+
     /// Drops the current word and ignores the rest of it, so it is never converted.
     mutating func skipWord() {
         reset()
@@ -45,6 +48,7 @@ struct KeystrokeBuffer: Equatable {
             return nil
         }
         guard !currentWord.isEmpty else {
+            pendingLetters.removeAll()
             if !previousWord.isEmpty { boundaryCount += 1 }
             return nil
         }
@@ -71,6 +75,7 @@ struct KeystrokeBuffer: Equatable {
         previousWord = []
         boundaryCount = 0
         skipping = false
+        pendingLetters.removeAll()
     }
 
     /// What the manual trigger converts: the word being typed, else the last completed word

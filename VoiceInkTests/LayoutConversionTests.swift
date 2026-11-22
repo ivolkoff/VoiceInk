@@ -20,6 +20,37 @@ struct LayoutConversionTests {
         #expect(p.switchToB == true)
     }
 
+    @Test func contextualShortWordsRequireAVerifiedPhrase() throws {
+        let layouts = try #require(TestLayouts.usAndRussian())
+        let map = LayoutMapper.bidirectionalMap(layouts.us, layouts.ru)
+        func reading(_ text: String) -> LayoutConversion.Plan {
+            LayoutConversion.plan(typed: text, aLang: "en", bLang: "ru", map: map,
+                                  capsLock: false, alwaysConvert: [])
+        }
+        let pending = ["f", "b", "z"].compactMap {
+            LayoutConversion.pendingLetter(reading($0), source: "en", target: "ru")
+        }
+        #expect(pending == Array("fbz"))
+        let anchor = reading("[jxe")
+        func correction(_ screen: String?, letters: [Character]? = nil,
+                        never: Set<String> = []) -> String? {
+            LayoutConversion.phraseReplacement(for: anchor, pending: letters ?? pending, onScreen: screen,
+                                              source: "en", target: "ru", map: map, never: never)?.produced
+        }
+        #expect(correction("f b z [jxe ") == "а и я хочу ")
+        #expect(correction("Да, f b z [jxe ") == "а и я хочу ")
+        #expect(correction("plan b [jxe ", letters: ["b"]) == nil)
+        #expect(correction("af b z [jxe ") == nil)
+        #expect(correction(nil) == nil)
+        #expect(correction("F b z [jxe ") == "А и я хочу ")
+        #expect(correction("f B z [jxe ") == nil)
+        #expect(correction("f b z [jxe ", never: ["я"]) == nil)
+        #expect(correction("f b z [jxe ", never: ["f b z [jxe"]) == nil)
+        for word in ["а", "и", "я", "хочу"] {
+            #expect(reading(word).verdict != .switchToConverted)
+        }
+    }
+
     @Test func correctCyrillicWordIsKept() {
         guard let p = plan("привет") else { return }
         #expect(p.verdict == .keep)

@@ -9,9 +9,6 @@ enum SmartConvert {
     private enum Script { case cyr, lat, other, mixed }
     private enum WordDecision { case keep, flip(String, Script), unresolved }
 
-    private static let cyr1: Set<Character> = ["я", "в", "с", "к", "о", "у", "а", "и"]
-    private static let lat1: Set<Character> = ["a", "i"]
-
     @MainActor
     static func selection(_ text: String, latLang: String, cyrLang: String, map: [Character: Character]) -> String {
         let toks = tokenize(text)
@@ -153,7 +150,7 @@ enum SmartConvert {
         let flipped = LayoutMapper.convertText(core, map: map)
         if core.count == 1 {
             guard let fch = letterCore(flipped).first,
-                  (target == .cyr ? cyr1 : lat1).contains(Character(fch.lowercased())) else { return orig }
+                  ShortWords.isSingle(fch, lang: target == .cyr ? "ru" : "en") else { return orig }
         }
         return lead + flipped + trail
     }

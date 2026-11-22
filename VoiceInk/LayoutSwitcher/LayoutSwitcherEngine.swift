@@ -30,6 +30,7 @@ final class LayoutSwitcherEngine {
     private var pendingAuto = false
     private var lastSeq: UInt64 = 0   // sequence number of the last tap event handled
     private var triggerShortcut: Shortcut?
+    private var layoutObserver: NSObjectProtocol?
     private var appObserver: NSObjectProtocol?
     private var cancellables = Set<AnyCancellable>()
 
@@ -79,6 +80,12 @@ final class LayoutSwitcherEngine {
         ) { [weak self] _ in
             Task { @MainActor in self?.resetContext() }
         }
+        layoutObserver = DistributedNotificationCenter.default().addObserver(
+            forName: Notification.Name(kTISNotifySelectedKeyboardInputSourceChanged as String),
+            object: nil, queue: .main
+        ) { [weak self] _ in
+            MainActor.assumeIsolated { self?.buffer.pendingLetters.removeAll() }
+        }
         SystemDictionary.warmUp()
         logger.notice("started")
     }
@@ -88,6 +95,8 @@ final class LayoutSwitcherEngine {
         tap = nil
         if let appObserver { NSWorkspace.shared.notificationCenter.removeObserver(appObserver) }
         appObserver = nil
+        if let layoutObserver { DistributedNotificationCenter.default().removeObserver(layoutObserver) }
+        layoutObserver = nil
         resetContext()
         logger.notice("stopped")
     }
@@ -150,6 +159,8 @@ final class LayoutSwitcherEngine {
     // MARK: - Auto conversion
 
     private func scheduleAutoConversion(of word: [TypedKey], capsLock: Bool, seq: UInt64) {
+        let precedingLetters = buffer.pendingLetters
+        buffer.pendingLetters.removeAll()
         guard settings.autoConvert else { logger.notice("auto gate: autoConvert off"); return }
         guard !resonance.isFrozen else { logger.notice("auto gate: frozen"); return }
         let front = NSWorkspace.shared.frontmostApplication?.bundleIdentifier
@@ -171,6 +182,12 @@ final class LayoutSwitcherEngine {
         guard !LayoutPolicy.isNeverWord(plan.typed, plan.converted, never: settings.neverWordsSet) else {
             logger.notice("auto gate: never-word"); return
         }
+        let sourceLang = plan.switchToB ? both.aLang : both.bLang
+        let targetLang = plan.switchToB ? both.bLang : both.aLang
+        if let letter = LayoutConversion.pendingLetter(plan, source: sourceLang, target: targetLang) {
+            buffer.pendingLetters = Array(precedingLetters.suffix(2)) + [letter]
+            return
+        }
         guard plan.verdict == .switchToConverted else {
             logger.notice("auto gate: verdict \(String(describing: plan.verdict), privacy: .public) typed=\(plan.typed, privacy: .private) conv=\(plan.converted, privacy: .private)")
             return
@@ -180,21 +197,19 @@ final class LayoutSwitcherEngine {
         // physical keys, and retyping them from `typed` would keep the wrong layout's image
         // («ghbdtn?» → «привет?» instead of «привет,»).
         let produced = plan.converted + " "
+        let forced = settings.alwaysWordsSet.contains(plan.converted.lowercased())
+            || settings.alwaysWordsSet.contains(plan.converted.prefix(plan.convertedLength).lowercased())
         let switchTarget = plan.switchToB ? both.bSource : both.aSource
-        guard resonance.allow(word: original, produced: produced) else {
-            buffer.reset()
-            return
-        }
-
         pendingAuto = true
         DispatchQueue.main.asyncAfter(deadline: .now() + Self.boundaryGrace) { [weak self] in
-            guard let self, self.pendingAuto else { return }
+            guard let self, self.pendingAuto, self.lastSeq == seq else { return }
             self.pendingAuto = false
             // Verify against the screen only when the app actually exposes text before the caret.
             // An empty result means the app gives us nothing to check (some editors / web fields),
             // not that the buffer is wrong — treat it like nil and proceed. And on a real mismatch
             // do NOT reset the buffer: the manual trigger stays available as a fallback.
-            if let onScreen = FocusedTextAccessibility.textBeforeCaret(),
+            let screen = FocusedTextAccessibility.textBeforeCaret()
+            if let onScreen = screen,
                !onScreen.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
                 // A letter right before it means the buffer holds only the tail of a word
                 // (typing resumed after a click or arrows mid-word).
@@ -205,8 +220,17 @@ final class LayoutSwitcherEngine {
                     return
                 }
             }
-            self.perform(deleteCount: original.count, text: produced, original: original,
-                         wasAuto: true, bundleID: front, switchTo: switchTarget, afterSeq: seq)
+            let phrase = forced ? nil : LayoutConversion.phraseReplacement(
+                for: plan, pending: precedingLetters, onScreen: screen, source: sourceLang,
+                target: targetLang, map: map, never: self.settings.neverWordsSet)
+            let replacement = phrase ?? (original: original, produced: produced)
+            guard self.resonance.allow(word: replacement.original, produced: replacement.produced) else {
+                self.buffer.reset()
+                return
+            }
+            self.perform(deleteCount: replacement.original.count, text: replacement.produced,
+                         original: replacement.original, wasAuto: true, bundleID: front,
+                         switchTo: switchTarget, afterSeq: seq)
         }
     }
 
@@ -215,6 +239,7 @@ final class LayoutSwitcherEngine {
     func handleManualTrigger() async {
         guard settings.enabled, !inFlight else { return }
         pendingAuto = false
+        buffer.pendingLetters.removeAll()
         let seq = lastSeq   // anything typed after this point cancels the replacement
         guard !LayoutPolicy.secureInputActive,
               !secureFieldFocused else {

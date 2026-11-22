@@ -58,6 +58,24 @@ struct KeystrokeBufferTests {
         #expect(b.manualTarget?.keys == [key(3)])
     }
 
+    @Test func phraseContextStopsAtEditingBoundaries() {
+        var b = KeystrokeBuffer()
+        b.append(key(3))
+        _ = b.space()
+        b.pendingLetters = ["f"]
+        b.append(key(4))
+        #expect(b.pendingLetters == ["f"])
+        b.backspace()
+        b.backspace()
+        #expect(b.pendingLetters.isEmpty)
+        b.pendingLetters = ["b"]
+        _ = b.space()
+        #expect(b.pendingLetters.isEmpty)
+        b.pendingLetters = ["z"]
+        b.skipWord()
+        #expect(b.pendingLetters.isEmpty)
+    }
+
     @Test func leadingSpacesAreNotABoundary() {
         var b = KeystrokeBuffer()
         let leading = b.space()
